@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, BriefcaseBusiness, CheckCircle2, MapPin, Pencil, Users } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import LandingFooter from "../components/landing/LandingFooter";
 import { useMobileNative } from "../hooks/useMobileNative";
@@ -14,6 +14,14 @@ import {
   updateCareerApplicationStatus,
   updateCareerJobStatus,
 } from "../lib/careersApi";
+import {
+  clearCareerPortfolioIntent,
+  readCareerPortfolioIntent,
+  readPublishedPortfolioForCareer,
+  roleRequiresHomeMakersPortfolio,
+  saveCareerPortfolioIntent,
+} from "../lib/careerPortfolioIntent";
+import { getProOnboardingResumePath } from "../lib/hmAuth";
 import "./CareersPage.css";
 
 const EMPLOYMENT = {
@@ -66,15 +74,31 @@ function JobMeta({ job }) {
 }
 
 function ApplicationForm({ job, onClose }) {
-  const [form, setForm] = useState(EMPTY_APPLICATION);
+  const navigate = useNavigate();
+  const portfolioRequired = roleRequiresHomeMakersPortfolio(job);
+  const publishedPortfolio = readPublishedPortfolioForCareer();
+  const savedIntent = readCareerPortfolioIntent();
+  const savedDraft = savedIntent?.jobId === job.id ? savedIntent.application : null;
+  const attachedPortfolioUrl = publishedPortfolio?.url || (savedIntent?.jobId === job.id ? savedIntent?.portfolioUrl : "") || "";
+  const [form, setForm] = useState(() => ({
+    ...EMPTY_APPLICATION,
+    ...(savedDraft || {}),
+    portfolio_url: attachedPortfolioUrl || savedDraft?.portfolio_url || "",
+    consent: false,
+  }));
   const [state, setState] = useState({ saving: false, error: "", sent: false });
   const set = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
   const submit = async (event) => {
     event.preventDefault();
+    if (portfolioRequired && !attachedPortfolioUrl) {
+      setState({ saving: false, sent: false, error: "Create and publish your HomeMakers portfolio before submitting this application." });
+      return;
+    }
     setState({ saving: true, error: "", sent: false });
     try {
       await submitCareerApplication(job.id, form);
+      clearCareerPortfolioIntent(job.id);
       setState({ saving: false, error: "", sent: true });
     } catch (error) {
       const duplicate = error?.code === "23505";
@@ -84,6 +108,11 @@ function ApplicationForm({ job, onClose }) {
         error: duplicate ? "An application using this email has already been received for this role." : (error?.message || "We could not submit your application."),
       });
     }
+  };
+
+  const buildPortfolio = () => {
+    saveCareerPortfolioIntent(job, form);
+    navigate(getProOnboardingResumePath());
   };
 
   return (
@@ -102,13 +131,40 @@ function ApplicationForm({ job, onClose }) {
             <p className="hm-careers-eyebrow">Apply to HomeMakers</p>
             <h2 id="career-apply-title">{job.title}</h2>
             <JobMeta job={job} />
+            {portfolioRequired ? (
+              <div className={`hm-careers-portfolio-callout ${attachedPortfolioUrl ? "attached" : ""}`}>
+                <div>
+                  <strong>{attachedPortfolioUrl ? "HomeMakers portfolio attached" : "A HomeMakers portfolio is required"}</strong>
+                  <p>
+                    {attachedPortfolioUrl
+                      ? `${publishedPortfolio?.name || "Your published portfolio"} will be reviewed with this application.`
+                      : "Add your experience, project details, credentials, and work photos once. We will use the published portfolio as the main evidence for this role."}
+                  </p>
+                </div>
+                {attachedPortfolioUrl ? (
+                  <a href={attachedPortfolioUrl} target="_blank" rel="noreferrer">View portfolio</a>
+                ) : (
+                  <button type="button" onClick={buildPortfolio}>Create your portfolio <ArrowRight size={16} /></button>
+                )}
+              </div>
+            ) : null}
             <form className="hm-careers-form" onSubmit={submit}>
               <label>Full name<input required minLength={2} value={form.full_name} onChange={(e) => set("full_name", e.target.value)} /></label>
               <label>Email<input required type="email" value={form.email} onChange={(e) => set("email", e.target.value)} /></label>
               <label>Phone<input type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} /></label>
               <label>Current city<input value={form.city} onChange={(e) => set("city", e.target.value)} /></label>
               <label>LinkedIn URL<input type="url" placeholder="https://linkedin.com/in/…" value={form.linkedin_url} onChange={(e) => set("linkedin_url", e.target.value)} /></label>
-              <label>Portfolio URL<input type="url" placeholder="https://…" value={form.portfolio_url} onChange={(e) => set("portfolio_url", e.target.value)} /></label>
+              <label>
+                {portfolioRequired ? "HomeMakers portfolio" : "Portfolio URL"}
+                <input
+                  required={portfolioRequired}
+                  readOnly={portfolioRequired}
+                  type="url"
+                  placeholder={portfolioRequired ? "Create and publish your HomeMakers portfolio above" : "https://…"}
+                  value={form.portfolio_url}
+                  onChange={(e) => set("portfolio_url", e.target.value)}
+                />
+              </label>
               <label className="wide">Résumé link<input required type="url" placeholder="Google Drive, Dropbox, or your website" value={form.resume_url} onChange={(e) => set("resume_url", e.target.value)} /></label>
               <label className="wide">Why this role?<textarea required minLength={20} rows={5} value={form.cover_note} onChange={(e) => set("cover_note", e.target.value)} /></label>
               <label className="wide hm-careers-consent">
@@ -116,7 +172,7 @@ function ApplicationForm({ job, onClose }) {
                 <span>I consent to HomeMakers using this information to evaluate my application and contact me about this role.</span>
               </label>
               {state.error ? <p className="hm-careers-error wide" role="alert">{state.error}</p> : null}
-              <button className="hm-careers-primary wide" type="submit" disabled={state.saving}>
+              <button className="hm-careers-primary wide" type="submit" disabled={state.saving || (portfolioRequired && !attachedPortfolioUrl)}>
                 {state.saving ? "Submitting…" : "Submit application"} <ArrowRight size={17} />
               </button>
             </form>
@@ -260,6 +316,7 @@ function CareersAdmin({ jobs, setJobs }) {
 
 export default function CareersPage() {
   const mobile = useMobileNative();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [jobs, setJobs] = useState([]);
   const [configured, setConfigured] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -288,6 +345,16 @@ export default function CareersPage() {
     })();
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    const applyId = searchParams.get("apply");
+    if (!applyId || !jobs.length || selectedJob) return;
+    const matchingJob = jobs.find((job) => job.id === applyId && job.status === "published");
+    if (matchingJob) {
+      setSelectedJob(matchingJob);
+      setSearchParams({}, { replace: true });
+    }
+  }, [jobs, searchParams, selectedJob, setSearchParams]);
 
   const publicJobs = useMemo(
     () => jobs.filter((job) => job.status === "published" && (team === "all" || job.team === team)),

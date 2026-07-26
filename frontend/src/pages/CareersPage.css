@@ -40,6 +40,11 @@
 .hm-careers-modal { position: relative; max-width: 780px; margin: 20px auto; border-radius: 24px; background: #fffdf9; padding: 36px; box-shadow: 0 30px 80px rgba(0,0,0,.25); }
 .hm-careers-modal h2 { margin: 8px 0 12px; font-family: var(--font-display, serif); font-size: 32px; }
 .hm-careers-modal-close { position: absolute; top: 16px; right: 18px; border: 0; background: transparent; color: #695d55; font-size: 28px; cursor: pointer; }
+.hm-careers-portfolio-callout { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 22px; border: 1px solid #dfc8b7; border-radius: 16px; background: #fff5eb; padding: 18px; }
+.hm-careers-portfolio-callout.attached { border-color: #bfd9c5; background: #f1faf3; }
+.hm-careers-portfolio-callout strong { display: block; color: #3d3029; font-size: 14px; }
+.hm-careers-portfolio-callout p { margin: 5px 0 0; color: #78685e; font-size: 12px; line-height: 1.5; }
+.hm-careers-portfolio-callout a, .hm-careers-portfolio-callout button { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; border: 0; background: transparent; color: #a65427; font: inherit; font-size: 12px; font-weight: 800; text-decoration: none; cursor: pointer; }
 .hm-careers-form, .hm-careers-admin-editor { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 28px; }
 .hm-careers-form label, .hm-careers-admin-editor label { display: grid; gap: 7px; color: #584c44; font-size: 12px; font-weight: 800; }
 .hm-careers-form input, .hm-careers-form textarea, .hm-careers-admin-editor input, .hm-careers-admin-editor textarea { width: 100%; box-sizing: border-box; border: 1px solid #ddcfc3; border-radius: 10px; background: white; padding: 12px; color: #2f2722; font: inherit; font-size: 14px; }
@@ -81,4 +86,5 @@
   .hm-careers-form .wide, .hm-careers-admin-editor .wide, .hm-careers-admin-heading { grid-column: 1; }
   .hm-careers-modal-backdrop { padding: 10px; }
   .hm-careers-modal { margin: 6px auto; padding: 28px 18px; }
+  .hm-careers-portfolio-callout { align-items: flex-start; flex-direction: column; }
 }

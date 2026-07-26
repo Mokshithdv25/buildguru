@@ -131,6 +131,55 @@ grant insert, update, delete on public.career_jobs to authenticated;
 grant insert on public.career_applications to anon, authenticated;
 grant select, update, delete on public.career_applications to authenticated;
 
+-- Initial opening. A fixed ID keeps this seed safe to run more than once while
+-- allowing the hiring admin to refine the role later without creating a copy.
+insert into public.career_jobs (
+  id,
+  title,
+  team,
+  location,
+  employment_type,
+  workplace_type,
+  summary,
+  description,
+  responsibilities,
+  qualifications,
+  status,
+  published_at
+)
+values (
+  '00000000-0000-4000-8000-000000000101'::uuid,
+  'Architect Product Manager',
+  'Product',
+  'India',
+  'full_time',
+  'remote',
+  'Own the architectural intelligence behind HomeMakers—from useful early concepts to professional-ready planning and review workflows.',
+  'HomeMakers is looking for a product-minded architect or engineer with deep residential design experience. You will define how the product understands plot inputs, space planning, floor plans, elevations, estimates, material takeoffs, and the checks required before work moves to a qualified local professional. This is not a client-service architect position. You will work with product, design, engineering, and practising professionals to make complex architectural decisions clear, structured, and safe for homeowners.',
+  '[
+    "Own product requirements for residential planning, floor-plan, elevation, estimate, and material-takeoff workflows",
+    "Translate Indian residential drawing standards, building bye-laws, and approval processes into clear product rules and review checkpoints",
+    "Define quality benchmarks for AI-generated concepts and identify when licensed professional review is required",
+    "Review product outputs for dimensional logic, circulation, constructability, climate response, and completeness",
+    "Work closely with product designers and engineers to turn architectural expertise into simple user experiences",
+    "Interview architects, engineers, contractors, and homeowners to identify workflow gaps and validate product decisions",
+    "Shape the handoff from early homeowner concepts to local professionals preparing authority-specific sanction and construction drawings"
+  ]'::jsonb,
+  '[
+    "Degree in architecture, civil engineering, structural engineering, or a closely related discipline",
+    "At least five years of hands-on experience with Indian residential projects, drawings, or approval coordination",
+    "Strong understanding of floor plans, elevations, dimensions, space planning, building services coordination, and drawing sets",
+    "Working knowledge of how municipal and development-authority requirements vary across Indian cities and states",
+    "Ability to distinguish indicative concepts from sanction-ready and construction-ready documentation",
+    "Experience translating complex professional workflows into requirements, systems, or repeatable processes",
+    "Clear written communication and comfort working across architecture, product, design, and engineering teams",
+    "Product management or construction-technology experience is valuable, but deep domain judgment and product thinking matter most"
+  ]'::jsonb,
+  'published',
+  now()
+)
+on conflict (id) do nothing;
+
 commit;
 
 -- Bootstrap a hiring admin only from the trusted SQL Editor/service role:
