@@ -63,7 +63,7 @@ export function readPublishedPortfolioForCareer() {
       id: portfolio.id || localStorage.getItem("hm_portfolio_id") || null,
       slug: portfolio.slug,
       url: publicProfileUrl(portfolio.slug),
-      name: portfolio.business_name || portfolio.full_name || "Your HomeMakers portfolio",
+      name: portfolio.business_name || portfolio.full_name || "Your HomeMakers practice",
     };
   } catch {
     return null;

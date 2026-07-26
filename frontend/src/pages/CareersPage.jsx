@@ -92,7 +92,7 @@ function ApplicationForm({ job, onClose }) {
   const submit = async (event) => {
     event.preventDefault();
     if (portfolioRequired && !attachedPortfolioUrl) {
-      setState({ saving: false, sent: false, error: "Create and publish your HomeMakers portfolio before submitting this application." });
+      setState({ saving: false, sent: false, error: "Complete the Set up your practice flow before submitting this application." });
       return;
     }
     setState({ saving: true, error: "", sent: false });
@@ -134,17 +134,17 @@ function ApplicationForm({ job, onClose }) {
             {portfolioRequired ? (
               <div className={`hm-careers-portfolio-callout ${attachedPortfolioUrl ? "attached" : ""}`}>
                 <div>
-                  <strong>{attachedPortfolioUrl ? "HomeMakers portfolio attached" : "A HomeMakers portfolio is required"}</strong>
+                  <strong>{attachedPortfolioUrl ? "HomeMakers practice profile attached" : "Set up your practice to apply"}</strong>
                   <p>
                     {attachedPortfolioUrl
-                      ? `${publishedPortfolio?.name || "Your published portfolio"} will be reviewed with this application.`
-                      : "Add your experience, project details, credentials, and work photos once. We will use the published portfolio as the main evidence for this role."}
+                      ? `${publishedPortfolio?.name || "Your published practice profile"} will be reviewed with this application.`
+                      : "Continue through the existing professional setup: choose your craft, add practice details, upload project photos and publish your profile. We will return you to this application when it is complete."}
                   </p>
                 </div>
                 {attachedPortfolioUrl ? (
-                  <a href={attachedPortfolioUrl} target="_blank" rel="noreferrer">View portfolio</a>
+                  <a href={attachedPortfolioUrl} target="_blank" rel="noreferrer">View practice</a>
                 ) : (
-                  <button type="button" onClick={buildPortfolio}>Create your portfolio <ArrowRight size={16} /></button>
+                  <button type="button" onClick={buildPortfolio}>Set up your practice <ArrowRight size={16} /></button>
                 )}
               </div>
             ) : null}
@@ -155,12 +155,12 @@ function ApplicationForm({ job, onClose }) {
               <label>Current city<input value={form.city} onChange={(e) => set("city", e.target.value)} /></label>
               <label>LinkedIn URL<input type="url" placeholder="https://linkedin.com/in/…" value={form.linkedin_url} onChange={(e) => set("linkedin_url", e.target.value)} /></label>
               <label>
-                {portfolioRequired ? "HomeMakers portfolio" : "Portfolio URL"}
+                {portfolioRequired ? "HomeMakers practice profile" : "Portfolio URL"}
                 <input
                   required={portfolioRequired}
                   readOnly={portfolioRequired}
                   type="url"
-                  placeholder={portfolioRequired ? "Create and publish your HomeMakers portfolio above" : "https://…"}
+                  placeholder={portfolioRequired ? "Complete Set up your practice above" : "https://…"}
                   value={form.portfolio_url}
                   onChange={(e) => set("portfolio_url", e.target.value)}
                 />
@@ -298,7 +298,7 @@ function CareersAdmin({ jobs, setJobs }) {
                   <div>
                     <strong>{application.full_name}</strong>
                     <span>{job?.title || "Role"} · {application.email}</span>
-                    <span><a href={application.resume_url} target="_blank" rel="noreferrer">Résumé</a>{application.portfolio_url ? <> · <a href={application.portfolio_url} target="_blank" rel="noreferrer">Portfolio</a></> : null}</span>
+                    <span><a href={application.resume_url} target="_blank" rel="noreferrer">Résumé</a>{application.portfolio_url ? <> · <a href={application.portfolio_url} target="_blank" rel="noreferrer">Practice profile</a></> : null}</span>
                   </div>
                   <select value={application.status} onChange={(e) => changeApplicationStatus(application.id, e.target.value)}>
                     {APPLICATION_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
@@ -404,7 +404,9 @@ export default function CareersPage() {
             {publicJobs.map((job) => (
               <article key={job.id}>
                 <div><h3>{job.title}</h3><JobMeta job={job} /><p>{job.summary}</p></div>
-                <button type="button" onClick={() => setSelectedJob(job)}>Apply now <ArrowRight size={17} /></button>
+                <button type="button" onClick={() => setSelectedJob(job)}>
+                  {roleRequiresHomeMakersPortfolio(job) ? "Apply through your practice" : "Apply now"} <ArrowRight size={17} />
+                </button>
                 <div className="hm-careers-job-details">
                   <p>{job.description}</p>
                   {job.responsibilities?.length ? <><h4>What you will do</h4><ul>{job.responsibilities.map((item) => <li key={item}>{item}</li>)}</ul></> : null}
