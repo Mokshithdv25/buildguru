@@ -11,6 +11,9 @@
 --   1. homemakers_single_setup.sql
 --   2. homemakers_rls_hardening.sql
 --   3. homemakers_project_workspace.sql
+--   4. homemakers_pro_leads.sql
+--   5. homemakers_project_intelligence.sql
+--   6. homemakers_careers.sql
 -- The base setup is fail-closed, so an interrupted rebuild does not expose data.
 -- =============================================================================
 
@@ -61,6 +64,9 @@ drop view if exists public.pro_lead_opportunities cascade;
 drop view if exists public.published_portfolios cascade;
 
 drop table if exists
+  public.career_applications,
+  public.career_jobs,
+  public.career_admins,
   public.project_team_members,
   public.project_payments,
   public.project_agent_actions,
@@ -101,5 +107,6 @@ drop function if exists public.handle_user_email_updated() cascade;
 drop function if exists public.handle_new_user() cascade;
 drop function if exists public.set_updated_at() cascade;
 drop function if exists public.can_respond_to_project(uuid, text) cascade;
+drop function if exists public.careers_is_admin() cascade;
 
 commit;

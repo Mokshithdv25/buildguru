@@ -329,6 +329,14 @@ export default function MobileHomePage() {
         </div>
       </section>
 
+      <section className="hm-m-careers-strip">
+        <div>
+          <span>Careers at HomeMakers</span>
+          <strong>Help make Indian home projects clearer.</strong>
+        </div>
+        <button type="button" onClick={() => navigate("/careers")}>Open roles <ArrowRight size={16} /></button>
+      </section>
+
       <MobileSaveToast toast={toast} onViewIdeas={() => { clearToast(); navigate("/design"); }} />
     </>
   );

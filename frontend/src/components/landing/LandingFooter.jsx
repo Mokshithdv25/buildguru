@@ -41,6 +41,9 @@ export default function LandingFooter() {
             <Link to="/subscriptions" className="text-muted-foreground hover:text-copper font-semibold">
               Plans &amp; billing
             </Link>
+            <Link to="/careers" className="text-muted-foreground hover:text-copper font-semibold">
+              Careers
+            </Link>
             <Link to="/terms" className="text-muted-foreground hover:text-copper font-semibold">
               Terms of Service
             </Link>

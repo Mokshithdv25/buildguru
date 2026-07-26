@@ -52,6 +52,24 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="border-t border-border/50 bg-card py-9">
+        <div className="container flex max-w-5xl flex-col items-start justify-between gap-5 md:flex-row md:items-center">
+          <div>
+            <p className="mb-1 font-body text-xs font-bold uppercase tracking-[0.16em] text-copper">Careers at HomeMakers</p>
+            <h2 className="m-0 font-display text-xl font-semibold text-foreground md:text-2xl">
+              Help build the future of Indian home projects.
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/careers")}
+            className="shrink-0 rounded-xl border border-copper/40 bg-background px-6 py-3 font-body text-sm font-semibold text-copper transition-colors hover:bg-secondary"
+          >
+            See open roles
+          </button>
+        </div>
+      </section>
+
       <footer className="py-0 border-0 bg-transparent">
         <LandingFooter />
       </footer>

@@ -1112,6 +1112,22 @@
   box-shadow: 0 12px 28px rgba(28,25,23,.18);
 }
 
+.hm-m-careers-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 16px 30px;
+  border: 1px solid #e5d7cb;
+  border-radius: 18px;
+  background: #fffaf5;
+  padding: 17px;
+}
+.hm-m-careers-strip > div { display: grid; gap: 4px; }
+.hm-m-careers-strip span { color: #a65b31; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.hm-m-careers-strip strong { color: #332821; font-family: var(--font-display, serif); font-size: 15px; line-height: 1.3; }
+.hm-m-careers-strip button { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; border: 0; background: transparent; color: #a65427; font: inherit; font-size: 12px; font-weight: 800; }
+
 .hm-m-home-final-cta h2,
 .hm-m-idea-actions h2 {
   margin: 8px 0 0;

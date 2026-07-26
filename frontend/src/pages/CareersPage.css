@@ -1,0 +1,84 @@
+.hm-careers-page { min-height: 100vh; background: #fffdf9; color: #29221d; font-family: var(--font-body, sans-serif); }
+.hm-careers-page main { overflow: hidden; }
+.hm-careers-hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .7fr); gap: 56px; align-items: end; max-width: 1180px; margin: 0 auto; padding: 88px 28px 74px; }
+.hm-careers-hero h1 { max-width: 760px; margin: 12px 0 18px; font-family: var(--font-display, serif); font-size: clamp(42px, 6vw, 74px); line-height: .98; letter-spacing: -.04em; }
+.hm-careers-hero > div > p:not(.hm-careers-eyebrow) { max-width: 680px; margin: 0 0 30px; color: #6f6259; font-size: 18px; line-height: 1.65; }
+.hm-careers-back { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 48px; color: #76675d; font-size: 14px; font-weight: 700; text-decoration: none; }
+.hm-careers-eyebrow { margin: 0; color: #b76432; font-size: 12px; font-weight: 800; letter-spacing: .17em; text-transform: uppercase; }
+.hm-careers-primary { display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 0; border-radius: 12px; background: #ae5e32; padding: 13px 20px; color: white; font: inherit; font-size: 14px; font-weight: 800; text-decoration: none; cursor: pointer; }
+.hm-careers-primary:disabled { cursor: wait; opacity: .65; }
+.hm-careers-hero aside { border-radius: 28px; background: #29211d; padding: 32px; color: white; box-shadow: 0 24px 50px rgba(41,33,29,.14); }
+.hm-careers-hero aside span { color: #e9a678; font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.hm-careers-hero aside strong { display: block; margin: 14px 0; font-family: var(--font-display, serif); font-size: 25px; line-height: 1.2; }
+.hm-careers-hero aside p { margin: 0; color: rgba(255,255,255,.7); font-size: 14px; line-height: 1.65; }
+.hm-careers-values { display: grid; grid-template-columns: repeat(3, 1fr); max-width: 1180px; margin: 0 auto 100px; border: 1px solid #eadfd6; border-radius: 24px; background: white; }
+.hm-careers-values article { padding: 30px; }
+.hm-careers-values article + article { border-left: 1px solid #eadfd6; }
+.hm-careers-values strong { font-family: var(--font-display, serif); font-size: 19px; }
+.hm-careers-values p { margin: 10px 0 0; color: #786b62; font-size: 14px; line-height: 1.6; }
+.hm-careers-open, .hm-careers-admin { padding: 88px max(28px, calc((100vw - 1124px) / 2)); }
+.hm-careers-open { background: #f5eee7; }
+.hm-careers-section-title { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 34px; }
+.hm-careers-section-title h2 { margin: 7px 0 0; font-family: var(--font-display, serif); font-size: 40px; }
+.hm-careers-section-title > span { color: #786b62; font-size: 13px; }
+.hm-careers-section-title label { display: grid; gap: 5px; color: #786b62; font-size: 12px; font-weight: 700; }
+.hm-careers-section-title select, .hm-careers-admin-editor select, .hm-careers-admin-list select { border: 1px solid #ddcfc3; border-radius: 10px; background: white; padding: 10px 34px 10px 12px; color: #332a25; }
+.hm-careers-jobs { display: grid; gap: 14px; }
+.hm-careers-jobs > article { display: grid; grid-template-columns: 1fr auto; gap: 28px; border: 1px solid #e1d3c8; border-radius: 20px; background: white; padding: 28px; }
+.hm-careers-jobs h3 { margin: 0 0 10px; font-family: var(--font-display, serif); font-size: 24px; }
+.hm-careers-jobs p { margin: 15px 0 0; color: #72655c; line-height: 1.6; }
+.hm-careers-jobs > article > button { align-self: center; display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; color: #a65427; font: inherit; font-weight: 800; cursor: pointer; }
+.hm-careers-meta { display: flex; flex-wrap: wrap; gap: 10px 18px; color: #7e7066; font-size: 13px; }
+.hm-careers-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.hm-careers-job-details { grid-column: 1 / -1; border-top: 1px solid #eee3da; padding-top: 4px; }
+.hm-careers-job-details h4 { margin: 22px 0 8px; }
+.hm-careers-job-details ul { margin: 0; padding-left: 20px; color: #62564e; line-height: 1.7; }
+.hm-careers-empty { border: 1px dashed #d6c3b4; border-radius: 18px; padding: 34px; text-align: center; color: #75675e; }
+.hm-careers-empty h3 { margin: 0 0 6px; color: #332a25; }
+.hm-careers-error { color: #a82828; font-size: 13px; }
+.hm-careers-modal-backdrop { position: fixed; z-index: 1000; inset: 0; overflow-y: auto; background: rgba(30,23,19,.68); padding: 28px; }
+.hm-careers-modal { position: relative; max-width: 780px; margin: 20px auto; border-radius: 24px; background: #fffdf9; padding: 36px; box-shadow: 0 30px 80px rgba(0,0,0,.25); }
+.hm-careers-modal h2 { margin: 8px 0 12px; font-family: var(--font-display, serif); font-size: 32px; }
+.hm-careers-modal-close { position: absolute; top: 16px; right: 18px; border: 0; background: transparent; color: #695d55; font-size: 28px; cursor: pointer; }
+.hm-careers-form, .hm-careers-admin-editor { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 28px; }
+.hm-careers-form label, .hm-careers-admin-editor label { display: grid; gap: 7px; color: #584c44; font-size: 12px; font-weight: 800; }
+.hm-careers-form input, .hm-careers-form textarea, .hm-careers-admin-editor input, .hm-careers-admin-editor textarea { width: 100%; box-sizing: border-box; border: 1px solid #ddcfc3; border-radius: 10px; background: white; padding: 12px; color: #2f2722; font: inherit; font-size: 14px; }
+.hm-careers-form .wide, .hm-careers-admin-editor .wide { grid-column: 1 / -1; }
+.hm-careers-consent { grid-template-columns: auto 1fr !important; align-items: start; font-weight: 500 !important; line-height: 1.5; }
+.hm-careers-consent input { width: auto; margin-top: 3px; }
+.hm-careers-success { padding: 45px 20px; text-align: center; }
+.hm-careers-success svg { color: #418553; }
+.hm-careers-success p { max-width: 520px; margin: 12px auto 24px; color: #70635a; line-height: 1.6; }
+.hm-careers-success button { border: 0; border-radius: 10px; background: #ae5e32; padding: 12px 18px; color: white; font: inherit; font-weight: 800; }
+.hm-careers-admin { background: #fffdf9; }
+.hm-careers-admin-editor { border: 1px solid #e4d8ce; border-radius: 22px; background: white; padding: 26px; }
+.hm-careers-admin-heading { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; }
+.hm-careers-admin-heading h3 { margin: 6px 0 0; font-family: var(--font-display, serif); font-size: 25px; }
+.hm-careers-admin-heading button { border: 0; background: transparent; color: #8c4c29; font-weight: 700; cursor: pointer; }
+.hm-careers-admin-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 28px; margin-top: 34px; }
+.hm-careers-admin-grid h3 { font-family: var(--font-display, serif); font-size: 22px; }
+.hm-careers-admin-list { display: grid; gap: 10px; }
+.hm-careers-admin-list article { display: flex; align-items: center; justify-content: space-between; gap: 14px; border: 1px solid #e6dcd4; border-radius: 14px; background: white; padding: 15px; }
+.hm-careers-admin-list article > div:first-child { display: grid; gap: 4px; min-width: 0; }
+.hm-careers-admin-list span { color: #7d7067; font-size: 12px; overflow-wrap: anywhere; }
+.hm-careers-admin-list article > div:last-child { display: flex; gap: 7px; }
+.hm-careers-admin-list button { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #ddcfc3; border-radius: 8px; background: #fffaf5; padding: 7px 9px; color: #72442d; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.hm-careers-admin-list a { color: #a65427; }
+
+@media (max-width: 900px) {
+  .hm-careers-page { padding-bottom: 92px; }
+  .hm-careers-hero { grid-template-columns: 1fr; gap: 28px; padding: 34px 18px 42px; }
+  .hm-careers-hero h1 { font-size: 45px; }
+  .hm-careers-back { margin-bottom: 30px; }
+  .hm-careers-values { grid-template-columns: 1fr; margin: 0 16px 58px; }
+  .hm-careers-values article + article { border-top: 1px solid #eadfd6; border-left: 0; }
+  .hm-careers-open, .hm-careers-admin { padding: 58px 16px; }
+  .hm-careers-section-title { align-items: start; flex-direction: column; }
+  .hm-careers-section-title h2 { font-size: 34px; }
+  .hm-careers-jobs > article { grid-template-columns: 1fr; }
+  .hm-careers-jobs > article > button { justify-self: start; }
+  .hm-careers-form, .hm-careers-admin-editor, .hm-careers-admin-grid { grid-template-columns: 1fr; }
+  .hm-careers-form .wide, .hm-careers-admin-editor .wide, .hm-careers-admin-heading { grid-column: 1; }
+  .hm-careers-modal-backdrop { padding: 10px; }
+  .hm-careers-modal { margin: 6px auto; padding: 28px 18px; }
+}

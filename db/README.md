@@ -28,10 +28,10 @@ client-side claim path.
 
 | Database state | Run in this order |
 | --- | --- |
-| Existing HomeMakers production schema | `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` |
-| Empty Supabase project | `homemakers_single_setup.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` |
-| Older v1/v1.1/v1.2 schema missing current columns or buckets | `homemakers_supabase_align.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` |
-| Intentionally discard all HomeMakers data | Empty the three app buckets through Storage Admin, delete disposable users through Auth Admin, then `homemakers_production_reset.sql` → `homemakers_single_setup.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` |
+| Existing HomeMakers production schema | `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
+| Empty Supabase project | `homemakers_single_setup.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
+| Older v1/v1.1/v1.2 schema missing current columns or buckets | `homemakers_supabase_align.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
+| Intentionally discard all HomeMakers data | Empty the three app buckets through Storage Admin, delete disposable users through Auth Admin, then `homemakers_production_reset.sql` → `homemakers_single_setup.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
 
 `homemakers_single_setup.sql` is now fail-closed: it enables RLS, revokes anonymous table access, and creates private buckets without broad policies. The app is not ready until the hardening and workspace scripts also succeed, but an interrupted bootstrap does not expose the database.
 
@@ -49,6 +49,7 @@ client-side claim path.
 - Workspace tables and progress triggers used by the web and native project hub.
 - A professional lead inbox backed by a privacy-safe homeowner-project projection. It omits homeowner IDs, contact details, full location, and raw brief content; each professional can modify only responses tied to their own portfolio.
 - An owner-scoped editable material takeoff and an approval log for AI-suggested follow-ups, professional shortlists, document reviews, and material-plan decisions.
+- Public published career listings, public application submission, and a separate trusted hiring-admin membership for managing roles and applications. Résumés are submitted as links; no public upload bucket is opened.
 
 ## SQL verification
 
@@ -73,9 +74,19 @@ where n.nspname = 'public'
     'project_stages', 'project_tasks', 'project_messages', 'project_documents',
     'project_team_members', 'project_payments', 'billing_orders',
     'user_entitlements', 'ai_usage_daily', 'project_lead_responses',
-    'project_material_items', 'project_agent_actions'
+    'project_material_items', 'project_agent_actions', 'career_admins',
+    'career_jobs', 'career_applications'
   )
 order by c.relname;
+```
+
+Seed each hiring admin only through the trusted SQL Editor/service role. This
+does not change the homeowner/pro role stored in `user_profiles`:
+
+```sql
+insert into public.career_admins (user_id)
+select id from auth.users where email = 'YOUR_ADMIN_EMAIL'
+on conflict (user_id) do nothing;
 ```
 
 Confirm the storage posture:
