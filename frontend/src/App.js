@@ -41,6 +41,7 @@ const ProLeadsPage = lazy(() => import("./pages/ProLeadsPage"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const CareersPage = lazy(() => import("./pages/CareersPage"));
+const CareerProfilePage = lazy(() => import("./pages/CareerProfilePage"));
 
 function RouteLoading() {
   return <div className="hm-route-loading" role="status" aria-live="polite"><span />Loading HomeMakers…</div>;
@@ -83,6 +84,7 @@ function DesktopRoutes() {
       <Route path="/subscriptions" element={<SubscriptionsPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/careers" element={<CareersPage />} />
+      <Route path="/career-profile/:slug" element={<CareerProfilePage />} />
       <Route
         path="/craft"
         element={

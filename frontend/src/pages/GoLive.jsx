@@ -8,11 +8,6 @@ import { HM_HEADER_BAR_CLASS, HM_TAGLINE_PORTFOLIO } from "../lib/hmBrand";
 import { getPortfolioBase, getPortfolioMedia, migrateLegacyPortfolioMedia, setPortfolioBase, setPortfolioMedia } from "../lib/portfolioStorage";
 import { publishPortfolio } from "../lib/api";
 import { publicProfileUrl } from "../lib/publicWebUrl";
-import {
-  attachPortfolioToCareerIntent,
-  careerApplicationReturnPath,
-  readCareerPortfolioIntent,
-} from "../lib/careerPortfolioIntent";
 
 function WhatsAppLogo() {
   return (
@@ -50,7 +45,6 @@ export default function GoLive() {
   const [craft, setCraft] = useState("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
-  const [careerIntent, setCareerIntent] = useState(() => readCareerPortfolioIntent());
 
   useEffect(() => {
     const portfolioId = localStorage.getItem("hm_portfolio_id");
@@ -86,8 +80,6 @@ export default function GoLive() {
         setForm(liveRecord);
         setSlug(liveRecord.slug || "");
         setCraft(liveRecord.craft || "");
-        const linkedIntent = attachPortfolioToCareerIntent({ id: liveRecord.id, slug: liveRecord.slug });
-        if (linkedIntent) setCareerIntent(linkedIntent);
       } catch (publishError) {
         console.error("Portfolio publish failed:", publishError);
         setError(publishError?.message || "Could not publish your portfolio. Check your connection and try again.");
@@ -158,13 +150,7 @@ export default function GoLive() {
 
           <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-[#EFE3D2] pt-6 sm:flex-row">
             <button type="button" onClick={() => window.open(`/profile/${slug}`, "_blank", "noopener")} className="flex items-center gap-2 rounded-xl border border-[#EFE3D2] bg-white px-6 py-3 font-semibold text-[#1C1917]"><Eye size={18} /> Preview as client</button>
-            <button
-              type="button"
-              onClick={() => navigate(careerIntent?.jobId ? careerApplicationReturnPath(careerIntent.jobId) : "/pro/dashboard")}
-              className="btn-continue flex items-center"
-            >
-              {careerIntent?.jobId ? "Continue job application" : "Go to dashboard"} <LayoutGrid size={18} className="ml-2" />
-            </button>
+            <button type="button" onClick={() => navigate("/pro/dashboard")} className="btn-continue flex items-center">Go to dashboard <LayoutGrid size={18} className="ml-2" /></button>
           </div>
         </section>
 

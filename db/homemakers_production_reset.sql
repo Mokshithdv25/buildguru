@@ -29,7 +29,7 @@ begin
   if exists (
     select 1
     from storage.objects
-    where bucket_id in ('project-v0', 'portfolio-media', 'project-documents')
+    where bucket_id in ('project-v0', 'portfolio-media', 'project-documents', 'career-work-samples')
   ) then
     raise exception 'HomeMakers storage buckets are not empty; delete objects through Storage Admin first';
   end if;
@@ -62,6 +62,7 @@ $$;
 
 drop view if exists public.pro_lead_opportunities cascade;
 drop view if exists public.published_portfolios cascade;
+drop view if exists public.published_career_profiles cascade;
 
 drop table if exists
   public.career_applications,
@@ -108,5 +109,6 @@ drop function if exists public.handle_new_user() cascade;
 drop function if exists public.set_updated_at() cascade;
 drop function if exists public.can_respond_to_project(uuid, text) cascade;
 drop function if exists public.careers_is_admin() cascade;
+drop function if exists public.career_work_sample_is_public(text) cascade;
 
 commit;

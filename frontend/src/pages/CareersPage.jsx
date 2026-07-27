@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, BriefcaseBusiness, CheckCircle2, MapPin, Pencil, Users } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, ArrowRight, BriefcaseBusiness, Camera, CheckCircle2, MapPin, Pencil, Users, X } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import LandingFooter from "../components/landing/LandingFooter";
 import { useMobileNative } from "../hooks/useMobileNative";
@@ -11,17 +11,11 @@ import {
   listPublishedCareerJobs,
   saveCareerJob,
   submitCareerApplication,
+  uploadCareerWorkSamples,
   updateCareerApplicationStatus,
   updateCareerJobStatus,
 } from "../lib/careersApi";
-import {
-  clearCareerPortfolioIntent,
-  readCareerPortfolioIntent,
-  readPublishedPortfolioForCareer,
-  roleRequiresHomeMakersPortfolio,
-  saveCareerPortfolioIntent,
-} from "../lib/careerPortfolioIntent";
-import { getProOnboardingResumePath } from "../lib/hmAuth";
+import { roleUsesCareerApplicationProfile } from "../lib/careerApplicationProfile";
 import "./CareersPage.css";
 
 const EMPLOYMENT = {
@@ -32,6 +26,15 @@ const EMPLOYMENT = {
 };
 const WORKPLACE = { remote: "Remote", hybrid: "Hybrid", onsite: "On-site" };
 const APPLICATION_STATUSES = ["received", "reviewing", "shortlisted", "rejected", "hired"];
+const ARCHITECT_SPECIALTIES = [
+  "Floor plans",
+  "Elevations",
+  "Residential planning",
+  "Approvals",
+  "3D / BIM",
+  "Estimates & materials",
+  "Product thinking",
+];
 
 const EMPTY_JOB = {
   title: "",
@@ -52,10 +55,12 @@ const EMPTY_APPLICATION = {
   email: "",
   phone: "",
   city: "",
-  linkedin_url: "",
-  portfolio_url: "",
-  resume_url: "",
   cover_note: "",
+  experience_range: "",
+  qualification: "",
+  tools: "",
+  specialties: [],
+  publish_portfolio: false,
   consent: false,
 };
 
@@ -73,32 +78,112 @@ function JobMeta({ job }) {
   );
 }
 
+function makeApplicationId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return `00000000-0000-4000-8000-${Date.now().toString().padStart(12, "0").slice(-12)}`;
+}
+
+function profileSlug(name, applicationId) {
+  const base = String(name || "architect")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "architect";
+  return `${base}-${applicationId.slice(-6)}`;
+}
+
+function optimizeWorkSample(file) {
+  return new Promise((resolve, reject) => {
+    if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+      reject(new Error("Use JPG, PNG, or WebP project images."));
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      reject(new Error("Each project image must be under 10 MB."));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const scale = Math.min(1600 / image.width, 1200 / image.height, 1);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const context = canvas.getContext("2d");
+        if (!context) {
+          reject(new Error("Could not process this image."));
+          return;
+        }
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.76));
+      };
+      image.onerror = () => reject(new Error("Could not process this image."));
+      image.src = String(reader.result || "");
+    };
+    reader.onerror = () => reject(new Error("Could not read this image."));
+    reader.readAsDataURL(file);
+  });
+}
+
 function ApplicationForm({ job, onClose }) {
-  const navigate = useNavigate();
-  const portfolioRequired = roleRequiresHomeMakersPortfolio(job);
-  const publishedPortfolio = readPublishedPortfolioForCareer();
-  const savedIntent = readCareerPortfolioIntent();
-  const savedDraft = savedIntent?.jobId === job.id ? savedIntent.application : null;
-  const attachedPortfolioUrl = publishedPortfolio?.url || (savedIntent?.jobId === job.id ? savedIntent?.portfolioUrl : "") || "";
-  const [form, setForm] = useState(() => ({
-    ...EMPTY_APPLICATION,
-    ...(savedDraft || {}),
-    portfolio_url: attachedPortfolioUrl || savedDraft?.portfolio_url || "",
-    consent: false,
-  }));
+  const applicationProfile = roleUsesCareerApplicationProfile(job);
+  const [form, setForm] = useState(EMPTY_APPLICATION);
+  const [applicationId] = useState(makeApplicationId);
+  const [samples, setSamples] = useState([]);
+  const [publishedSlug, setPublishedSlug] = useState("");
   const [state, setState] = useState({ saving: false, error: "", sent: false });
   const set = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
+  const toggleSpecialty = (specialty) => {
+    set("specialties", form.specialties.includes(specialty)
+      ? form.specialties.filter((item) => item !== specialty)
+      : [...form.specialties, specialty]);
+  };
+
+  const addSamples = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
+    if (!files.length) return;
+    try {
+      const remaining = Math.max(0, 8 - samples.length);
+      const optimized = await Promise.all(files.slice(0, remaining).map(optimizeWorkSample));
+      setSamples((current) => [...current, ...optimized.map((dataUrl) => ({ dataUrl, caption: "" }))]);
+      setState((current) => ({ ...current, error: "" }));
+    } catch (error) {
+      setState((current) => ({ ...current, error: error?.message || "Could not add these images." }));
+    }
+  };
+
   const submit = async (event) => {
     event.preventDefault();
-    if (portfolioRequired && !attachedPortfolioUrl) {
-      setState({ saving: false, sent: false, error: "Complete the Set up your practice flow before submitting this application." });
+    if (applicationProfile && samples.length < 2) {
+      setState({ saving: false, error: "Add at least two project images so we can understand your work.", sent: false });
+      return;
+    }
+    if (applicationProfile && form.specialties.length === 0) {
+      setState({ saving: false, error: "Choose at least one area you work on.", sent: false });
+      return;
+    }
+    if (applicationProfile && samples.some((sample) => sample.caption.trim().length < 8)) {
+      setState({ saving: false, error: "Add a short caption to every project image.", sent: false });
       return;
     }
     setState({ saving: true, error: "", sent: false });
     try {
-      await submitCareerApplication(job.id, form);
-      clearCareerPortfolioIntent(job.id);
+      const workSamplePaths = applicationProfile
+        ? await uploadCareerWorkSamples(applicationId, samples)
+        : [];
+      const slug = form.publish_portfolio ? profileSlug(form.full_name, applicationId) : "";
+      await submitCareerApplication(job.id, {
+        ...form,
+        id: applicationId,
+        work_sample_paths: workSamplePaths,
+        work_sample_captions: samples.map((sample) => sample.caption.trim()),
+        profile_slug: slug,
+      });
+      setPublishedSlug(slug);
       setState({ saving: false, error: "", sent: true });
     } catch (error) {
       const duplicate = error?.code === "23505";
@@ -110,11 +195,6 @@ function ApplicationForm({ job, onClose }) {
     }
   };
 
-  const buildPortfolio = () => {
-    saveCareerPortfolioIntent(job, form);
-    navigate(getProOnboardingResumePath());
-  };
-
   return (
     <div className="hm-careers-modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <section className="hm-careers-modal" role="dialog" aria-modal="true" aria-labelledby="career-apply-title">
@@ -124,6 +204,12 @@ function ApplicationForm({ job, onClose }) {
             <CheckCircle2 size={42} />
             <h2 id="career-apply-title">Application received</h2>
             <p>Thank you for applying for {job.title}. Our hiring team will contact you if there is a match.</p>
+            {publishedSlug ? (
+              <p className="hm-careers-success-note">
+                Your selected work is also live as a HomeMakers portfolio. Your email and phone remain private.
+              </p>
+            ) : null}
+            {publishedSlug ? <Link className="hm-careers-profile-link" to={`/career-profile/${publishedSlug}`}>View your portfolio <ArrowRight size={16} /></Link> : null}
             <button type="button" onClick={onClose}>Back to open roles</button>
           </div>
         ) : (
@@ -131,48 +217,90 @@ function ApplicationForm({ job, onClose }) {
             <p className="hm-careers-eyebrow">Apply to HomeMakers</p>
             <h2 id="career-apply-title">{job.title}</h2>
             <JobMeta job={job} />
-            {portfolioRequired ? (
-              <div className={`hm-careers-portfolio-callout ${attachedPortfolioUrl ? "attached" : ""}`}>
-                <div>
-                  <strong>{attachedPortfolioUrl ? "HomeMakers practice profile attached" : "Set up your practice to apply"}</strong>
-                  <p>
-                    {attachedPortfolioUrl
-                      ? `${publishedPortfolio?.name || "Your published practice profile"} will be reviewed with this application.`
-                      : "Continue through the existing professional setup: choose your craft, add practice details, upload project photos and publish your profile. We will return you to this application when it is complete."}
-                  </p>
-                </div>
-                {attachedPortfolioUrl ? (
-                  <a href={attachedPortfolioUrl} target="_blank" rel="noreferrer">View practice</a>
-                ) : (
-                  <button type="button" onClick={buildPortfolio}>Set up your practice <ArrowRight size={16} /></button>
-                )}
+            {applicationProfile ? (
+              <div className="hm-careers-application-notice">
+                <strong>This is a job application built around your work.</strong>
+                <p>
+                  No Google sign-in and no résumé. Add a few project images and the details that matter. You can choose below whether the same submission also becomes a public HomeMakers portfolio.
+                </p>
               </div>
             ) : null}
             <form className="hm-careers-form" onSubmit={submit}>
               <label>Full name<input required minLength={2} value={form.full_name} onChange={(e) => set("full_name", e.target.value)} /></label>
               <label>Email<input required type="email" value={form.email} onChange={(e) => set("email", e.target.value)} /></label>
-              <label>Phone<input type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} /></label>
-              <label>Current city<input value={form.city} onChange={(e) => set("city", e.target.value)} /></label>
-              <label>LinkedIn URL<input type="url" placeholder="https://linkedin.com/in/…" value={form.linkedin_url} onChange={(e) => set("linkedin_url", e.target.value)} /></label>
-              <label>
-                {portfolioRequired ? "HomeMakers practice profile" : "Portfolio URL"}
-                <input
-                  required={portfolioRequired}
-                  readOnly={portfolioRequired}
-                  type="url"
-                  placeholder={portfolioRequired ? "Complete Set up your practice above" : "https://…"}
-                  value={form.portfolio_url}
-                  onChange={(e) => set("portfolio_url", e.target.value)}
-                />
-              </label>
-              <label className="wide">Résumé link<input required type="url" placeholder="Google Drive, Dropbox, or your website" value={form.resume_url} onChange={(e) => set("resume_url", e.target.value)} /></label>
-              <label className="wide">Why this role?<textarea required minLength={20} rows={5} value={form.cover_note} onChange={(e) => set("cover_note", e.target.value)} /></label>
+              <label>Phone<input required type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} /></label>
+              <label>Current city<input required value={form.city} onChange={(e) => set("city", e.target.value)} /></label>
+              {applicationProfile ? (
+                <>
+                  <div className="hm-careers-form-section wide">
+                    <span>Your practice</span>
+                    <strong>A quick picture of what you know.</strong>
+                  </div>
+                  <label>
+                    Relevant experience
+                    <select required value={form.experience_range} onChange={(e) => set("experience_range", e.target.value)}>
+                      <option value="">Select</option>
+                      <option value="under_2">Under 2 years</option>
+                      <option value="2_3">2–3 years</option>
+                      <option value="4_6">4–6 years</option>
+                      <option value="7_plus">7+ years</option>
+                    </select>
+                  </label>
+                  <label>Architecture / engineering background<input placeholder="B.Arch, Diploma, B.Tech Civil…" value={form.qualification} onChange={(e) => set("qualification", e.target.value)} /></label>
+                  <label>Tools you use<input required placeholder="AutoCAD, Revit, SketchUp, BIM…" value={form.tools} onChange={(e) => set("tools", e.target.value)} /></label>
+                  <fieldset className="hm-careers-specialties wide">
+                    <legend>What do you work on?</legend>
+                    <div>
+                      {ARCHITECT_SPECIALTIES.map((specialty) => (
+                        <label key={specialty}>
+                          <input type="checkbox" checked={form.specialties.includes(specialty)} onChange={() => toggleSpecialty(specialty)} />
+                          <span>{specialty}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <div className="hm-careers-form-section wide">
+                    <span>Selected work</span>
+                    <strong>Add 2–8 project images.</strong>
+                    <p>Plans, elevations, details, site photos, models, or finished spaces are all useful. Only upload work you are allowed to share.</p>
+                  </div>
+                  <div className="hm-careers-samples wide">
+                    {samples.map((sample, index) => (
+                      <article key={`${applicationId}-${index}`}>
+                        <img src={sample.dataUrl} alt="" />
+                        <button type="button" aria-label={`Remove work sample ${index + 1}`} onClick={() => setSamples((items) => items.filter((_, itemIndex) => itemIndex !== index))}><X size={15} /></button>
+                        <input
+                          required
+                          placeholder="What is this, and what did you do?"
+                          value={sample.caption}
+                          onChange={(event) => setSamples((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, caption: event.target.value } : item))}
+                        />
+                      </article>
+                    ))}
+                    {samples.length < 8 ? (
+                      <label className="hm-careers-sample-upload">
+                        <Camera size={24} />
+                        <strong>Add project photos</strong>
+                        <span>JPG, PNG or WebP</span>
+                        <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={addSamples} />
+                      </label>
+                    ) : null}
+                  </div>
+                </>
+              ) : null}
+              <label className="wide">A little about your work<textarea required minLength={20} rows={4} placeholder="What kind of homes or design problems do you enjoy working on, and why does this role interest you?" value={form.cover_note} onChange={(e) => set("cover_note", e.target.value)} /></label>
+              {applicationProfile ? (
+                <label className="wide hm-careers-consent hm-careers-publish-choice">
+                  <input type="checkbox" checked={form.publish_portfolio} onChange={(e) => set("publish_portfolio", e.target.checked)} />
+                  <span><strong>Also publish this as my HomeMakers portfolio.</strong> My name, city, introduction, experience, tools, specialties, captions, and selected images will be public. My email and phone will remain private.</span>
+                </label>
+              ) : null}
               <label className="wide hm-careers-consent">
                 <input required type="checkbox" checked={form.consent} onChange={(e) => set("consent", e.target.checked)} />
                 <span>I consent to HomeMakers using this information to evaluate my application and contact me about this role.</span>
               </label>
               {state.error ? <p className="hm-careers-error wide" role="alert">{state.error}</p> : null}
-              <button className="hm-careers-primary wide" type="submit" disabled={state.saving || (portfolioRequired && !attachedPortfolioUrl)}>
+              <button className="hm-careers-primary wide" type="submit" disabled={state.saving}>
                 {state.saving ? "Submitting…" : "Submit application"} <ArrowRight size={17} />
               </button>
             </form>
@@ -298,7 +426,29 @@ function CareersAdmin({ jobs, setJobs }) {
                   <div>
                     <strong>{application.full_name}</strong>
                     <span>{job?.title || "Role"} · {application.email}</span>
-                    <span><a href={application.resume_url} target="_blank" rel="noreferrer">Résumé</a>{application.portfolio_url ? <> · <a href={application.portfolio_url} target="_blank" rel="noreferrer">Practice profile</a></> : null}</span>
+                    {application.candidate_profile?.experience_range ? (
+                      <span>{application.candidate_profile.experience_range.replace("_", "–")} experience · {application.candidate_profile.qualification}</span>
+                    ) : null}
+                    {application.work_sample_urls?.length ? (
+                      <div className="hm-careers-admin-samples">
+                        {application.work_sample_urls.map((url, index) => (
+                          <a key={url} href={url} target="_blank" rel="noreferrer" aria-label={`Open ${application.full_name} work sample ${index + 1}`}>
+                            <img src={url} alt="" />
+                            <span>{application.work_sample_captions?.[index] || `Sample ${index + 1}`}</span>
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
+                    {application.candidate_profile?.tools ? (
+                      <details className="hm-careers-application-answers">
+                        <summary>Application answers</summary>
+                        <p><strong>Tools:</strong> {application.candidate_profile.tools}</p>
+                        <p><strong>Specialties:</strong> {(application.candidate_profile.specialties || []).join(", ")}</p>
+                        <p><strong>Introduction:</strong> {application.cover_note}</p>
+                        <p><strong>Public portfolio:</strong> {application.publish_portfolio ? "Published" : "Private"}</p>
+                        {application.profile_slug ? <p><Link to={`/career-profile/${application.profile_slug}`}>View public portfolio</Link></p> : null}
+                      </details>
+                    ) : null}
                   </div>
                   <select value={application.status} onChange={(e) => changeApplicationStatus(application.id, e.target.value)}>
                     {APPLICATION_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
@@ -405,7 +555,7 @@ export default function CareersPage() {
               <article key={job.id}>
                 <div><h3>{job.title}</h3><JobMeta job={job} /><p>{job.summary}</p></div>
                 <button type="button" onClick={() => setSelectedJob(job)}>
-                  {roleRequiresHomeMakersPortfolio(job) ? "Apply through your practice" : "Apply now"} <ArrowRight size={17} />
+                  Apply now <ArrowRight size={17} />
                 </button>
                 <div className="hm-careers-job-details">
                   <p>{job.description}</p>

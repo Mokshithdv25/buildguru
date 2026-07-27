@@ -36,6 +36,7 @@ const PricingPage = lazy(() => import("../pages/PricingPage"));
 const AccountPage = lazy(() => import("../pages/AccountPage"));
 const LegalPage = lazy(() => import("../pages/LegalPage"));
 const CareersPage = lazy(() => import("../pages/CareersPage"));
+const CareerProfilePage = lazy(() => import("../pages/CareerProfilePage"));
 
 function MobileRouteLoading() {
   return <div className="hm-m-route-loading" role="status"><span />Loading…</div>;
@@ -124,6 +125,7 @@ export default function MobileAppRoutes() {
       <Route path="/terms" element={<MobileShell hideTabs><LegalPage kind="terms" /></MobileShell>} />
       <Route path="/privacy" element={<MobileShell hideTabs><LegalPage kind="privacy" /></MobileShell>} />
       <Route path="/careers" element={<MobileShell hideTabs><CareersPage /></MobileShell>} />
+      <Route path="/career-profile/:slug" element={<MobileShell hideTabs><CareerProfilePage /></MobileShell>} />
       <Route path="*" element={withShell(MobileHomePage)} />
     </Routes></Suspense>
   );

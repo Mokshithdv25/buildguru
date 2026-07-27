@@ -31,7 +31,7 @@ client-side claim path.
 | Existing HomeMakers production schema | `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
 | Empty Supabase project | `homemakers_single_setup.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
 | Older v1/v1.1/v1.2 schema missing current columns or buckets | `homemakers_supabase_align.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
-| Intentionally discard all HomeMakers data | Empty the three app buckets through Storage Admin, delete disposable users through Auth Admin, then `homemakers_production_reset.sql` → `homemakers_single_setup.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
+| Intentionally discard all HomeMakers data | Empty the four app buckets through Storage Admin, delete disposable users through Auth Admin, then `homemakers_production_reset.sql` → `homemakers_single_setup.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
 
 `homemakers_single_setup.sql` is now fail-closed: it enables RLS, revokes anonymous table access, and creates private buckets without broad policies. The app is not ready until the hardening and workspace scripts also succeed, but an interrupted bootstrap does not expose the database.
 
@@ -49,7 +49,7 @@ client-side claim path.
 - Workspace tables and progress triggers used by the web and native project hub.
 - A professional lead inbox backed by a privacy-safe homeowner-project projection. It omits homeowner IDs, contact details, full location, and raw brief content; each professional can modify only responses tied to their own portfolio.
 - An owner-scoped editable material takeoff and an approval log for AI-suggested follow-ups, professional shortlists, document reviews, and material-plan decisions.
-- Public published career listings, public application submission, and a separate trusted hiring-admin membership for managing roles and applications. Résumés are submitted as links; no public upload bucket is opened.
+- Public career listings and OAuth-free applications with private work-sample uploads, plus a separate trusted hiring-admin membership. Applicants may explicitly publish the safe portfolio projection; email and phone are never included in that public view.
 
 ## SQL verification
 
@@ -94,11 +94,11 @@ Confirm the storage posture:
 ```sql
 select id, public
 from storage.buckets
-where id in ('project-v0', 'project-documents', 'portfolio-media')
+where id in ('project-v0', 'project-documents', 'portfolio-media', 'career-work-samples')
 order by id;
 ```
 
-Expected: all three buckets report `public = false`. Portfolio owners can read their own media. Anonymous and authenticated public readers can select only an exact `{owner_user_id}/{portfolio_id}/...` object path whose matching portfolio row is published; the frontend and API turn that permitted read into a short-lived signed URL.
+Expected: all four buckets report `public = false`. Portfolio owners can read their own media. Anonymous and authenticated public readers can select only an exact portfolio object referenced by a published portfolio or an opted-in published career profile; the frontend turns that permitted read into a short-lived signed URL. Career application photos remain private when the publish option is not selected.
 
 ## Anonymous API probes
 

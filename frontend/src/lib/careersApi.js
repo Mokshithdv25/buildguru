@@ -1,7 +1,8 @@
 import { getSupabase } from "./supabaseClient";
 
 const JOB_FIELDS = "id,title,team,location,employment_type,workplace_type,summary,description,responsibilities,qualifications,status,published_at,closes_at,created_at,updated_at";
-const APPLICATION_FIELDS = "id,job_id,full_name,email,phone,city,linkedin_url,portfolio_url,resume_url,cover_note,status,created_at,updated_at";
+const APPLICATION_FIELDS = "id,job_id,full_name,email,phone,city,cover_note,candidate_profile,work_sample_paths,work_sample_captions,publish_portfolio,profile_slug,status,created_at,updated_at";
+const CAREER_SAMPLES_BUCKET = "career-work-samples";
 
 function client() {
   const supabase = getSupabase();
@@ -49,12 +50,23 @@ export async function listAdminCareerJobs() {
 }
 
 export async function listCareerApplications() {
-  const { data, error } = await client()
+  const supabase = client();
+  const { data, error } = await supabase
     .from("career_applications")
     .select(APPLICATION_FIELDS)
     .order("created_at", { ascending: false });
   throwError(error);
-  return data || [];
+  return Promise.all((data || []).map(async (application) => {
+    const paths = application.work_sample_paths || [];
+    if (!paths.length) return { ...application, work_sample_urls: [] };
+    const { data: signed, error: signError } = await supabase.storage
+      .from(CAREER_SAMPLES_BUCKET)
+      .createSignedUrls(paths, 3600);
+    return {
+      ...application,
+      work_sample_urls: signError ? [] : (signed || []).map((item) => item.signedUrl).filter(Boolean),
+    };
+  }));
 }
 
 export async function saveCareerJob(job) {
@@ -104,20 +116,79 @@ export async function updateCareerJobStatus(id, status) {
 
 export async function submitCareerApplication(jobId, application) {
   const payload = {
+    id: application.id,
     job_id: jobId,
     full_name: application.full_name.trim(),
     email: application.email.trim().toLowerCase(),
     phone: application.phone.trim() || null,
     city: application.city.trim() || null,
-    linkedin_url: application.linkedin_url.trim() || null,
-    portfolio_url: application.portfolio_url.trim() || null,
-    resume_url: application.resume_url.trim(),
+    linkedin_url: null,
+    portfolio_url: null,
+    resume_url: null,
     cover_note: application.cover_note.trim(),
+    candidate_profile: {
+      experience_range: application.experience_range,
+      qualification: application.qualification.trim(),
+      tools: application.tools.trim(),
+      specialties: application.specialties,
+    },
+    work_sample_paths: application.work_sample_paths,
+    work_sample_captions: application.work_sample_captions,
+    publish_portfolio: application.publish_portfolio === true,
+    profile_slug: application.publish_portfolio ? application.profile_slug : null,
     consent: application.consent === true,
     status: "received",
   };
   const { error } = await client().from("career_applications").insert(payload);
   throwError(error);
+}
+
+function dataUrlBytes(dataUrl) {
+  const match = String(dataUrl).match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/);
+  if (!match) throw new Error("Use JPG, PNG, or WebP work samples.");
+  return {
+    contentType: match[1],
+    bytes: Uint8Array.from(atob(match[2]), (character) => character.charCodeAt(0)),
+  };
+}
+
+export async function uploadCareerWorkSamples(applicationId, samples) {
+  const supabase = client();
+  const paths = [];
+  for (let index = 0; index < samples.length; index += 1) {
+    const parsed = dataUrlBytes(samples[index].dataUrl);
+    const objectId = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const extension = parsed.contentType === "image/png" ? "png" : parsed.contentType === "image/webp" ? "webp" : "jpg";
+    const path = `${applicationId}/${index}-${objectId}.${extension}`;
+    const { error } = await supabase.storage.from(CAREER_SAMPLES_BUCKET).upload(path, parsed.bytes, {
+      contentType: parsed.contentType,
+      upsert: false,
+    });
+    throwError(error);
+    paths.push(path);
+  }
+  return paths;
+}
+
+export async function getPublishedCareerProfile(slug) {
+  const supabase = client();
+  const { data, error } = await supabase
+    .from("published_career_profiles")
+    .select("id,slug,full_name,city,short_bio,candidate_profile,work_sample_paths,work_sample_captions,created_at")
+    .eq("slug", slug)
+    .maybeSingle();
+  throwError(error);
+  if (!data) throw new Error("Portfolio not found.");
+  const { data: signed, error: signError } = await supabase.storage
+    .from(CAREER_SAMPLES_BUCKET)
+    .createSignedUrls(data.work_sample_paths || [], 3600);
+  throwError(signError);
+  return {
+    ...data,
+    work_sample_urls: (signed || []).map((item) => item.signedUrl).filter(Boolean),
+  };
 }
 
 export async function updateCareerApplicationStatus(id, status) {

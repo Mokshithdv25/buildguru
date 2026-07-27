@@ -1,0 +1,30 @@
+.hm-career-profile { min-height: 100vh; background: #fffdf9; color: #2f2722; }
+.hm-career-profile main { max-width: 1100px; margin: 0 auto; padding: 54px 24px 90px; }
+.hm-career-profile-back { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 48px; color: #76675d; font-size: 13px; font-weight: 800; text-decoration: none; }
+.hm-career-profile header { max-width: 760px; }
+.hm-career-profile header > p:first-child, .hm-career-profile-kicker { margin: 0; color: #b76432; font-size: 11px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.hm-career-profile h1 { margin: 9px 0 12px; font-family: var(--font-display, serif); font-size: clamp(42px, 7vw, 72px); line-height: 1; letter-spacing: -.035em; }
+.hm-career-profile header > div:not(.hm-career-profile-tags) { display: flex; flex-wrap: wrap; gap: 12px; color: #786b62; font-size: 13px; }
+.hm-career-profile header > div:not(.hm-career-profile-tags) span { display: inline-flex; align-items: center; gap: 5px; }
+.hm-career-profile-bio { margin: 24px 0 0; color: #655950; font-size: 17px; line-height: 1.7; white-space: pre-wrap; }
+.hm-career-profile-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.hm-career-profile-tags span { border-radius: 999px; background: #f4e8dc; padding: 8px 12px; color: #8f4b28; font-size: 12px; font-weight: 700; }
+.hm-career-profile-tools { margin: 18px 0 0; color: #70635a; font-size: 13px; }
+.hm-career-profile section { margin-top: 80px; border-top: 1px solid #eadfd6; padding-top: 50px; }
+.hm-career-profile h2 { margin: 7px 0 26px; font-family: var(--font-display, serif); font-size: 36px; }
+.hm-career-profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.hm-career-profile figure { margin: 0; overflow: hidden; border: 1px solid #e5d9cf; border-radius: 18px; background: white; }
+.hm-career-profile figure img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.hm-career-profile figcaption { padding: 15px; color: #675a51; font-size: 13px; line-height: 1.5; }
+.hm-career-profile-empty { min-height: 50vh; display: grid; place-content: center; text-align: center; }
+.hm-career-profile-empty h1 { font-size: 38px; }
+.hm-career-profile-empty p { color: #786b62; }
+
+@media (max-width: 700px) {
+  .hm-career-profile { padding-bottom: 92px; }
+  .hm-career-profile main { padding: 32px 16px 60px; }
+  .hm-career-profile-back { margin-bottom: 32px; }
+  .hm-career-profile h1 { font-size: 46px; }
+  .hm-career-profile section { margin-top: 55px; padding-top: 36px; }
+  .hm-career-profile-grid { grid-template-columns: 1fr; }
+}
