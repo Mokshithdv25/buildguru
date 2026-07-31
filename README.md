@@ -1,8 +1,8 @@
-# HomeMakers
+# BuildGuru
 
 India’s home platform: AI design and estimates, marketplace, project hub, and materials — homeowners and pros on the same projects.
 
-**Repo:** [homemakersfinal](https://github.com/Mokshithdv25/homemakersfinal) · **Web:** Vercel · **API:** Render
+**Repo:** [buildgurufinal](https://github.com/Mokshithdv25/buildgurufinal) · **Web:** Vercel · **API:** Render
 
 ---
 
@@ -97,7 +97,7 @@ Source control: GitHub
 
 | Tool | Use |
 |------|-----|
-| **GitHub** | Source, `homemakersfinal` main branch |
+| **GitHub** | Source, `buildgurufinal` main branch |
 | **Vercel** | Production frontend only |
 | **Render** | Production API |
 | **Supabase** | Database, auth, storage |
@@ -114,8 +114,8 @@ Source control: GitHub
 
 Treat a deployment as a release candidate only when both Vercel and Render are running the same reviewed revision and the live checks below pass.
 
-1. Apply the production Supabase migrations in the documented order. Existing schemas use `db/homemakers_rls_hardening.sql`, then `db/homemakers_project_workspace.sql`; fresh projects first use the fail-closed `db/homemakers_single_setup.sql`. Intentional clean resets and legacy upgrades have separate paths in [db/README.md](db/README.md).
-2. Keep production email account creation disabled until custom SMTP delivery, confirmation, and password recovery pass end-to-end tests. Google OAuth is the current account-creation path. Allow `https://www.homemakers.online/sign-in`, `https://homemakers.online/sign-in`, and `in.homemakers.app://auth/callback`; require email confirmation before re-enabling email sign-up. Sign in with Apple remains a release blocker for App Store submission.
+1. Apply the production Supabase migrations in the documented order. Existing schemas use `db/buildguru_rls_hardening.sql`, then `db/buildguru_project_workspace.sql`; fresh projects first use the fail-closed `db/buildguru_single_setup.sql`. Intentional clean resets and legacy upgrades have separate paths in [db/README.md](db/README.md).
+2. Keep production email account creation disabled until custom SMTP delivery, confirmation, and password recovery pass end-to-end tests. Google OAuth is the current account-creation path. Allow `https://www.buildguru.online/sign-in`, `https://buildguru.online/sign-in`, and `in.buildguru.app://auth/callback`; require email confirmation before re-enabling email sign-up. Sign in with Apple remains a release blocker for App Store submission.
 3. Build the frontend with Node 20. Keep the non-secret production origins in `frontend/.env.production`; set `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY` in Vercel and in ignored `frontend/.env.production.local` for native release builds.
 4. On Render, set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, `XAI_API_KEY`, and the three `RAZORPAY_*` values from `backend/.env.example`. Keep `ALLOW_AI_MOCKS=false`.
 5. Deploy Render and verify `/health/ready`, `/api/ai/status`, and an authenticated `/api/ai/hub-assistant` request. Then deploy the Vercel frontend and confirm its API traffic goes to Render.

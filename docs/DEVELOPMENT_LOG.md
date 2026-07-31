@@ -1,4 +1,4 @@
-# HomeMakers development log
+# BuildGuru development log
 
 **Purpose:** One place in the repo for *what you asked for* and *what we shipped*, alongside git and Cursor transcripts.
 
@@ -11,8 +11,8 @@
 | Source | Location | What it captures |
 |--------|----------|------------------|
 | **This file** | `docs/DEVELOPMENT_LOG.md` | Human-readable requests → outcomes (you are here) |
-| **Git** | `homemakersfinal` / `main` | Every **committed** code change + commit message |
-| **Cursor agent transcript** | `~/.cursor/projects/Users-mokshith-Documents-homemakers-1/agent-transcripts/<uuid>/<uuid>.jsonl` | User/assistant messages (~2.1 MB main session); tool diffs often redacted |
+| **Git** | `buildgurufinal` / `main` | Every **committed** code change + commit message |
+| **Cursor agent transcript** | `~/.cursor/projects/Users-mokshith-Documents-buildguru-1/agent-transcripts/<uuid>/<uuid>.jsonl` | User/assistant messages (~2.1 MB main session); tool diffs often redacted |
 | **Cursor chat UI** | This thread in the IDE | Full conversation; long threads may be **summarized** for the model |
 | **Deploy logs** | Vercel + Render dashboards | Build/deploy events, not product requests |
 
@@ -59,7 +59,7 @@ Other transcript files in that folder are shorter or older chats.
 | `30346c8` | Fix production v0-images 500 + fallbacks |
 | `20d09b8` | `AUTH_UI_ENABLED = false` open demo |
 
-**Infra reminder:** Backend changes need **Render** redeploy; frontend needs **Vercel** + `REACT_APP_BACKEND_URL=https://homemakers-6o3h.onrender.com`.
+**Infra reminder:** Backend changes need **Render** redeploy; frontend needs **Vercel** + `REACT_APP_BACKEND_URL=https://buildguru-6o3h.onrender.com`.
 
 ---
 
@@ -70,13 +70,13 @@ Other transcript files in that folder are shorter or older chats.
 | Theme | Outcome |
 |-------|---------|
 | Integrate **Grok** ($5 xAI credits) for build/remodel v0 | `backend/server.py` + `frontend/src/lib/aiApi.js` |
-| **homemakers.online** on Vercel | Domain DNS; env vars on Vercel |
+| **buildguru.online** on Vercel | Domain DNS; env vars on Vercel |
 | **Google / email sign-in** | Supabase auth, redirect URLs, RLS SQL |
 | Sign-in → **build/remodel** + profile menu | Routing, `HmUserMenu`, guards |
 | Remodel showing **exteriors** / wrong estimate | Prompt + budget-anchored estimate fixes |
 | **Find Pros** = search + location, results from published portfolios | Marketplace/browse changes |
 | **Larger v0 images** in wizard | `V0MockResults.jsx` layout |
-| Pitch deck, logo PNG, YC copy | `homemakers_pitch_v2.html`, docs |
+| Pitch deck, logo PNG, YC copy | `buildguru_pitch_v2.html`, docs |
 | **Mobile** (Capacitor) | `docs/MOBILE.md`, mobile shell |
 | Persist v0 to **project management** / Supabase | `projectFlowApi`, projects table |
 | Only **2 complementary** Grok images per v0 (credits) | `GROK_V0_MOOD_IMAGES=2` |
@@ -98,7 +98,7 @@ b5760ae Fix Vercel CI build: LandingNavbar hook deps
 54ac8ba Fix Vercel deep links, RLS hardening, and UAT UX gaps
 ```
 
-Full history: `git log --oneline homemakersfinal/main`
+Full history: `git log --oneline buildgurufinal/main`
 
 ---
 

@@ -1,5 +1,5 @@
--- HomeMakers — professional lead inbox
--- Run after homemakers_rls_hardening.sql and homemakers_project_workspace.sql.
+-- BuildGuru — professional lead inbox
+-- Run after buildguru_rls_hardening.sql and buildguru_project_workspace.sql.
 -- This migration exposes a deliberately limited project projection to signed-in
 -- professionals and stores each professional's private response state.
 

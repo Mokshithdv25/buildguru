@@ -1,7 +1,7 @@
 -- =============================================================================
--- HomeMakers careers — public jobs, applications, and trusted hiring admins
+-- BuildGuru careers — public jobs, applications, and trusted hiring admins
 -- =============================================================================
--- Run after the core HomeMakers migrations. Hiring admins are deliberately
+-- Run after the core BuildGuru migrations. Hiring admins are deliberately
 -- separate from user_profiles.role so homeowner/pro authorization stays intact.
 
 begin;
@@ -235,7 +235,7 @@ select
   a.full_name,
   a.city,
   a.cover_note as short_bio,
-  a.candidate_profile,
+  a.candidate_profile - 'license_number' as candidate_profile,
   a.work_sample_paths,
   a.work_sample_captions,
   a.created_at
@@ -271,7 +271,7 @@ values (
   'full_time',
   'remote',
   'Bring hands-on residential design experience into the product and help make plans, elevations, estimates, and professional handoffs genuinely useful.',
-  'HomeMakers is looking for an architect, civil engineer, or built-environment professional who enjoys improving how people work. You will help the product team understand residential planning, floor plans, elevations, estimates, material takeoffs, and local approval workflows. You do not need a traditional product-manager background. You do need practical judgment, curiosity about software, and the ability to explain architectural decisions clearly.',
+  'BuildGuru is looking for an architect, civil engineer, or built-environment professional who enjoys improving how people work. You will help the product team understand residential planning, floor plans, elevations, estimates, material takeoffs, and local approval workflows. You do not need a traditional product-manager background. You do need practical judgment, curiosity about software, and the ability to explain architectural decisions clearly.',
   '[
     "Own product requirements for residential planning, floor-plan, elevation, estimate, and material-takeoff workflows",
     "Translate Indian residential drawing standards, building bye-laws, and approval processes into clear product rules and review checkpoints",

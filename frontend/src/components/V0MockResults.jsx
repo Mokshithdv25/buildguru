@@ -158,7 +158,7 @@ async function downloadVisual(url, label) {
     const blobUrl = URL.createObjectURL(await response.blob());
     const anchor = document.createElement("a");
     anchor.href = blobUrl;
-    anchor.download = `${String(label || "homemakers-v0").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.jpg`;
+    anchor.download = `${String(label || "buildguru-v0").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.jpg`;
     anchor.click();
     URL.revokeObjectURL(blobUrl);
   } catch {

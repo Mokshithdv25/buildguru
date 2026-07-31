@@ -1,7 +1,7 @@
-# HomeMaker — Portfolio Builder
+# BuildGuru — Portfolio Builder
 
 ## Original Problem Statement
-Build the HomeMaker onboarding page (Step 1 — "What's your craft?") per the provided mockup.
+Build the BuildGuru onboarding page (Step 1 — "What's your craft?") per the provided mockup.
 User clarifications:
 - Build first page fully functional
 - Backend to save portfolio data (MongoDB)

@@ -244,7 +244,7 @@ export default function LandingNavbar({ tagline = null }) {
         >
           <img
             src={hmLogoMarkSrc}
-            alt="HomeMakers"
+            alt="BuildGuru"
             className="w-12 h-12 md:w-[60px] md:h-[60px]"
             width={60}
             height={60}

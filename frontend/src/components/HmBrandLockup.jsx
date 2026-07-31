@@ -30,7 +30,7 @@ export function HmHeaderBrandLockup({
     <Link
       to={to}
       title={tagline}
-      aria-label={`HomeMakers. ${tagline}`}
+      aria-label={`BuildGuru. ${tagline}`}
       className={`flex items-center gap-2.5 md:gap-4 no-underline text-inherit shrink-0 ${className}`.trim()}
     >
       <img
@@ -42,7 +42,7 @@ export function HmHeaderBrandLockup({
         decoding="async"
       />
       <div className={`leading-tight min-w-0${truncateTitle ? " min-w-0" : ""}`}>
-        <div className={`${HM_WORDMARK_TITLE_CLASS}${truncateTitle ? " truncate" : ""}`}>HomeMakers</div>
+        <div className={`${HM_WORDMARK_TITLE_CLASS}${truncateTitle ? " truncate" : ""}`}>BuildGuru</div>
         <div className={subline}>{tagline}</div>
       </div>
     </Link>
@@ -67,7 +67,7 @@ export function HmSidebarBrandMark({ className = "", size, titleClassName, tagli
           style={{ width: logoSize, height: logoSize }}
           decoding="async"
         />
-        <span className={titleClassName || HM_SIDEBAR_WORDMARK_CLASS}>HomeMakers</span>
+        <span className={titleClassName || HM_SIDEBAR_WORDMARK_CLASS}>BuildGuru</span>
       </div>
       {tagline ? (
         <p

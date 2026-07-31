@@ -13,9 +13,9 @@ class LaunchContractsTest(unittest.TestCase):
     def test_project_post_status_matches_database_constraint(self):
         project_api = (ROOT / "frontend/src/lib/projectFlowApi.js").read_text()
         for sql_name in (
-            "homemakers_single_setup.sql",
-            "homemakers_supabase_align.sql",
-            "homemakers_rls_hardening.sql",
+            "buildguru_single_setup.sql",
+            "buildguru_supabase_align.sql",
+            "buildguru_rls_hardening.sql",
         ):
             sql = (ROOT / "db" / sql_name).read_text()
             self.assertIn("open_for_quotes", sql, sql_name)
@@ -122,7 +122,7 @@ class LaunchContractsTest(unittest.TestCase):
         self.assertIn("payment.get(\"status\") != \"captured\"", server)
 
     def test_launch_sql_removes_anonymous_storage_writes(self):
-        sql = (ROOT / "db/homemakers_rls_hardening.sql").read_text()
+        sql = (ROOT / "db/buildguru_rls_hardening.sql").read_text()
         self.assertIn('drop policy if exists "demo_storage_insert"', sql)
         self.assertIn('drop policy if exists "demo_storage_update"', sql)
         self.assertIn("activate_billing_order", sql)
@@ -132,7 +132,7 @@ class LaunchContractsTest(unittest.TestCase):
         )
 
     def test_public_directory_view_and_project_images_do_not_expose_private_data(self):
-        sql = (ROOT / "db/homemakers_rls_hardening.sql").read_text()
+        sql = (ROOT / "db/buildguru_rls_hardening.sql").read_text()
         compact_sql = re.sub(r"\s+", " ", sql.lower())
         self.assertIn("create or replace view public.published_portfolios", compact_sql)
         self.assertIn("with (security_barrier = true)", compact_sql)
@@ -165,8 +165,8 @@ class LaunchContractsTest(unittest.TestCase):
         env_example = (ROOT / "backend/.env.example").read_text()
         render = (ROOT / "render.yaml").read_text()
         for config in (env_example, render):
-            self.assertIn("https://www.homemakers.online", config)
-            self.assertIn("https://homemakers.online", config)
+            self.assertIn("https://www.buildguru.online", config)
+            self.assertIn("https://buildguru.online", config)
             self.assertIn("https://localhost", config)
             self.assertIn("capacitor://localhost", config)
         self.assertIn("CORS_ORIGIN_REGEX=", env_example)
@@ -212,14 +212,14 @@ class LaunchContractsTest(unittest.TestCase):
     def test_checklists_drive_persisted_project_progress(self):
         project_api = (ROOT / "frontend/src/lib/projectFlowApi.js").read_text()
         dashboard = (ROOT / "frontend/src/pages/ProjectDashboard.jsx").read_text()
-        migration = (ROOT / "db/homemakers_project_workspace.sql").read_text()
+        migration = (ROOT / "db/buildguru_project_workspace.sql").read_text()
         self.assertIn("export function derivePhaseProgress", project_api)
         self.assertIn("await syncProjectProgress", project_api)
         self.assertIn("Stage percentage is calculated from completed checklist tasks", dashboard)
         self.assertIn("trg_project_task_progress", migration)
 
     def test_project_workspace_modules_are_owner_scoped(self):
-        migration = (ROOT / "db/homemakers_project_workspace.sql").read_text()
+        migration = (ROOT / "db/buildguru_project_workspace.sql").read_text()
         api = (ROOT / "frontend/src/lib/projectWorkspaceApi.js").read_text()
         for table in ("project_team_members", "project_payments"):
             self.assertIn(f"create table if not exists public.{table}", migration)
@@ -262,7 +262,7 @@ class LaunchContractsTest(unittest.TestCase):
     def test_billing_is_fail_closed_and_reuses_one_pending_order(self):
         server = (ROOT / "backend/server.py").read_text()
         render = (ROOT / "render.yaml").read_text()
-        migration = (ROOT / "db/homemakers_rls_hardening.sql").read_text()
+        migration = (ROOT / "db/buildguru_rls_hardening.sql").read_text()
         billing_api = (ROOT / "frontend/src/lib/billingApi.js").read_text()
         self.assertIn('BILLING_ENABLED = _env_flag("BILLING_ENABLED", False)', server)
         self.assertIn('ALLOW_LIVE_BILLING = _env_flag("ALLOW_LIVE_BILLING", False)', server)
@@ -291,8 +291,8 @@ class LaunchContractsTest(unittest.TestCase):
 
     def test_real_image_generation_has_a_durable_daily_quota(self):
         server = (ROOT / "backend/server.py").read_text()
-        hardening = (ROOT / "db/homemakers_rls_hardening.sql").read_text()
-        workspace = (ROOT / "db/homemakers_project_workspace.sql").read_text()
+        hardening = (ROOT / "db/buildguru_rls_hardening.sql").read_text()
+        workspace = (ROOT / "db/buildguru_project_workspace.sql").read_text()
         env_example = (ROOT / "backend/.env.example").read_text()
         render = (ROOT / "render.yaml").read_text()
 
@@ -397,7 +397,7 @@ class LaunchContractsTest(unittest.TestCase):
         self.assertIn("Smart reminders and client follow-ups are the next layer", pros)
 
     def test_portfolio_self_publish_reporting_and_blocking_are_launch_contracts(self):
-        sql = (ROOT / "db/homemakers_rls_hardening.sql").read_text()
+        sql = (ROOT / "db/buildguru_rls_hardening.sql").read_text()
         api = (ROOT / "frontend/src/lib/api.js").read_text()
         desktop = (ROOT / "frontend/src/pages/PortfolioPage.jsx").read_text()
         mobile = (ROOT / "frontend/src/mobile/pages/MobileProProfilePage.jsx").read_text()
@@ -420,7 +420,7 @@ class LaunchContractsTest(unittest.TestCase):
         self.assertIn("Work With Me", mobile)
         self.assertIn("Want a portfolio like this? Create yours", mobile)
 
-        migration = (ROOT / "db/homemakers_portfolio_self_publish.sql").read_text()
+        migration = (ROOT / "db/buildguru_portfolio_self_publish.sql").read_text()
         self.assertIn("drop trigger if exists trg_portfolio_moderation_insert", migration)
         self.assertIn("set moderation_status = 'approved'", migration)
         self.assertIn("still_waiting", migration)
@@ -464,7 +464,7 @@ class LaunchContractsTest(unittest.TestCase):
         self.assertIn("Continue where you left off", mobile_home)
         self.assertIn("hm-m-resume-card", mobile_home)
         self.assertIn("hm-m-feed-skeleton", mobile_home)
-        self.assertIn("HomeMakers professional network", mobile_pros)
+        self.assertIn("BuildGuru professional network", mobile_pros)
         self.assertIn("Search professionals", mobile_pros)
         self.assertIn("hm-m-results-header", mobile_pros)
         self.assertIn("hm-m-pro-skeleton", mobile_pros)
@@ -508,10 +508,10 @@ class LaunchContractsTest(unittest.TestCase):
 
     def test_production_database_scripts_are_transactional(self):
         for name in (
-            "homemakers_production_reset.sql",
-            "homemakers_single_setup.sql",
-            "homemakers_rls_hardening.sql",
-            "homemakers_project_workspace.sql",
+            "buildguru_production_reset.sql",
+            "buildguru_single_setup.sql",
+            "buildguru_rls_hardening.sql",
+            "buildguru_project_workspace.sql",
         ):
             sql = (ROOT / "db" / name).read_text().lower()
             self.assertRegex(sql, r"(?m)^begin;\s*$", name)

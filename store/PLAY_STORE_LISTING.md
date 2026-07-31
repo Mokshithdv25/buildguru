@@ -1,13 +1,13 @@
-# HomeMakers — Google Play listing draft
+# BuildGuru — Google Play listing draft
 
 ## Identity
 
-- App name: HomeMakers
-- Package name: `in.homemakers.app`
+- App name: BuildGuru
+- Package name: `in.buildguru.app`
 - Category: House & Home
-- Contact email: support@homemakers.online
-- Website: https://www.homemakers.online
-- Privacy policy: https://www.homemakers.online/privacy
+- Contact email: support@buildguru.online
+- Website: https://www.buildguru.online
+- Privacy policy: https://www.buildguru.online/privacy
 
 ## Short description
 
@@ -17,7 +17,7 @@ Plan Indian homes with AI concepts, real pros, saved projects and checklists.
 
 Plan, organize, and continue your home project from one account.
 
-HomeMakers helps homeowners create a new-build or remodel brief, explore early AI concepts and indicative estimates, discover published professionals, and manage saved project work with checklists.
+BuildGuru helps homeowners create a new-build or remodel brief, explore early AI concepts and indicative estimates, discover published professionals, and manage saved project work with checklists.
 
 HOMEOWNER TOOLS
 

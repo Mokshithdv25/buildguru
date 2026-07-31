@@ -40,7 +40,7 @@ export default function LandingWhyChooseUs() {
           viewport={{ once: true }}
           className="mb-12 text-center"
         >
-          <h2 className="mb-3 font-display text-4xl font-bold text-foreground md:text-5xl">Why choose HomeMakers</h2>
+          <h2 className="mb-3 font-display text-4xl font-bold text-foreground md:text-5xl">Why choose BuildGuru</h2>
           <p className="mx-auto max-w-xl font-body text-base text-muted-foreground md:text-lg">
             Faster, smarter, seamless. AI where it saves you time. Real pros where it matters.
           </p>

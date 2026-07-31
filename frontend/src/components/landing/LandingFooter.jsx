@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import HmMarketingWordmark from "../HmMarketingWordmark";
-import { LEGAL_BUSINESS_NAME, SUPPORT_EMAIL, UDYAM_REGISTRATION, legalEntityLine } from "../../lib/legalBusiness";
+import { LEGAL_BUSINESS_NAME, SUPPORT_EMAIL, legalEntityLine } from "../../lib/legalBusiness";
 
 export default function LandingFooter() {
   return (
@@ -16,20 +16,16 @@ export default function LandingFooter() {
             {LEGAL_BUSINESS_NAME ? (
               <p className="mt-2 font-body text-xs text-muted-foreground">
                 Registered business name: <strong className="text-foreground">{LEGAL_BUSINESS_NAME}</strong>
-                {UDYAM_REGISTRATION ? (
-                  <>
-                    <br />
-                    Udyam: <strong className="text-foreground">{UDYAM_REGISTRATION}</strong>
-                  </>
-                ) : null}
               </p>
             ) : null}
-            <p className="mt-2 font-body text-sm text-muted-foreground">
-              Contact:{" "}
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-copper font-semibold hover:underline">
-                {SUPPORT_EMAIL}
-              </a>
-            </p>
+            {SUPPORT_EMAIL ? (
+              <p className="mt-2 font-body text-sm text-muted-foreground">
+                Contact:{" "}
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-copper font-semibold hover:underline">
+                  {SUPPORT_EMAIL}
+                </a>
+              </p>
+            ) : null}
           </div>
           <nav className="flex flex-wrap gap-x-8 gap-y-3 font-body text-sm" aria-label="Site footer">
             <Link to="/pricing" className="text-muted-foreground hover:text-copper font-semibold">
@@ -56,7 +52,7 @@ export default function LandingFooter() {
           </nav>
         </div>
         <p className="mt-8 border-t border-border/60 pt-6 text-center font-body text-xs text-muted-foreground md:text-left">
-          © {new Date().getFullYear()} HomeMakers. Secure checkout via Razorpay (India). Site served over HTTPS.
+          © {new Date().getFullYear()} BuildGuru. Secure checkout via Razorpay (India). Site served over HTTPS.
         </p>
       </div>
     </footer>

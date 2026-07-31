@@ -107,7 +107,7 @@ else:
             "MONGO_SERVER_SELECTION_TIMEOUT_MS", 3000, 250, 10000
         ),
     )
-    _db = _mongo_client[os.getenv("DB_NAME", "homemaker")]
+    _db = _mongo_client[os.getenv("DB_NAME", "buildguru")]
     _portfolios = _db["portfolios"]
 
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "").strip()
@@ -118,14 +118,14 @@ ALLOW_LIVE_BILLING = _env_flag("ALLOW_LIVE_BILLING", False)
 
 PAID_PLANS = {
     "homeowner_project_pass": {
-        "name": "HomeMakers Project Pass",
+        "name": "BuildGuru Project Pass",
         "amount_paise": 499_900,
         "role": "homeowner",
         "duration_days": None,
         "description": "AI design, estimate and project workspace access",
     },
     "pro_growth_30d": {
-        "name": "HomeMakers Pro Growth",
+        "name": "BuildGuru Pro Growth",
         "amount_paise": 199_900,
         "role": "pro",
         "duration_days": 30,
@@ -646,7 +646,7 @@ def health_ready():
 
 @api_router.get("/")
 def root():
-    return {"message": "HomeMaker API"}
+    return {"message": "BuildGuru API"}
 
 
 @api_router.post("/portfolio", response_model=Portfolio)
@@ -750,7 +750,7 @@ def public_profile(slug: str):
 
 @api_router.delete("/account")
 def delete_account(user: dict = Depends(_require_user)):
-    """Permanently remove the signed-in user's HomeMakers data and auth account."""
+    """Permanently remove the signed-in user's BuildGuru data and auth account."""
     if not _supabase or not SUPABASE_SERVICE_ROLE_KEY:
         raise HTTPException(status_code=503, detail="Account deletion is not configured")
     user_id = user["id"]
@@ -2766,7 +2766,7 @@ def _grok_hub_assistant(message: str, ctx: dict) -> Optional[dict]:
     role = (ctx.get("role") or "homeowner").strip()
     surface = (ctx.get("surface") or "project-hub").strip()
     system = (
-        "You are Homi, a warm concise agentic assistant inside HomeMakers project management. "
+        "You are Homi, a warm concise agentic assistant inside BuildGuru project management. "
         "Answer using ONLY the active Project context JSON as ground truth. It may include a structured brief, AI v0 estimate summary, "
         "task board, site messages, document register metadata, payment ledger, editable material plan, and approval log. "
         "Do not invent tasks, document contents, messages, quantities, payments, progress, brands, or approvals that are not in context. "
@@ -2990,11 +2990,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_origins=_csv_env(
         "CORS_ORIGINS",
-        "https://www.homemakers.online,https://homemakers.online,http://localhost:3000,http://127.0.0.1:3000",
+        "https://www.buildguru.online,https://buildguru.online,http://localhost:3000,http://127.0.0.1:3000",
     ),
     allow_origin_regex=os.getenv(
         "CORS_ORIGIN_REGEX",
-        r"https://(homemakers(-1|final)?|frontend)(-[a-z0-9-]+)?\.vercel\.app",
+        r"https://(buildguru(-1|final)?|frontend)(-[a-z0-9-]+)?\.vercel\.app",
     ),
     allow_methods=["*"],
     allow_headers=["*"],

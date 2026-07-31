@@ -16,7 +16,7 @@ export default function MobileAccountPage() {
 
   return (
     <>
-      <MobileHeader title="You" subtitle={session ? name : "Explore HomeMakers"} />
+      <MobileHeader title="You" subtitle={session ? name : "Explore BuildGuru"} />
       <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
         {session || !AUTH_UI_ENABLED ? (
           <div className="hm-m-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>

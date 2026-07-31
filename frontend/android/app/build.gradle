@@ -7,10 +7,10 @@ def hmKeyPassword = System.getenv('HM_ANDROID_KEY_PASSWORD')
 def hmReleaseSigningReady = hmKeystorePath && hmStorePassword && hmKeyAlias && hmKeyPassword
 
 android {
-    namespace "in.homemakers.app"
+    namespace "in.buildguru.app"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "in.homemakers.app"
+        applicationId "in.buildguru.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

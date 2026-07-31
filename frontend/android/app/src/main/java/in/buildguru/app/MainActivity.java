@@ -1,4 +1,4 @@
-package in.homemakers.app;
+package in.buildguru.app;
 
 import com.getcapacitor.BridgeActivity;
 

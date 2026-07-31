@@ -1,4 +1,4 @@
--- HomeMakers portfolio self-publishing migration.
+-- BuildGuru portfolio self-publishing migration.
 -- Run this entire file once in the Supabase SQL Editor after the production
 -- one-shot schema. It removes the old pre-publication review trigger while
 -- preserving the approved public projection and report-based quarantine.

@@ -1,7 +1,7 @@
 -- =============================================================================
--- HomeMakers — FAIL-CLOSED BASE SCHEMA
--- Run on an empty/reset Supabase project, then run homemakers_rls_hardening.sql
--- and homemakers_project_workspace.sql. This bootstrap is deliberately safe if
+-- BuildGuru — FAIL-CLOSED BASE SCHEMA
+-- Run on an empty/reset Supabase project, then run buildguru_rls_hardening.sql
+-- and buildguru_project_workspace.sql. This bootstrap is deliberately safe if
 -- the sequence stops early: private tables have RLS enabled, anonymous grants
 -- are revoked, storage buckets are private, and no broad demo policies exist.
 --
@@ -9,7 +9,7 @@
 -- Projects, v0 packs, portfolios, and storage for the React app.
 --
 -- It is idempotent for the canonical schema, but it is not a legacy migration.
--- Use homemakers_production_reset.sql first when intentionally discarding an
+-- Use buildguru_production_reset.sql first when intentionally discarding an
 -- older schema, and never use the obsolete open-demo SQL attachment.
 -- =============================================================================
 
@@ -466,7 +466,7 @@ create trigger trg_project_tasks_updated_at
   before update on public.project_tasks
   for each row execute function public.set_updated_at();
 
--- Fail closed until homemakers_rls_hardening.sql installs owner-scoped policies.
+-- Fail closed until buildguru_rls_hardening.sql installs owner-scoped policies.
 alter table public.projects enable row level security;
 alter table public.project_briefs enable row level security;
 alter table public.project_stages enable row level security;

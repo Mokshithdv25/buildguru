@@ -46,5 +46,5 @@ This is a technical disclosure draft, not legal advice. The publisher must confi
 - Collects personal info, photos/files, app activity/content, and purchase information
 - Shares data with service providers for app functionality and user-requested AI processing
 - Data is encrypted in transit
-- Users can request deletion in-app and through support@homemakers.online
+- Users can request deletion in-app and through support@buildguru.online
 - No advertising use and no sale of personal data

@@ -1,5 +1,5 @@
 /**
- * Mobile IA: Houzz-style shell + HomeMakers product flows.
+ * Mobile IA: Houzz-style shell + BuildGuru product flows.
  *
  * Framework (inspired by Houzz):
  *   bottom tabs · search-first discovery · saved boards · project hub · profile

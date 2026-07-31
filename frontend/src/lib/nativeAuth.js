@@ -1,7 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { getSupabase } from "./supabaseClient";
 
-export const NATIVE_AUTH_CALLBACK = "in.homemakers.app://auth/callback";
+export const NATIVE_AUTH_CALLBACK = "in.buildguru.app://auth/callback";
 
 export function authCallbackUrl(nextPath) {
   const safeNext = String(nextPath || "/sign-in");

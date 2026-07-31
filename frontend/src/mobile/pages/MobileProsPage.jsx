@@ -88,7 +88,7 @@ export default function MobileProsPage() {
     <>
       <MobileHeader title="Find professionals" subtitle="Real work · direct project handoff" />
       <section className="hm-m-pro-search-panel">
-        <span className="hm-m-search-eyebrow">HomeMakers professional network</span>
+        <span className="hm-m-search-eyebrow">BuildGuru professional network</span>
         <h1>Find someone whose work already feels right.</h1>
         <p>Compare published portfolios, then start a structured project with the professional attached.</p>
         <form onSubmit={onSearch}>
@@ -116,7 +116,7 @@ export default function MobileProsPage() {
         <p role="alert" style={{ padding: 16, color: "#B42318" }}>{directoryError}</p>
       ) : !hasSearched ? (
         <p style={{ padding: "8px 16px 24px", fontSize: 14, color: "#78716C", lineHeight: 1.5 }}>
-          Search or tap a trade to see professionals who completed their portfolio on HomeMakers.
+          Search or tap a trade to see professionals who completed their portfolio on BuildGuru.
         </p>
       ) : loading ? (
         <div className="hm-m-pro-skeleton" role="status" aria-label="Loading professionals">

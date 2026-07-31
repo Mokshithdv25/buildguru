@@ -285,7 +285,7 @@ export function LivePreview({
       {showTestimonial && (
         <div className="mt-4 bg-[#FFFDFB] border border-[#EFE3D2] rounded-2xl p-5">
           <div className="text-[13px] text-[#1C1917] leading-relaxed font-medium">
-            Client reviews are not displayed until HomeMakers can verify that they came from a completed project.
+            Client reviews are not displayed until BuildGuru can verify that they came from a completed project.
           </div>
         </div>
       )}

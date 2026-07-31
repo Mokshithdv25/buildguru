@@ -2,11 +2,11 @@
 
 ## Completed in the repository
 
-- Bundle/package ID set to `in.homemakers.app`
+- Bundle/package ID set to `in.buildguru.app`
 - Version 1.0 / build 1 configured
 - Capacitor Android and iOS projects present
 - Mobile production web bundle generated and copied to both native projects
-- Branded HomeMakers icons and splash screens generated for iOS and Android
+- Branded BuildGuru icons and splash screens generated for iOS and Android
 - Android Studio, JDK 17, Android SDK Platform 35, Build Tools 35, and platform tools installed
 - Public privacy policy and terms routes present
 - In-app permanent account deletion implemented
@@ -15,9 +15,9 @@
 
 ## Required before uploading
 
-- Apply the production Supabase scripts in the path documented by `db/README.md`. Existing schemas use `db/homemakers_rls_hardening.sql`, then `db/homemakers_project_workspace.sql`, `db/homemakers_pro_leads.sql`, and `db/homemakers_project_intelligence.sql`; fresh projects first use the fail-closed `db/homemakers_single_setup.sql`. Use the destructive reset only when data loss is intentional.
+- Apply the production Supabase scripts in the path documented by `db/README.md`. Existing schemas use `db/buildguru_rls_hardening.sql`, then `db/buildguru_project_workspace.sql`, `db/buildguru_pro_leads.sql`, and `db/buildguru_project_intelligence.sql`; fresh projects first use the fail-closed `db/buildguru_single_setup.sql`. Use the destructive reset only when data loss is intentional.
 - Run the SQL, anonymous, storage, and two-account isolation probes in `db/README.md`. Any anonymous project/billing row or exposure of a portfolio owner ID, street address, email, phone, license number, or private media blocks release.
-- Keep `REACT_APP_EMAIL_SIGNUP_ENABLED=false` until custom SMTP confirmation, resend, and password-recovery delivery pass end-to-end tests; Google OAuth is the current account-creation path. Allow `https://www.homemakers.online/sign-in`, `https://homemakers.online/sign-in`, and `in.homemakers.app://auth/callback`, and require confirmation before email sign-up is re-enabled.
+- Keep `REACT_APP_EMAIL_SIGNUP_ENABLED=false` until custom SMTP confirmation, resend, and password-recovery delivery pass end-to-end tests; Google OAuth is the current account-creation path. Allow `https://www.buildguru.online/sign-in`, `https://buildguru.online/sign-in`, and `in.buildguru.app://auth/callback`, and require confirmation before email sign-up is re-enabled.
 - Set `REACT_APP_SUPABASE_URL` and the browser-safe `REACT_APP_SUPABASE_ANON_KEY` in Vercel and in ignored `frontend/.env.production.local` for native builds. Never expose the service-role key to the frontend.
 - Configure production Supabase service-role, AI, CORS, and Razorpay Test Mode secrets on Render. Keep `ALLOW_AI_MOCKS=false`.
 - Redeploy the Render backend and the frontend-only Vercel project from the reviewed revision; confirm both services report that same revision before treating them as release candidates.
@@ -29,7 +29,7 @@
 - Confirm the professional lead view rejects anonymous access, never exposes homeowner IDs, contact details, full location, or raw brief data, and isolates each professional's targeted opportunities and response rows.
 - Confirm material items and agent-action approvals are owner-scoped, quantity and brand edits persist, and no suggested follow-up, shortlist, hire, or order is represented as executed without explicit approval history.
 - Review every pending portfolio before approval; test Report profile and Block profile on web, iOS, and Android; assign an owner and response SLA for the `portfolio_reports` queue.
-- Confirm `support@homemakers.online` is monitored for safety and moderation escalations.
+- Confirm `support@buildguru.online` is monitored for safety and moderation escalations.
 - Keep `BILLING_ENABLED=false`, `ALLOW_LIVE_BILLING=false`, and Razorpay in Test Mode. Paid webhooks record entitlements, but paid features are not yet gated by those entitlements; Live Mode keys and real charges stay blocked until entitlement enforcement and downgrade/expiry tests pass.
 - Keep Razorpay checkout web-only unless the publisher enrolls in Google Play alternative billing and implements the required choice/reporting APIs; native builds currently show entitlement status without a purchase CTA
 - Add StoreKit/Google Play Billing before selling digital feature access directly inside the native apps
@@ -39,7 +39,7 @@
 
 ## Android publisher actions
 
-- Create or select the Play Console app for `in.homemakers.app`
+- Create or select the Play Console app for `in.buildguru.app`
 - Generate and securely back up a Play upload keystore
 - Configure release signing outside source control
 - Export `HM_ANDROID_KEYSTORE`, `HM_ANDROID_STORE_PASSWORD`, `HM_ANDROID_KEY_ALIAS`, and `HM_ANDROID_KEY_PASSWORD`; the Gradle release build consumes these without committing secrets
@@ -54,7 +54,7 @@
 - Install full Xcode and select `/Applications/Xcode.app/Contents/Developer`
 - Review and accept the Xcode license (`sudo xcodebuild -license`) before running CocoaPods or an archive build
 - Sign into Xcode with the Apple Developer account
-- Select the correct Team and provisioning profile for `in.homemakers.app`
+- Select the correct Team and provisioning profile for `in.buildguru.app`
 - Archive and validate the app, then upload it to App Store Connect
 - Create the App Store Connect app record
 - Add review credentials, privacy answers, age rating, export-compliance answers, screenshots, and metadata

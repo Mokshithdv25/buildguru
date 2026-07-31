@@ -1,5 +1,5 @@
--- HomeMakers — project intelligence, material takeoff, and approval queue
--- Run after homemakers_project_workspace.sql and homemakers_pro_leads.sql.
+-- BuildGuru — project intelligence, material takeoff, and approval queue
+-- Run after buildguru_project_workspace.sql and buildguru_pro_leads.sql.
 
 begin;
 

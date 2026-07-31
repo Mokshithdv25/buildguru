@@ -4,7 +4,7 @@ import { PenLine } from "lucide-react";
 const OR = "#C85F2B";
 
 /**
- * Explains that sanction-grade work is paid to the architect — not a fixed HomeMakers “drawing package”.
+ * Explains that sanction-grade work is paid to the architect — not a fixed BuildGuru “drawing package”.
  */
 export default function ArchitectEngagementCallout({ onBrowseArchitects }) {
   return (
@@ -40,7 +40,7 @@ export default function ArchitectEngagementCallout({ onBrowseArchitects }) {
             constraints, and numbers before they quote.
           </p>
           <ul style={{ margin: "10px 0 0", paddingLeft: 18, fontSize: 12, color: "#44403C", lineHeight: 1.5 }}>
-            <li style={{ marginBottom: 4 }}>HomeMakers doesn&apos;t assign an architect in the free v0 step</li>
+            <li style={{ marginBottom: 4 }}>BuildGuru doesn&apos;t assign an architect in the free v0 step</li>
             <li style={{ marginBottom: 4 }}>Share this brief + v0 so they understand you faster — then you agree scope &amp; fees directly</li>
             <li>Project hub is where execution starts, when you&apos;re ready to pull the team in</li>
           </ul>

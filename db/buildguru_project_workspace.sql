@@ -1,5 +1,5 @@
--- HomeMakers launch workspace: checklist progress, team, documents, and payment ledger.
--- Run after homemakers_single_setup.sql and homemakers_rls_hardening.sql.
+-- BuildGuru launch workspace: checklist progress, team, documents, and payment ledger.
+-- Run after buildguru_single_setup.sql and buildguru_rls_hardening.sql.
 
 begin;
 

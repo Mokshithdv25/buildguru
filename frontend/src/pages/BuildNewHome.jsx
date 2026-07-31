@@ -190,7 +190,7 @@ function validateBuildStep(step, form) {
       return "Please choose both exterior colours (base and trim).";
     }
     if (budgetAmountClamped(form) < 1) return "Please set a construction budget above zero.";
-    if (!String(form.hearAboutUs ?? "").trim()) return "Please tell us how you found HomeMakers.";
+    if (!String(form.hearAboutUs ?? "").trim()) return "Please tell us how you found BuildGuru.";
     return null;
   }
   return null;

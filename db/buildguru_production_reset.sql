@@ -1,19 +1,19 @@
 -- =============================================================================
--- HomeMakers — DESTRUCTIVE PRODUCTION RESET
+-- BuildGuru — DESTRUCTIVE PRODUCTION RESET
 -- =============================================================================
--- Permanently removes all HomeMakers public-schema data and legacy policies.
+-- Permanently removes all BuildGuru public-schema data and legacy policies.
 -- It deliberately preserves the Supabase project, Auth configuration, API keys,
 -- OAuth providers, and bucket records. Empty application buckets through the
 -- Supabase Storage API/Dashboard first; delete disposable Auth users through the
 -- Auth Admin UI/API separately.
 --
 -- After this succeeds, run in order:
---   1. homemakers_single_setup.sql
---   2. homemakers_rls_hardening.sql
---   3. homemakers_project_workspace.sql
---   4. homemakers_pro_leads.sql
---   5. homemakers_project_intelligence.sql
---   6. homemakers_careers.sql
+--   1. buildguru_single_setup.sql
+--   2. buildguru_rls_hardening.sql
+--   3. buildguru_project_workspace.sql
+--   4. buildguru_pro_leads.sql
+--   5. buildguru_project_intelligence.sql
+--   6. buildguru_careers.sql
 -- The base setup is fail-closed, so an interrupted rebuild does not expose data.
 -- =============================================================================
 
@@ -31,7 +31,7 @@ begin
     from storage.objects
     where bucket_id in ('project-v0', 'portfolio-media', 'project-documents', 'career-work-samples')
   ) then
-    raise exception 'HomeMakers storage buckets are not empty; delete objects through Storage Admin first';
+    raise exception 'BuildGuru storage buckets are not empty; delete objects through Storage Admin first';
   end if;
 end;
 $$;
@@ -40,7 +40,7 @@ $$;
 drop trigger if exists on_auth_user_created on auth.users;
 drop trigger if exists on_auth_user_email_updated on auth.users;
 
--- This Supabase project is dedicated to HomeMakers. Rebuild storage access from
+-- This Supabase project is dedicated to BuildGuru. Rebuild storage access from
 -- an empty policy set so no unknown permissive policy can survive the reset.
 do $$
 declare

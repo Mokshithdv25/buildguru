@@ -28,16 +28,16 @@ client-side claim path.
 
 | Database state | Run in this order |
 | --- | --- |
-| Existing HomeMakers production schema | `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
-| Empty Supabase project | `homemakers_single_setup.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
-| Older v1/v1.1/v1.2 schema missing current columns or buckets | `homemakers_supabase_align.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
-| Intentionally discard all HomeMakers data | Empty the four app buckets through Storage Admin, delete disposable users through Auth Admin, then `homemakers_production_reset.sql` → `homemakers_single_setup.sql` → `homemakers_rls_hardening.sql` → `homemakers_project_workspace.sql` → `homemakers_pro_leads.sql` → `homemakers_project_intelligence.sql` → `homemakers_careers.sql` |
+| Existing BuildGuru production schema | `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` |
+| Empty Supabase project | `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` |
+| Older v1/v1.1/v1.2 schema missing current columns or buckets | `buildguru_supabase_align.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` |
+| Intentionally discard all BuildGuru data | Empty the four app buckets through Storage Admin, delete disposable users through Auth Admin, then `buildguru_production_reset.sql` → `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` |
 
-`homemakers_single_setup.sql` is now fail-closed: it enables RLS, revokes anonymous table access, and creates private buckets without broad policies. The app is not ready until the hardening and workspace scripts also succeed, but an interrupted bootstrap does not expose the database.
+`buildguru_single_setup.sql` is now fail-closed: it enables RLS, revokes anonymous table access, and creates private buckets without broad policies. The app is not ready until the hardening and workspace scripts also succeed, but an interrupted bootstrap does not expose the database.
 
-`homemakers_production_reset.sql` is destructive and refuses to run while any HomeMakers storage object remains. Delete files through Storage Admin rather than deleting `storage.objects` rows directly. SQL does not delete Auth users; use Auth Admin when the accounts are also disposable. SMTP and confirmation-email delivery are Auth configuration and remain separate from every database script.
+`buildguru_production_reset.sql` is destructive and refuses to run while any BuildGuru storage object remains. Delete files through Storage Admin rather than deleting `storage.objects` rows directly. SQL does not delete Auth users; use Auth Admin when the accounts are also disposable. SMTP and confirmation-email delivery are Auth configuration and remain separate from every database script.
 
-`supabase_storage.sql` is a standalone storage repair/reference script. The canonical production paths above already create or harden the required buckets; if this repair script is used later, re-run `homemakers_rls_hardening.sql` afterward and repeat the probes below.
+`supabase_storage.sql` is a standalone storage repair/reference script. The canonical production paths above already create or harden the required buckets; if this repair script is used later, re-run `buildguru_rls_hardening.sql` afterward and repeat the probes below.
 
 ## What the required scripts establish
 
@@ -157,7 +157,7 @@ Finally, create two disposable authenticated accounts. Each account must be able
 ## Portfolio safety operations
 
 Professionals self-publish immediately with `moderation_status = 'approved'`.
-Run `homemakers_portfolio_self_publish.sql` once on installations that used the
+Run `buildguru_portfolio_self_publish.sql` once on installations that used the
 older review-gated schema. Continue to review user reports after publication:
 
 ```sql

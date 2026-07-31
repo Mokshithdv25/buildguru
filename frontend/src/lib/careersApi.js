@@ -129,6 +129,7 @@ export async function submitCareerApplication(jobId, application) {
     candidate_profile: {
       experience_range: application.experience_range,
       qualification: application.qualification.trim(),
+      license_number: application.license_number.trim(),
       tools: application.tools.trim(),
       specialties: application.specialties,
     },

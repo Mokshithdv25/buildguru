@@ -1,7 +1,7 @@
 import React from "react";
 
 /**
- * HomeMakers logo — continuous curvy heart/peach shape from design-compass.
+ * BuildGuru logo — continuous curvy heart/peach shape from design-compass.
  * Uses the exact same SVG path from the original design system.
  * size: controls width/height in px (default matches marketing header)
  * color: stroke color override (default uses gold gradient)
@@ -15,7 +15,7 @@ export default function HomeLogo({ size = 62, color }) {
       viewBox="0 0 200 200"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="HomeMakers logo"
+      aria-label="BuildGuru logo"
     >
       <defs>
         <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="100%">

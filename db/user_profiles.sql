@@ -1,4 +1,4 @@
--- HomeMakers — user_profiles (pairs with Supabase Auth)
+-- BuildGuru — user_profiles (pairs with Supabase Auth)
 -- Run in Supabase SQL editor after core schema exists.
 
 create table if not exists public.user_profiles (

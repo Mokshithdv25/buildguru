@@ -162,7 +162,7 @@ export default function MobileHomePage() {
         <div className="hm-m-home-lockup">
           <img src={hmLogoMarkSrc} alt="" />
           <div>
-            <div className="hm-m-home-brand">HomeMakers</div>
+            <div className="hm-m-home-brand">BuildGuru</div>
             <p className="hm-m-home-tagline">Projects · Design & estimates · Pros · Materials</p>
           </div>
         </div>
@@ -264,7 +264,7 @@ export default function MobileHomePage() {
 
       <div className="hm-m-section-heading">
         <div>
-          <span>Why HomeMakers</span>
+          <span>Why BuildGuru</span>
           <h2>Built around your role</h2>
           <p>A clear path for planning a home—and a clear path for growing a professional practice.</p>
         </div>
@@ -297,7 +297,7 @@ export default function MobileHomePage() {
 
       <div className="hm-m-section-heading">
         <div>
-          <span>Professionals on HomeMakers</span>
+          <span>Professionals on BuildGuru</span>
           <h2>See real work before you shortlist</h2>
         </div>
         <button type="button" onClick={() => navigate("/browse")}>Find pros</button>
@@ -331,7 +331,7 @@ export default function MobileHomePage() {
 
       <section className="hm-m-careers-strip">
         <div>
-          <span>Careers at HomeMakers</span>
+          <span>Careers at BuildGuru</span>
           <strong>Help make Indian home projects clearer.</strong>
         </div>
         <button type="button" onClick={() => navigate("/careers")}>Open roles <ArrowRight size={16} /></button>

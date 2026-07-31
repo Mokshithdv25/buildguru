@@ -38,7 +38,7 @@ export default function CareerProfilePage() {
         {profile ? (
           <>
             <header>
-              <p>HomeMakers portfolio</p>
+              <p>BuildGuru portfolio</p>
               <h1>{profile.full_name}</h1>
               <div>
                 {profile.city ? <span><MapPin size={15} />{profile.city}</span> : null}

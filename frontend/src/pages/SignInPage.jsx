@@ -553,13 +553,13 @@ export default function SignInPage() {
         >
           <img
             src={hmLogoMarkSrc}
-            alt="HomeMakers"
+            alt="BuildGuru"
             className="w-12 h-12 md:w-[60px] md:h-[60px] shrink-0"
             width={60}
             height={60}
             decoding="async"
           />
-          <span className={`hm-mobile-auth-wordmark ${HM_WORDMARK_TITLE_CLASS}`}>HomeMakers</span>
+          <span className={`hm-mobile-auth-wordmark ${HM_WORDMARK_TITLE_CLASS}`}>BuildGuru</span>
         </button>
         <div className="flex-1" aria-hidden />
       </div>
@@ -586,7 +586,7 @@ export default function SignInPage() {
                     {passwordRecovery
                       ? "Choose a secure password and confirm it below."
                       : requestedSignUp
-                      ? "Join HomeMakers and bring your dream home to life."
+                      ? "Join BuildGuru and bring your dream home to life."
                       : "Sign in to start your homemaking journey."}
                   </p>
                 </div>
@@ -867,7 +867,7 @@ export default function SignInPage() {
                   ) : null}
 
                   {!passwordRecovery && <p className="text-muted-foreground font-body text-[11px] text-center leading-relaxed">
-                    By continuing, you agree to HomeMakers&apos;{" "}
+                    By continuing, you agree to BuildGuru&apos;{" "}
                     <button type="button" onClick={() => navigate("/terms")} className="hm-mobile-auth-legal text-copper hover:underline">Terms of Service</button>
                     {" "}and{" "}
                     <button type="button" onClick={() => navigate("/privacy")} className="hm-mobile-auth-legal text-copper hover:underline">Privacy Policy</button>

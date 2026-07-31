@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">HomeMakers</string>
-    <string name="title_activity_main">HomeMakers</string>
-    <string name="package_name">in.homemakers.app</string>
-    <string name="custom_url_scheme">in.homemakers.app</string>
+    <string name="app_name">BuildGuru</string>
+    <string name="title_activity_main">BuildGuru</string>
+    <string name="package_name">in.buildguru.app</string>
+    <string name="custom_url_scheme">in.buildguru.app</string>
 </resources>

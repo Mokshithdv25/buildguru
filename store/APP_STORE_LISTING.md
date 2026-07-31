@@ -1,15 +1,15 @@
-# HomeMakers — App Store listing draft
+# BuildGuru — App Store listing draft
 
 ## Identity
 
-- App name: HomeMakers
-- Bundle ID: `in.homemakers.app`
+- App name: BuildGuru
+- Bundle ID: `in.buildguru.app`
 - Primary category: Lifestyle
 - Secondary category: Productivity
 - Age rating draft: 4+
-- Support URL: https://www.homemakers.online
-- Marketing URL: https://www.homemakers.online
-- Privacy policy URL: https://www.homemakers.online/privacy
+- Support URL: https://www.buildguru.online
+- Marketing URL: https://www.buildguru.online
+- Privacy policy URL: https://www.buildguru.online/privacy
 
 ## iOS metadata
 
@@ -19,7 +19,7 @@
 
 ### Description
 
-HomeMakers brings early home planning, professional discovery, and project tracking into one place.
+BuildGuru brings early home planning, professional discovery, and project tracking into one place.
 
 Create a new-build or remodel brief, use AI to explore concepts and indicative estimates, and save the result to your account. Return later from any device to continue the same project.
 
@@ -42,7 +42,7 @@ AI concepts and estimates are preliminary planning aids, not sanction drawings, 
 
 ## Review notes draft
 
-HomeMakers supports homeowner and professional roles. Google OAuth is the current account-creation path. Email/password sign-in remains available for existing accounts, while in-app email account creation stays disabled until custom SMTP confirmation and recovery delivery are verified. Public discovery and public professional profiles can be reviewed without an account. Project, document, team, payment-ledger, and portfolio-editing features require authentication.
+BuildGuru supports homeowner and professional roles. Google OAuth is the current account-creation path. Email/password sign-in remains available for existing accounts, while in-app email account creation stays disabled until custom SMTP confirmation and recovery delivery are verified. Public discovery and public professional profiles can be reviewed without an account. Project, document, team, payment-ledger, and portfolio-editing features require authentication.
 
 This listing is not ready for submission until Sign in with Apple is implemented and verified alongside Google OAuth in the iOS app.
 

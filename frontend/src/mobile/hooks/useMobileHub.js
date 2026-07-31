@@ -28,7 +28,7 @@ function remodelResume(remodel) {
   return null;
 }
 
-/** Aggregates real HomeMakers state for mobile home / design hubs. */
+/** Aggregates real BuildGuru state for mobile home / design hubs. */
 export function useMobileHub({ includeProCount = false } = {}) {
   const session = useHmSession();
   const [projects, setProjects] = useState([]);
@@ -102,7 +102,7 @@ export function useMobileHub({ includeProCount = false } = {}) {
       cards.push({
         id: "pros-nearby",
         label: "Browse published pros",
-        sub: "Real portfolios on HomeMakers",
+        sub: "Real portfolios on BuildGuru",
         path: "/browse",
       });
     }

@@ -477,7 +477,7 @@ export default function YourDetails() {
               </div>
             </div>
             <div className="-mt-1 rounded-xl border border-[#DCE9E2] bg-[#F3FAF6] px-4 py-3 text-[12px] leading-relaxed text-[#456052]">
-              <strong>Private contact details:</strong> phone, email, street address, and licence information are never displayed on your public portfolio. Homeowner inquiries begin through HomeMakers.
+              <strong>Private contact details:</strong> phone, email, street address, and licence information are never displayed on your public portfolio. Homeowner inquiries begin through BuildGuru.
             </div>
 
             <div>

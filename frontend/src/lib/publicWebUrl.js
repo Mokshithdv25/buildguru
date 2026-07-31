@@ -1,4 +1,4 @@
-const DEFAULT_PUBLIC_WEB_ORIGIN = "https://www.homemakers.online";
+const DEFAULT_PUBLIC_WEB_ORIGIN = "https://www.buildguru.online";
 
 function normalizedConfiguredOrigin() {
   const raw = String(process.env.REACT_APP_PUBLIC_WEB_URL || "").trim();

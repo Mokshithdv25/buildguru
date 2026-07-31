@@ -6,16 +6,24 @@ import { LEGAL_BUSINESS_NAME, SUPPORT_EMAIL, legalEntityDetailsParagraph } from 
 const aboutParagraph = () => {
   const details = legalEntityDetailsParagraph();
   const base =
-    "HomeMakers (homemakers.online) helps plan home construction and remodeling in India: AI-assisted design concepts and estimates, a project hub, a marketplace of professionals, and portfolio tools for professionals. By creating an account or using the platform you agree to these terms.";
+    "BuildGuru (buildguru.online) helps plan home construction and remodeling in India: AI-assisted design concepts and estimates, a project hub, a marketplace of professionals, and portfolio tools for professionals. By creating an account or using the platform you agree to these terms.";
   if (LEGAL_BUSINESS_NAME) {
-    return `HomeMakers is operated by ${LEGAL_BUSINESS_NAME}. ${details || ""} ${base}`.replace(/\s+/g, " ").trim();
+    return `BuildGuru is operated by ${LEGAL_BUSINESS_NAME}. ${details || ""} ${base}`.replace(/\s+/g, " ").trim();
   }
   return base;
 };
 
+const refundInstructions = SUPPORT_EMAIL
+  ? `If you were charged in error or checkout failed after payment, contact ${SUPPORT_EMAIL} within 7 days with your Razorpay payment ID and account email.`
+  : "If you were charged in error or checkout failed after payment, keep your Razorpay payment ID and account email. A verified billing-support contact will be displayed at checkout before paid purchases are enabled.";
+
+const contactInstructions = SUPPORT_EMAIL
+  ? `Questions: ${SUPPORT_EMAIL}.`
+  : "Any verified contact details will be published on this website.";
+
 const TERMS_SECTIONS = [
   {
-    h: "1. About HomeMakers",
+    h: "1. About BuildGuru",
     p: aboutParagraph(),
   },
   {
@@ -28,11 +36,11 @@ const TERMS_SECTIONS = [
   },
   {
     h: "4. Professionals and the marketplace",
-    p: "Professional profiles, portfolios, quotes, and proposals are provided by the professionals themselves. HomeMakers does not employ, certify, or guarantee any professional. Verify licenses, references, and agreements directly before hiring. Contracts and payments for work are between you and the professional unless a HomeMakers payment feature explicitly states otherwise.",
+    p: "Professional profiles, portfolios, quotes, and proposals are provided by the professionals themselves. BuildGuru does not employ, certify, or guarantee any professional. Verify licenses, references, and agreements directly before hiring. Contracts and payments for work are between you and the professional unless a BuildGuru payment feature explicitly states otherwise.",
   },
   {
     h: "5. Your content",
-    p: "You keep ownership of the content you upload (photos, briefs, portfolio work). You grant HomeMakers a license to store, process, and display that content to operate the platform — for example showing a published portfolio to potential clients, or using your brief to generate AI concepts.",
+    p: "You keep ownership of the content you upload (photos, briefs, portfolio work). You grant BuildGuru a license to store, process, and display that content to operate the platform — for example showing a published portfolio to potential clients, or using your brief to generate AI concepts.",
   },
   {
     h: "6. Acceptable use",
@@ -40,16 +48,16 @@ const TERMS_SECTIONS = [
   },
   {
     h: "7. Liability",
-    p: "The platform is provided \"as is\". To the maximum extent permitted by law, HomeMakers is not liable for construction outcomes, cost overruns, disputes with professionals, or decisions made from AI-generated concepts. Nothing in these terms limits liability that cannot be limited under applicable law.",
+    p: "The platform is provided \"as is\". To the maximum extent permitted by law, BuildGuru is not liable for construction outcomes, cost overruns, disputes with professionals, or decisions made from AI-generated concepts. Nothing in these terms limits liability that cannot be limited under applicable law.",
   },
   {
     h: "8. Refunds and cancellations",
     id: "refunds",
-    p: `Paid digital plans (Project Pass, Pro Growth) are non-refundable once access has been activated on your account, except where required by applicable law or where we fail to deliver the purchased digital service. If you were charged in error or checkout failed after payment, contact ${SUPPORT_EMAIL} within 7 days with your Razorpay payment ID and account email. Approved refunds are processed back to the original payment method via Razorpay. You may cancel future renewals by not purchasing again; Pro Growth is a fixed 30-day pass, not an auto-renewing subscription unless we explicitly state otherwise on the checkout page.`,
+    p: `Paid digital plans (Project Pass, Pro Growth) are non-refundable once access has been activated on your account, except where required by applicable law or where we fail to deliver the purchased digital service. ${refundInstructions} Approved refunds are processed back to the original payment method via Razorpay. You may cancel future renewals by not purchasing again; Pro Growth is a fixed 30-day pass, not an auto-renewing subscription unless we explicitly state otherwise on the checkout page.`,
   },
   {
     h: "9. Changes and contact",
-    p: `We may update these terms as the platform evolves; continued use after an update means you accept the revised terms. Questions: ${SUPPORT_EMAIL}. These terms are governed by the laws of India.`,
+    p: `We may update these terms as the platform evolves; continued use after an update means you accept the revised terms. ${contactInstructions} These terms are governed by the laws of India.`,
   },
 ];
 
@@ -76,7 +84,7 @@ const PRIVACY_SECTIONS = [
   },
   {
     h: "6. Your choices",
-    p: `You can edit your profile and portfolio, control whether a portfolio is published, and permanently delete your account, projects, portfolios, and files from Account & Settings. A minimized payment-event audit may be retained where required for fraud prevention, tax, accounting, or other legal obligations. You can also write to ${SUPPORT_EMAIL} for privacy assistance.`,
+    p: "You can edit your profile and portfolio, control whether a portfolio is published, and permanently delete your account, projects, portfolios, and files from Account & Settings. A minimized payment-event audit may be retained where required for fraud prevention, tax, accounting, or other legal obligations.",
   },
   {
     h: "7. Cookies and analytics",
@@ -84,7 +92,9 @@ const PRIVACY_SECTIONS = [
   },
   {
     h: "8. Contact",
-    p: `For privacy questions or requests: ${SUPPORT_EMAIL}.`,
+    p: SUPPORT_EMAIL
+      ? `For privacy questions or requests: ${SUPPORT_EMAIL}.`
+      : "Use Account & Settings for available privacy controls. Any additional verified privacy contact will be published on this page.",
   },
 ];
 
@@ -101,7 +111,7 @@ export default function LegalPage({ kind = "terms" }) {
           to="/"
           className="inline-flex items-center gap-2 text-sm font-semibold text-[#1C1917] hover:text-[#C85F2B] transition-colors mb-8"
         >
-          <ArrowLeft size={16} /> HomeMakers
+          <ArrowLeft size={16} /> BuildGuru
         </Link>
 
         <h1 className="font-serif-display text-3xl md:text-4xl font-semibold text-[#1C1917] mb-2">{title}</h1>

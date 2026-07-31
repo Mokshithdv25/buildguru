@@ -91,9 +91,9 @@ export default function GoLive() {
 
   const profileUrl = publicProfileUrl(slug);
   const profileHost = (() => {
-    try { return new URL(profileUrl).host; } catch { return "www.homemakers.online"; }
+    try { return new URL(profileUrl).host; } catch { return "www.buildguru.online"; }
   })();
-  const shareMessage = `View my professional portfolio on HomeMakers: ${profileUrl}`;
+  const shareMessage = `View my professional portfolio on BuildGuru: ${profileUrl}`;
 
   const copyLink = async () => {
     try { await navigator.clipboard.writeText(profileUrl); } catch { window.prompt("Copy your portfolio link:", profileUrl); }
@@ -125,7 +125,7 @@ export default function GoLive() {
         <section className="pt-8 lg:border-r lg:border-[#EFE3D2] lg:pr-12">
           <div className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-green-700"><CheckCircle2 size={14} /> Published instantly</div>
           <h1 className="mt-6 font-serif-display text-4xl font-medium leading-[1.05] text-[#1C1917] md:text-5xl">You&apos;re live, <span className="italic font-semibold text-[#C85F2B]">{firstName}!</span></h1>
-          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#6A5E53]">Your work is public now. Share the link anywhere and let every inquiry begin through HomeMakers.</p>
+          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#6A5E53]">Your work is public now. Share the link anywhere and let every inquiry begin through BuildGuru.</p>
 
           <div className="mt-8 rounded-2xl border border-[#EFE3D2] bg-white p-5 shadow-sm">
             <div className="mb-3 flex items-center gap-2"><span className="text-sm font-semibold text-[#1C1917]">Your live portfolio link</span><span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">Live</span></div>

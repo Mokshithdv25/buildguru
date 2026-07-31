@@ -10,7 +10,7 @@ export const PORTFOLIO_THEMES = [
   {
     id: "warm-studio",
     name: "Warm studio",
-    tagline: "HomeMakers default — trusted terracotta",
+    tagline: "BuildGuru default — trusted terracotta",
     designImpact: "Soft cream canvas · serif headings · rounded project frames",
     accent: "#C85F2B",
     accentSoft: "#FDF0D8",

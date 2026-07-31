@@ -1,6 +1,6 @@
 {
-  "appId": "in.homemakers.app",
-  "appName": "HomeMakers",
+  "appId": "in.buildguru.app",
+  "appName": "BuildGuru",
   "webDir": "build",
   "bundledWebRuntime": false,
   "server": {

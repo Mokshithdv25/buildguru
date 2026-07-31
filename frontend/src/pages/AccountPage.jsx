@@ -146,8 +146,8 @@ export default function AccountPage() {
           onClick={() => navigate("/")}
           className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer p-0 min-w-0"
         >
-          <img src={hmLogoMarkSrc} alt="HomeMakers" className="w-12 h-12 shrink-0" width={48} height={48} />
-          <span className={HM_WORDMARK_TITLE_CLASS}>HomeMakers</span>
+          <img src={hmLogoMarkSrc} alt="BuildGuru" className="w-12 h-12 shrink-0" width={48} height={48} />
+          <span className={HM_WORDMARK_TITLE_CLASS}>BuildGuru</span>
         </button>
         <div className="flex-1" aria-hidden />
         <HmUserMenu />

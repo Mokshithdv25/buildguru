@@ -44,7 +44,7 @@ const CareersPage = lazy(() => import("./pages/CareersPage"));
 const CareerProfilePage = lazy(() => import("./pages/CareerProfilePage"));
 
 function RouteLoading() {
-  return <div className="hm-route-loading" role="status" aria-live="polite"><span />Loading HomeMakers…</div>;
+  return <div className="hm-route-loading" role="status" aria-live="polite"><span />Loading BuildGuru…</div>;
 }
 
 function ScrollToTopOnRouteChange() {

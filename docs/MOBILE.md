@@ -1,4 +1,4 @@
-# HomeMakers mobile apps (iOS & Android)
+# BuildGuru mobile apps (iOS & Android)
 
 The React web app is wrapped with [Capacitor](https://capacitorjs.com/) so one codebase ships to the App Store and Google Play.
 
@@ -51,9 +51,9 @@ Never place a Supabase service-role key in any `REACT_APP_*` variable. Do not co
 
 Add all release callbacks to the Supabase Auth redirect allowlist:
 
-- `https://www.homemakers.online/sign-in`
-- `https://homemakers.online/sign-in`
-- `in.homemakers.app://auth/callback`
+- `https://www.buildguru.online/sign-in`
+- `https://buildguru.online/sign-in`
+- `in.buildguru.app://auth/callback`
 
 The native callback uses PKCE and is handled by the app's custom URL scheme. Production currently keeps `REACT_APP_EMAIL_SIGNUP_ENABLED=false`; email/password sign-in remains available for existing accounts, but Google OAuth is the account-creation path. Do not enable email account creation until custom SMTP delivery, confirmation, resend, and password recovery have passed end-to-end tests on physical iOS and Android devices.
 
@@ -137,22 +137,22 @@ Remove `server.url` before store builds.
    Both commands should print nothing.
 
 4. **iOS**: Xcode → Product → Archive → Distribute to App Store Connect
-   - Bundle ID: `in.homemakers.app`  
+   - Bundle ID: `in.buildguru.app`
    - Version/build in Xcode project settings
 5. **Android**: Android Studio → Build → Generate Signed Bundle/APK (AAB for Play Store)
-   - Application ID: `in.homemakers.app`
+   - Application ID: `in.buildguru.app`
 
 ## App identity
 
 | Field | Value |
 |-------|--------|
-| App name | HomeMakers |
-| iOS / Android ID | `in.homemakers.app` |
+| App name | BuildGuru |
+| iOS / Android ID | `in.buildguru.app` |
 | Web bundle dir | `frontend/build` |
 
 ## Icons & splash
 
-Branded HomeMakers icons and splash screens have been generated for both native projects from `frontend/public/logo.svg` using `@capacitor/assets`:
+Branded BuildGuru icons and splash screens have been generated for both native projects from `frontend/public/logo.svg` using `@capacitor/assets`:
 
 - iOS: `ios/App/App/Assets.xcassets`
 - Android: `android/app/src/main/res`
@@ -168,5 +168,5 @@ npx capacitor-assets generate --ios --android --assetPath public --logoSplashTar
 
 - **Blank screen**: Run `npm run build` then `npx cap sync`. Check Safari Web Inspector (iOS) or Chrome `chrome://inspect` (Android).
 - **API errors**: Run `npm run verify:mobile-env`, confirm the Render service is healthy, and ensure backend CORS allows `capacitor://localhost` / `https://localhost`.
-- **Auth returns to the browser**: Confirm `in.homemakers.app://auth/callback` is in the Supabase redirect allowlist and test the installed build, not only browser mobile preview.
+- **Auth returns to the browser**: Confirm `in.buildguru.app://auth/callback` is in the Supabase redirect allowlist and test the installed build, not only browser mobile preview.
 - **Safe area / notch**: Native shell adds `hm-native` class; fixed nav uses `env(safe-area-inset-*)`.

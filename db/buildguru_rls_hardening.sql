@@ -1,5 +1,5 @@
 -- =============================================================================
--- HomeMakers — RLS hardening (run once in Supabase SQL Editor after single_setup)
+-- BuildGuru — RLS hardening (run once in Supabase SQL Editor after single_setup)
 -- Owner-scoped projects; portfolios writable only by owner; published pros public.
 -- =============================================================================
 

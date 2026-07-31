@@ -1,10 +1,10 @@
--- HomeMakers: align existing v1/v1.1/v1.2 Supabase schema with current frontend
+-- BuildGuru: align existing v1/v1.1/v1.2 Supabase schema with current frontend
 -- Safe to run multiple times. Run AFTER your v1 setup scripts.
 --
 -- You already have: portfolios, projects, project_briefs, project_ai_runs, PM tables.
 -- This adds what the React app expects and fixes one constraint mismatch.
 --
--- LEGACY ALIGNMENT ONLY. Production must run homemakers_rls_hardening.sql after
+-- LEGACY ALIGNMENT ONLY. Production must run buildguru_rls_hardening.sql after
 -- this file. This script now fails closed instead of disabling project RLS.
 
 -- =========================

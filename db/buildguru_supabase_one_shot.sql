@@ -1,15 +1,15 @@
--- HomeMakers — ONE-SHOT SUPABASE PRODUCTION UPGRADE
+-- BuildGuru — ONE-SHOT SUPABASE PRODUCTION UPGRADE
 -- Paste this ENTIRE file into Supabase SQL Editor. Do not paste only a selection.
 
 begin;
 set local lock_timeout = '15s';
 set local statement_timeout = '180s';
 
-create schema if not exists homemakers_quarantine;
-revoke all on schema homemakers_quarantine from public, anon, authenticated;
-grant usage on schema homemakers_quarantine to service_role;
+create schema if not exists buildguru_quarantine;
+revoke all on schema buildguru_quarantine from public, anon, authenticated;
+grant usage on schema buildguru_quarantine to service_role;
 
--- This Supabase project is dedicated to HomeMakers. Rebuild the Storage policy
+-- This Supabase project is dedicated to BuildGuru. Rebuild the Storage policy
 -- set deterministically so a legacy permissive policy cannot survive.
 do $hm_storage_cleanup$
 declare
@@ -40,11 +40,11 @@ begin
       if to_regclass('public.' || child_table) is not null then
         backup_table := 'orphan_' || child_table;
         execute format(
-          'create table if not exists homemakers_quarantine.%I (like public.%I including all)',
+          'create table if not exists buildguru_quarantine.%I (like public.%I including all)',
           backup_table, child_table
         );
         execute format(
-          'insert into homemakers_quarantine.%I
+          'insert into buildguru_quarantine.%I
            select child.* from public.%I child
            join public.projects project on project.id = child.project_id
            where project.owner_user_id is null on conflict do nothing',
@@ -53,9 +53,9 @@ begin
       end if;
     end loop;
 
-    create table if not exists homemakers_quarantine.orphan_projects
+    create table if not exists buildguru_quarantine.orphan_projects
       (like public.projects including all);
-    insert into homemakers_quarantine.orphan_projects
+    insert into buildguru_quarantine.orphan_projects
       select * from public.projects where owner_user_id is null
       on conflict do nothing;
     delete from public.projects where owner_user_id is null;
@@ -63,26 +63,26 @@ begin
 
   if to_regclass('public.portfolios') is not null then
     if to_regclass('public.portfolio_reports') is not null then
-      create table if not exists homemakers_quarantine.orphan_portfolio_reports
+      create table if not exists buildguru_quarantine.orphan_portfolio_reports
         (like public.portfolio_reports including all);
-      insert into homemakers_quarantine.orphan_portfolio_reports
+      insert into buildguru_quarantine.orphan_portfolio_reports
         select report.* from public.portfolio_reports report
         join public.portfolios portfolio on portfolio.id = report.portfolio_id
         where portfolio.owner_user_id is null on conflict do nothing;
     end if;
 
     if to_regclass('public.blocked_portfolios') is not null then
-      create table if not exists homemakers_quarantine.orphan_blocked_portfolios
+      create table if not exists buildguru_quarantine.orphan_blocked_portfolios
         (like public.blocked_portfolios including all);
-      insert into homemakers_quarantine.orphan_blocked_portfolios
+      insert into buildguru_quarantine.orphan_blocked_portfolios
         select blocked.* from public.blocked_portfolios blocked
         join public.portfolios portfolio on portfolio.id = blocked.portfolio_id
         where portfolio.owner_user_id is null on conflict do nothing;
     end if;
 
-    create table if not exists homemakers_quarantine.orphan_portfolios
+    create table if not exists buildguru_quarantine.orphan_portfolios
       (like public.portfolios including all);
-    insert into homemakers_quarantine.orphan_portfolios
+    insert into buildguru_quarantine.orphan_portfolios
       select * from public.portfolios where owner_user_id is null
       on conflict do nothing;
     delete from public.portfolios where owner_user_id is null;
@@ -118,23 +118,23 @@ begin
   end if;
 
   if to_regclass('public.project_professionals') is not null then
-    create table if not exists homemakers_quarantine.legacy_project_professionals
+    create table if not exists buildguru_quarantine.legacy_project_professionals
       (like public.project_professionals including all);
-    insert into homemakers_quarantine.legacy_project_professionals
+    insert into buildguru_quarantine.legacy_project_professionals
       select * from public.project_professionals on conflict do nothing;
     drop table public.project_professionals cascade;
   end if;
 end;
 $hm_migrate$;
 
-revoke all on all tables in schema homemakers_quarantine from public, anon, authenticated;
-grant select on all tables in schema homemakers_quarantine to service_role;
+revoke all on all tables in schema buildguru_quarantine from public, anon, authenticated;
+grant select on all tables in schema buildguru_quarantine to service_role;
 
 
 -- =============================================================================
--- HomeMakers — FAIL-CLOSED BASE SCHEMA
--- Run on an empty/reset Supabase project, then run homemakers_rls_hardening.sql
--- and homemakers_project_workspace.sql. This bootstrap is deliberately safe if
+-- BuildGuru — FAIL-CLOSED BASE SCHEMA
+-- Run on an empty/reset Supabase project, then run buildguru_rls_hardening.sql
+-- and buildguru_project_workspace.sql. This bootstrap is deliberately safe if
 -- the sequence stops early: private tables have RLS enabled, anonymous grants
 -- are revoked, storage buckets are private, and no broad demo policies exist.
 --
@@ -142,7 +142,7 @@ grant select on all tables in schema homemakers_quarantine to service_role;
 -- Projects, v0 packs, portfolios, and storage for the React app.
 --
 -- It is idempotent for the canonical schema, but it is not a legacy migration.
--- Use homemakers_production_reset.sql first when intentionally discarding an
+-- Use buildguru_production_reset.sql first when intentionally discarding an
 -- older schema, and never use the obsolete open-demo SQL attachment.
 -- =============================================================================
 
@@ -597,7 +597,7 @@ create trigger trg_project_tasks_updated_at
   before update on public.project_tasks
   for each row execute function public.set_updated_at();
 
--- Fail closed until homemakers_rls_hardening.sql installs owner-scoped policies.
+-- Fail closed until buildguru_rls_hardening.sql installs owner-scoped policies.
 alter table public.projects enable row level security;
 alter table public.project_briefs enable row level security;
 alter table public.project_stages enable row level security;
@@ -651,7 +651,7 @@ drop policy if exists "portfolio_media_select_public" on storage.objects;
 -- select id, email, role, full_name from public.user_profiles order by updated_at desc limit 10;
 
 -- =============================================================================
--- HomeMakers — RLS hardening (run once in Supabase SQL Editor after single_setup)
+-- BuildGuru — RLS hardening (run once in Supabase SQL Editor after single_setup)
 -- Owner-scoped projects; portfolios writable only by owner; published pros public.
 -- =============================================================================
 
@@ -1404,8 +1404,8 @@ grant all on public.billing_orders to service_role;
 grant all on public.user_entitlements to service_role;
 grant all on public.billing_webhook_events to service_role;
 
--- HomeMakers launch workspace: checklist progress, team, documents, and payment ledger.
--- Run after homemakers_single_setup.sql and homemakers_rls_hardening.sql.
+-- BuildGuru launch workspace: checklist progress, team, documents, and payment ledger.
+-- Run after buildguru_single_setup.sql and buildguru_rls_hardening.sql.
 
 create table if not exists public.project_team_members (
   id uuid primary key default gen_random_uuid(),
@@ -1709,7 +1709,7 @@ grant execute on function public.launch_schema_ready() to service_role;
 do $hm_verify$
 begin
   if not public.launch_schema_ready() then
-    raise exception 'HomeMakers schema readiness check failed; transaction rolled back';
+    raise exception 'BuildGuru schema readiness check failed; transaction rolled back';
   end if;
 end;
 $hm_verify$;

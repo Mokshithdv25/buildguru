@@ -4,7 +4,7 @@
 
 ---
 
-## One-line HomeMakers
+## One-line BuildGuru
 
 **AI-powered project OS for homeowners who keep control:** vision → v0 concepts & indicative estimate → **post for pro quotes** (or bring your own team) → **project management** through build — with an **open contractor & architect marketplace**, not turn-key delivery or a materials catalog.
 
@@ -12,12 +12,12 @@
 
 ## Quick comparison
 
-| Player | What they really sell | AI role | HomeMakers overlap? |
+| Player | What they really sell | AI role | BuildGuru overlap? |
 |--------|------------------------|---------|---------------------|
 | **Material Depot** | Materials commerce + stores + inspiration + 3D visualizer | Merchandising, discovery, shop-the-look | **Low** — we don’t lead with SKU checkout |
 | **Room Story AI** (and similar) | “Found a photo → AI finds products → buy” | Visual **product matching** & purchase | **Low** — we don’t optimize for item cart |
 | **Livspace / Homelane** | **End-to-end** design + delivery (their network, their PM) | Planning inside *their* managed journey | **Different category** — managed interior, not open market |
-| **HomeMakers** | Brief + v0 + **quotes from pros** + execution hub | **Redesign / concepts / estimate** on *your* project; pros quote real scope | **This is us** |
+| **BuildGuru** | Brief + v0 + **quotes from pros** + execution hub | **Redesign / concepts / estimate** on *your* project; pros quote real scope | **This is us** |
 
 ---
 
@@ -38,7 +38,7 @@
 
 **Pitch line**
 
-> “Material Depot helps you **buy materials**. HomeMakers helps you **run the project** — AI clarity first, then **open-market quotes** from architects and contractors, then one hub until keys in hand. We might link to material partners later; we are **not** a depot homepage.”
+> “Material Depot helps you **buy materials**. BuildGuru helps you **run the project** — AI clarity first, then **open-market quotes** from architects and contractors, then one hub until keys in hand. We might link to material partners later; we are **not** a depot homepage.”
 
 ---
 
@@ -58,7 +58,7 @@
 
 **Pitch line**
 
-> “Room Story–style products answer: *‘What should I buy from this picture?’* HomeMakers answers: *‘What’s my project, what might it cost, and **who should I hire** to do the next phase?’* Totally different wedge.”
+> “Room Story–style products answer: *‘What should I buy from this picture?’* BuildGuru answers: *‘What’s my project, what might it cost, and **who should I hire** to do the next phase?’* Totally different wedge.”
 
 ---
 
@@ -79,7 +79,7 @@
 
 **Pitch line**
 
-> “Livspace and Homelane are **operators** — they sell you *their* end-to-end delivery. HomeMakers is **infrastructure** — AI + marketplace + PM for people who **choose their own pros**. Comparing us to them is like comparing Stripe to a bank branch.”
+> “Livspace and Homelane are **operators** — they sell you *their* end-to-end delivery. BuildGuru is **infrastructure** — AI + marketplace + PM for people who **choose their own pros**. Comparing us to them is like comparing Stripe to a bank branch.”
 
 ---
 
@@ -87,7 +87,7 @@
 
 | Partner type | Relationship |
 |--------------|--------------|
-| **Material Depot–class retailers** | Future: curated **materials** from an approved BOM / selections tab — homeowner still runs project on HomeMakers. |
+| **Material Depot–class retailers** | Future: curated **materials** from an approved BOM / selections tab — homeowner still runs project on BuildGuru. |
 | **Room Story–class visual commerce** | Optional inspiration import; we don’t become a product-matching checkout. |
 | **Livspace / Homelane** | Different ICP; some users may start managed and later want control — rarely direct swap. |
 

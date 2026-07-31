@@ -1,6 +1,6 @@
 # Project management — future build roadmap
 
-This document captures **what still needs to be designed, specified, and implemented** for HomeMakers project management. It is the source of truth for scope; the in-app `/project` screen is a **visual shell / demo** aligned with the product reference, not a finished backend feature set.
+This document captures **what still needs to be designed, specified, and implemented** for BuildGuru project management. It is the source of truth for scope; the in-app `/project` screen is a **visual shell / demo** aligned with the product reference, not a finished backend feature set.
 
 ---
 

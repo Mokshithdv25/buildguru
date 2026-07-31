@@ -1,5 +1,5 @@
 /**
- * Shared HomeMakers chrome — logo sizes, header bar, wordmark.
+ * Shared BuildGuru chrome — logo sizes, header bar, wordmark.
  * Top bar + lockup match the marketing homepage (`LandingNavbar`) for a single baseline.
  */
 
@@ -60,7 +60,7 @@ export const HM_PROJECT_HUB_HEADER_CLASS = [
   "flex flex-col gap-3 sm:grid sm:grid-cols-[auto_minmax(0,1.5fr)_auto] sm:items-center sm:gap-x-3 md:gap-x-6 sm:gap-y-0",
 ].join(" ");
 
-/** Primary “HomeMakers” wordmark next to the mark — homepage baseline */
+/** Primary “BuildGuru” wordmark next to the mark — homepage baseline */
 export const HM_WORDMARK_TITLE_CLASS =
   "font-display text-[30px] md:text-[42px] tracking-[0.03em] font-semibold leading-none pb-1 text-[#A86A31] [text-shadow:0_1px_0_rgba(255,255,255,0.25)]";
 
@@ -76,7 +76,7 @@ export const HM_WORDMARK_TAGLINE_SINGLE_LINE =
 export const HM_SIDEBAR_BRAND_CLASS =
   "flex items-center gap-3 px-5 py-[17px] border-b border-black/5 bg-[rgba(251,247,242,0.92)] backdrop-blur-xl backdrop-saturate-150 cursor-pointer";
 
-/** Sidebar “HomeMakers” — same copper display treatment as the main header, scaled down */
+/** Sidebar “BuildGuru” — same copper display treatment as the main header, scaled down */
 export const HM_SIDEBAR_WORDMARK_CLASS =
   "font-display text-lg font-semibold text-[#A86A31] tracking-[0.03em] leading-tight [text-shadow:0_1px_0_rgba(255,255,255,0.2)]";
 

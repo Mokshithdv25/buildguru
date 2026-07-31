@@ -58,6 +58,7 @@ const EMPTY_APPLICATION = {
   cover_note: "",
   experience_range: "",
   qualification: "",
+  license_number: "",
   tools: "",
   specialties: [],
   publish_portfolio: false,
@@ -206,7 +207,7 @@ function ApplicationForm({ job, onClose }) {
             <p>Thank you for applying for {job.title}. Our hiring team will contact you if there is a match.</p>
             {publishedSlug ? (
               <p className="hm-careers-success-note">
-                Your selected work is also live as a HomeMakers portfolio. Your email and phone remain private.
+                Your selected work is also live as a BuildGuru portfolio. Your email, phone, and licence number remain private.
               </p>
             ) : null}
             {publishedSlug ? <Link className="hm-careers-profile-link" to={`/career-profile/${publishedSlug}`}>View your portfolio <ArrowRight size={16} /></Link> : null}
@@ -214,14 +215,14 @@ function ApplicationForm({ job, onClose }) {
           </div>
         ) : (
           <>
-            <p className="hm-careers-eyebrow">Apply to HomeMakers</p>
+            <p className="hm-careers-eyebrow">Apply to BuildGuru</p>
             <h2 id="career-apply-title">{job.title}</h2>
             <JobMeta job={job} />
             {applicationProfile ? (
               <div className="hm-careers-application-notice">
                 <strong>This is a job application built around your work.</strong>
                 <p>
-                  No Google sign-in and no résumé. Add a few project images and the details that matter. You can choose below whether the same submission also becomes a public HomeMakers portfolio.
+                  No Google sign-in and no résumé. Add a few project images and the details that matter. You can choose below whether the same submission also becomes a public BuildGuru portfolio.
                 </p>
               </div>
             ) : null}
@@ -247,6 +248,7 @@ function ApplicationForm({ job, onClose }) {
                     </select>
                   </label>
                   <label>Architecture / engineering background<input placeholder="B.Arch, Diploma, B.Tech Civil…" value={form.qualification} onChange={(e) => set("qualification", e.target.value)} /></label>
+                  <label>Licence / COA number<input required placeholder="e.g. CA/2022/123456" value={form.license_number} onChange={(e) => set("license_number", e.target.value)} /></label>
                   <label>Tools you use<input required placeholder="AutoCAD, Revit, SketchUp, BIM…" value={form.tools} onChange={(e) => set("tools", e.target.value)} /></label>
                   <fieldset className="hm-careers-specialties wide">
                     <legend>What do you work on?</legend>
@@ -292,12 +294,12 @@ function ApplicationForm({ job, onClose }) {
               {applicationProfile ? (
                 <label className="wide hm-careers-consent hm-careers-publish-choice">
                   <input type="checkbox" checked={form.publish_portfolio} onChange={(e) => set("publish_portfolio", e.target.checked)} />
-                  <span><strong>Also publish this as my HomeMakers portfolio.</strong> My name, city, introduction, experience, tools, specialties, captions, and selected images will be public. My email and phone will remain private.</span>
+                  <span><strong>Also publish this as my BuildGuru portfolio.</strong> My name, city, introduction, experience, tools, specialties, captions, and selected images will be public. My email, phone, and licence number will remain private.</span>
                 </label>
               ) : null}
               <label className="wide hm-careers-consent">
                 <input required type="checkbox" checked={form.consent} onChange={(e) => set("consent", e.target.checked)} />
-                <span>I consent to HomeMakers using this information to evaluate my application and contact me about this role.</span>
+                <span>I consent to BuildGuru using this information to evaluate my application and contact me about this role.</span>
               </label>
               {state.error ? <p className="hm-careers-error wide" role="alert">{state.error}</p> : null}
               <button className="hm-careers-primary wide" type="submit" disabled={state.saving}>
@@ -442,6 +444,7 @@ function CareersAdmin({ jobs, setJobs }) {
                     {application.candidate_profile?.tools ? (
                       <details className="hm-careers-application-answers">
                         <summary>Application answers</summary>
+                        <p><strong>Licence / registration:</strong> {application.candidate_profile.license_number || "Not provided"}</p>
                         <p><strong>Tools:</strong> {application.candidate_profile.tools}</p>
                         <p><strong>Specialties:</strong> {(application.candidate_profile.specialties || []).join(", ")}</p>
                         <p><strong>Introduction:</strong> {application.cover_note}</p>
@@ -519,7 +522,7 @@ export default function CareersPage() {
         <section className="hm-careers-hero">
           <div>
             <Link to="/" className="hm-careers-back"><ArrowLeft size={16} /> Home</Link>
-            <p className="hm-careers-eyebrow">Careers at HomeMakers</p>
+            <p className="hm-careers-eyebrow">Careers at BuildGuru</p>
             <h1>Build the future of Indian home projects.</h1>
             <p>Join a team making design, hiring, materials and project delivery clearer for homeowners and professionals.</p>
             <a href="#open-roles" className="hm-careers-primary">See open roles <ArrowRight size={17} /></a>

@@ -1,6 +1,6 @@
 {
-  "name": "HomeMakers",
-  "short_name": "HomeMakers",
+  "name": "BuildGuru",
+  "short_name": "BuildGuru",
   "description": "Design, plan, and manage an Indian home project.",
   "start_url": "/",
   "display": "standalone",

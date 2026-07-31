@@ -4,8 +4,8 @@ Run through this **once** before sharing the live link. Production: Vercel front
 
 ## Must work (do not skip)
 
-1. **Vercel env** — `REACT_APP_SUPABASE_URL`, `REACT_APP_SUPABASE_ANON_KEY`, `REACT_APP_BACKEND_URL` = `https://homemakers-6o3h.onrender.com` (no `/api`). Redeploy after changes.
-2. **Supabase SQL** — `db/homemakers_single_setup.sql` then **`db/homemakers_rls_hardening.sql`** if production still has MVP anon/RLS-off policies.
+1. **Vercel env** — `REACT_APP_SUPABASE_URL`, `REACT_APP_SUPABASE_ANON_KEY`, `REACT_APP_BACKEND_URL` = `https://buildguru-6o3h.onrender.com` (no `/api`). Redeploy after changes.
+2. **Supabase SQL** — `db/buildguru_single_setup.sql` then **`db/buildguru_rls_hardening.sql`** if production still has MVP anon/RLS-off policies.
 3. **Redeploy Vercel** after this branch — deep links need root asset paths (`homepage` removed; `PUBLIC_URL` empty in `frontend/vercel.json`).
 4. **Sign in with Email or Google** — not phone OTP (disabled in production).
 5. **Homeowner path:** `/sign-in?role=homeowner` → `/build` → new home or remodel → generate v0 → handoff → URL must include `projectId=…`.

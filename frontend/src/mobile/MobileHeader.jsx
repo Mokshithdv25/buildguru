@@ -12,7 +12,7 @@ export default function MobileHeader({ title, subtitle, backTo, right = null }) 
           <ChevronLeft size={22} />
         </button>
       ) : (
-        <button type="button" className="hm-m-brand-btn" aria-label="HomeMakers home" onClick={() => navigate("/")}>
+        <button type="button" className="hm-m-brand-btn" aria-label="BuildGuru home" onClick={() => navigate("/")}>
           <img src={hmLogoMarkSrc} alt="" />
         </button>
       )}

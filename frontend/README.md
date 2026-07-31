@@ -1,6 +1,6 @@
-# HomeMakers frontend
+# BuildGuru frontend
 
-The shared React client for the HomeMakers web product and Capacitor iOS/Android apps. It covers homeowner design flows, professional portfolios, project workspaces, account management, and the mobile experience.
+The shared React client for the BuildGuru web product and Capacitor iOS/Android apps. It covers homeowner design flows, professional portfolios, project workspaces, account management, and the mobile experience.
 
 ## Local development
 

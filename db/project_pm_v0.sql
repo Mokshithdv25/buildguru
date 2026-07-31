@@ -1,5 +1,5 @@
--- HomeMakers: STRICT RLS for project v0 (optional — only if you use owner-scoped RLS)
--- If you disabled RLS on projects (MVP scripts), use db/homemakers_supabase_align.sql instead.
+-- BuildGuru: STRICT RLS for project v0 (optional — only if you use owner-scoped RLS)
+-- If you disabled RLS on projects (MVP scripts), use db/buildguru_supabase_align.sql instead.
 -- Run in Supabase SQL editor after core project_* tables exist.
 
 CREATE TABLE IF NOT EXISTS public.project_v0_packs (

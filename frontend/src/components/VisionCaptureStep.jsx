@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { optimizeImageFileToDataUrl } from "../lib/imageDataUrl";
 
 /**
- * Free-text + optional voice capture — styled to match Homemakers craft flows (warm cream / terracotta).
+ * Free-text + optional voice capture — styled to match BuildGuru craft flows (warm cream / terracotta).
  */
 export default function VisionCaptureStep({
   value,

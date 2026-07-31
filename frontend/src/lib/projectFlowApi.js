@@ -293,7 +293,7 @@ function seedFromBrief(brief, flowType, aiPlan = null) {
     {
       phase: "Design & Approval",
       role: "System",
-      name: "HomeMakers",
+      name: "BuildGuru",
       time: "Just now",
       text: `Project created from ${flowType === "remodel" ? "Remodel" : "Build New Home"} brief for ${location}.`,
       color: "#2A6496",
@@ -301,7 +301,7 @@ function seedFromBrief(brief, flowType, aiPlan = null) {
     {
       phase: "Design & Approval",
       role: "System",
-      name: "HomeMakers",
+      name: "BuildGuru",
       time: "Just now",
       text: summaryNote || `Primary direction captured: ${goal}.`,
       color: "#2A6496",
@@ -312,7 +312,7 @@ function seedFromBrief(brief, flowType, aiPlan = null) {
     messages.push({
       phase: "Design & Approval",
       role: "System",
-      name: "HomeMakers",
+      name: "BuildGuru",
       time: "Just now",
       text: `Indicative v0 total: ${formatInrShort(aiPlan.total_indicative_inr)} (ballpark — validate with your architect).`,
       color: "#2A6496",

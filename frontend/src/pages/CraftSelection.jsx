@@ -281,7 +281,7 @@ export default function CraftSelection() {
         {/* RIGHT — benefits above live preview */}
         <section className="lg:pl-12 lg:pt-4">
           <div className="mb-6 rounded-2xl border border-[#EFE3D2] bg-white/85 p-4 shadow-sm">
-            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-[#B04F20]">Why join on HomeMakers</p>
+            <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-[#B04F20]">Why join on BuildGuru</p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {[
                 {

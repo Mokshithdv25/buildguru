@@ -1,4 +1,4 @@
-# HomeMakers — Investor pitch (narrative + slide map)
+# BuildGuru — Investor pitch (narrative + slide map)
 
 *Internal working doc. Nothing here is a securities offering. Verify third-party figures before press, DD, or external distribution.*
 
@@ -6,7 +6,7 @@
 
 ## Where the market research lives (Design Compass)
 
-The **full research-backed tables, sources, and competitor revenue** are in the **Design Compass** project on this machine (sibling to `homemakers-1`, **not** inside the `homemakers-1` git repo — that’s why a search in-repo didn’t find them):
+The **full research-backed tables, sources, and competitor revenue** are in the **Design Compass** project on this machine (sibling to `buildguru-1`, **not** inside the `buildguru-1` git repo — that’s why a search in-repo didn’t find them):
 
 | Path | Contents |
 |------|----------|
@@ -16,7 +16,7 @@ The **full research-backed tables, sources, and competitor revenue** are in the 
 
 **Cross-folder scan (other `Documents` projects):** a short **“what we checked + what to use”** view is in **[INVESTOR_RESEARCH_BRIEF.md](./INVESTOR_RESEARCH_BRIEF.md)** (Design Compass + Gharr synthesis; other folders were non-additive for research).
 
-**This file (below) pulls the headline numbers from `business_implementation_plan.md`** so `homemakers-1` carries a self-contained pitch; **diligence should open the Design Compass file for full citations.**
+**This file (below) pulls the headline numbers from `business_implementation_plan.md`** so `buildguru-1` carries a self-contained pitch; **diligence should open the Design Compass file for full citations.**
 
 ---
 
@@ -30,7 +30,7 @@ The **full research-backed tables, sources, and competitor revenue** are in the 
 
 ## 1. Title
 
-**HomeMakers**  
+**BuildGuru**
 *The full-stack platform for home design, build, and project execution — from first idea in India to keys in hand.*
 
 **Stage:** Pre-seed / seed — product in market build; raising to **finish the product, go to market, and hire a small world-class team**.
@@ -62,7 +62,7 @@ The **full research-backed tables, sources, and competitor revenue** are in the 
 ### Structural reality (why software should exist)
 
 - **~90%+** of construction workers in the **unorganized** layer; **~82%** of residential market is **small, fragmented builders** — the system is **relationships + WhatsApp**, not a product.
-- **400M+** WhatsApp users in India — coordination already lives in chat; **HomeMakers** turns that chaos into **locked scope, estimates, and a project room**.
+- **400M+** WhatsApp users in India — coordination already lives in chat; **BuildGuru** turns that chaos into **locked scope, estimates, and a project room**.
 
 ### Honest monetizable layer (not “we capture all of construction”)
 
@@ -74,7 +74,7 @@ From the same plan: we target the **decision + coordination** layer — on the o
 - **AI + structured data** can deliver **clarity at scale** without armies of estimators.
 - **Competitors** are strong in **managed interiors** or **discovery** — not in a **pre-execution OS** for the long tail.
 
-**Pitch cheat sheet (vs. names investors throw at you):** [COMPETITIVE_POSITIONING.md](./COMPETITIVE_POSITIONING.md) — **Material Depot** = materials retail; **Room Story AI** = image → product buy; **Livspace / Homelane** = end-to-end operator; **HomeMakers** = AI v0 + open pro marketplace + project management.
+**Pitch cheat sheet (vs. names investors throw at you):** [COMPETITIVE_POSITIONING.md](./COMPETITIVE_POSITIONING.md) — **Material Depot** = materials retail; **Room Story AI** = image → product buy; **Livspace / Homelane** = end-to-end operator; **BuildGuru** = AI v0 + open pro marketplace + project management.
 
 ---
 
@@ -169,7 +169,7 @@ From the same plan: we target the **decision + coordination** layer — on the o
 
 ## One-liner forwardable blurb (for intros)
 
-*HomeMakers is building the AI-native platform for end-to-end home design and build in India — from structured briefs and professionals to a single project room for money, files, and execution. We’re raising a **$4.5M–$6M seed** to finish the product, hit India GTM, and build the team. Founder: ex-Cisco, ASU (AI + business), family background in civil planning.*
+*BuildGuru is building the AI-native platform for end-to-end home design and build in India — from structured briefs and professionals to a single project room for money, files, and execution. We’re raising a **$4.5M–$6M seed** to finish the product, hit India GTM, and build the team. Founder: ex-Cisco, ASU (AI + business), family background in civil planning.*
 
 ---
 

@@ -74,7 +74,7 @@ export default function LandingHero({ onGetStarted, onExploreDesigns }) {
                 ))}
               </div>
               <p className="m-0 font-body text-[13px] font-medium text-[#f2eee9]/80 sm:max-w-[16rem]">
-                Join 2,400+ homeowners already building on HomeMakers
+                Join 2,400+ homeowners already building on BuildGuru
               </p>
             </div>
 

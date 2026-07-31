@@ -30,9 +30,9 @@ export default function LandingTestimonials() {
     <section className="border-y border-border/40 bg-[#FBF7F2] py-20 md:py-24">
       <div className="container max-w-6xl">
         <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto mb-12 max-w-4xl text-center">
-          <span className="section-kicker">One connected HomeMakers workflow</span>
+          <span className="section-kicker">One connected BuildGuru workflow</span>
           <h2 className="mt-4 font-display text-4xl font-bold leading-tight text-foreground md:text-5xl">End-to-end AI tools for planning, hiring, shopping, and running a home project.</h2>
-          <p className="mx-auto mt-5 max-w-3xl font-body text-sm leading-relaxed text-muted-foreground md:text-base">HomeMakers connects design concepts, floor-plan directions, estimates, material takeoffs, professional matching, project shopping, and day-to-day project management—without pretending every construction-business tool belongs in the homeowner workflow.</p>
+          <p className="mx-auto mt-5 max-w-3xl font-body text-sm leading-relaxed text-muted-foreground md:text-base">BuildGuru connects design concepts, floor-plan directions, estimates, material takeoffs, professional matching, project shopping, and day-to-day project management—without pretending every construction-business tool belongs in the homeowner workflow.</p>
         </motion.div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {capabilityGroups.map(({ title, Icon, items }, groupIndex) => (

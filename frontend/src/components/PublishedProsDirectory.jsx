@@ -73,7 +73,7 @@ export function usePublishedPros({ craft, city, limit = 24 } = {}) {
 export default function PublishedProsDirectory({
   variant = "cards",
   title = "Find pros near you",
-  subtitle = "People who published their portfolio on HomeMakers.",
+  subtitle = "People who published their portfolio on BuildGuru.",
   limit = 12,
   craft = null,
   city = null,
@@ -173,7 +173,7 @@ export default function PublishedProsDirectory({
   if (variant === "list") {
     return (
       <div className={className}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: OR, marginBottom: 8, letterSpacing: "0.06em" }}>LIVE ON HOMEMAKERS</p>
+        <p style={{ fontSize: 11, fontWeight: 700, color: OR, marginBottom: 8, letterSpacing: "0.06em" }}>LIVE ON BUILDGURU</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 10 }}>
           {pros.slice(0, limit).map((pro) => {
             const to = profileTo(pro);

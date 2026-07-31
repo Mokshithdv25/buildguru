@@ -27,7 +27,7 @@ export default function MobileDesignPage() {
         <div>
           <span>Architecture</span>
           <h2>Indian homes, by style</h2>
-          <p>Real directions from the same visual library used in your HomeMakers brief.</p>
+          <p>Real directions from the same visual library used in your BuildGuru brief.</p>
         </div>
       </div>
       <div className="hm-m-style-stack">

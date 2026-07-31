@@ -85,7 +85,7 @@ export async function openRazorpayCheckout(order, options = {}) {
       key,
       amount: order.amount,
       currency: order.currency || "INR",
-      name: order.name || "HomeMakers",
+      name: order.name || "BuildGuru",
       description: order.description || "Secure payment",
       order_id: order.order_id,
       prefill: {
@@ -141,7 +141,7 @@ export async function purchasePlan(planId, profile = {}) {
     {
       ...order,
       order_id: order.order_id,
-      name: order.name || "HomeMakers",
+      name: order.name || "BuildGuru",
       description: order.description,
     },
     {

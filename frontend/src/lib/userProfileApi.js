@@ -1,6 +1,6 @@
 import { getSupabase } from "./supabaseClient";
 
-/** Persistent session row: email + role + profile (requires homemakers_single_setup.sql). */
+/** Persistent session row: email + role + profile (requires buildguru_single_setup.sql). */
 export async function fetchMySession() {
   const sb = getSupabase();
   if (!sb) return null;
