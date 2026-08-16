@@ -483,24 +483,20 @@ class LaunchContractsTest(unittest.TestCase):
         self.assertIn('expected_prefix = f"{owner_id}/{portfolio_id}/"', server)
         self.assertIn('.eq("moderation_status", "approved")', server)
 
-    def test_existing_profile_role_beats_generic_sign_in_intent(self):
+    def test_sign_in_intent_selects_active_mode_for_existing_profile(self):
         auth = (ROOT / "frontend/src/lib/hmAuth.js").read_text()
         profile_pos = auth.index('if (profile?.role === "pro"')
         intent_pos = auth.index('if (signInIntent === "pro"')
-        self.assertLess(profile_pos, intent_pos)
+        self.assertLess(intent_pos, profile_pos)
+        self.assertNotIn("switchHmMode", auth)
 
-    def test_oauth_role_persistence_requires_an_explicit_signup_callback(self):
+    def test_oauth_portal_selects_mode_without_rewriting_identity_role(self):
         sign_in = (ROOT / "frontend/src/pages/SignInPage.jsx").read_text()
-        self.assertRegex(
-            sign_in,
-            re.compile(
-                r'if\s*\(\s*searchParams\.get\("oauth"\) === "1"\s*&&\s*'
-                r'searchParams\.get\("signup"\) === "1"',
-                re.DOTALL,
-            ),
-        )
         self.assertIn('if (requestedSignUp) params.set("signup", "1");', sign_in)
-        self.assertEqual(sign_in.count("await updateUserProfileRole("), 1)
+        self.assertNotIn("updateUserProfileRole", sign_in)
+        self.assertNotIn("profile.role !== signInIntent", sign_in)
+        self.assertIn("Sign out before entering", sign_in)
+        self.assertIn("Sign out to use", sign_in)
 
     def test_craco_does_not_preload_generic_dotenv_before_cra(self):
         craco = (ROOT / "frontend/craco.config.js").read_text()

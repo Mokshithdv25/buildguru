@@ -1,30 +1,43 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, ArrowRight, ArrowLeft, Check, Loader2, Mail } from "lucide-react";
+import { Phone, ArrowRight, ArrowLeft, Check, Loader2, Mail, Home, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { HM_HEADER_BAR_CHROME_CLASS, HM_WORDMARK_TITLE_CLASS, hmLogoMarkSrc } from "../lib/hmBrand";
 import { getSupabase, isSupabaseConfigured, getSupabaseInitError } from "../lib/supabaseClient";
-import { fetchUserProfile, updateUserProfileRole, upsertUserProfile } from "../lib/userProfileApi";
-import { establishHmSession, getPostLoginPath } from "../lib/hmAuth";
+import { fetchUserProfile, upsertUserProfile } from "../lib/userProfileApi";
+import { establishHmSession, getPostLoginPath, signOutHm } from "../lib/hmAuth";
+import { useHmSession } from "../hooks/useHmSession";
 import { authCallbackUrl, openNativeAuthUrl } from "../lib/nativeAuth";
 import { isNativeApp } from "../lib/capacitorPlatform";
 
 const EMAIL_SIGNUP_ENABLED = process.env.REACT_APP_EMAIL_SIGNUP_ENABLED === "true";
+const PHONE_AUTH_ENABLED = process.env.REACT_APP_PHONE_AUTH_ENABLED === "true";
+
+function portalPath(role, mode) {
+  if (role === "pro") return mode === "signup" ? "/pro/join" : "/pro/sign-in";
+  return mode === "signup" ? "/join" : "/sign-in?role=homeowner";
+}
 
 /**
  * Sign-in: Google plus email/password for existing accounts. Email account
  * creation stays disabled until production SMTP is configured and verified.
- * Phone OTP remains a demo flow until enabled in Supabase.
+ * Phone OTP stays hidden until the production SMS provider is configured.
  */
-export default function SignInPage() {
+export default function SignInPage({ portalRole = null, portalMode = null }) {
   const navigate = useNavigate();
+  const currentSession = useHmSession();
   const [searchParams] = useSearchParams();
-  const requestedSignUp = searchParams.get("mode") === "signup";
+  const requestedSignUp = portalMode === "signup" || searchParams.get("mode") === "signup" || searchParams.get("signup") === "1";
+  const roleSelected =
+    portalRole === "pro" ||
+    portalRole === "homeowner" ||
+    searchParams.get("role") === "pro" ||
+    searchParams.get("role") === "homeowner";
   const modeFromQuery = requestedSignUp && EMAIL_SIGNUP_ENABLED ? "signup" : "signin";
-  const roleFromQuery = searchParams.get("role") === "pro" ? "pro" : "homeowner";
+  const roleFromQuery = portalRole === "pro" || searchParams.get("role") === "pro" ? "pro" : "homeowner";
   const redirectFromQuery = (() => {
     const raw = searchParams.get("redirect");
     if (!raw) return null;
@@ -59,7 +72,7 @@ export default function SignInPage() {
   );
 
   const isSignUp = mode === "signup";
-  const showPhoneOtp = process.env.NODE_ENV === "development";
+  const showPhoneOtp = PHONE_AUTH_ENABLED;
   const supabaseConfigured = isSupabaseConfigured();
   const supabaseInitError = getSupabaseInitError();
   const googleOnlySignUp = requestedSignUp && !EMAIL_SIGNUP_ENABLED && !passwordRecovery;
@@ -67,8 +80,8 @@ export default function SignInPage() {
   const otpRefs = useRef([]);
 
   useEffect(() => {
-    if (searchParams.get("mode") === "signup" && EMAIL_SIGNUP_ENABLED) setMode("signup");
-    if (searchParams.get("role") === "pro") setAccountRole("pro");
+    if ((portalMode === "signup" || searchParams.get("mode") === "signup") && EMAIL_SIGNUP_ENABLED) setMode("signup");
+    if (portalRole === "pro" || searchParams.get("role") === "pro") setAccountRole("pro");
     if (searchParams.get("native_error")) {
       setStep("entry");
       setMode("signin");
@@ -80,7 +93,7 @@ export default function SignInPage() {
       setPasswordRecovery(true);
       setMode("signin");
     }
-  }, [searchParams]);
+  }, [portalMode, portalRole, searchParams]);
 
   useEffect(() => {
     const sb = getSupabase();
@@ -114,7 +127,7 @@ export default function SignInPage() {
   const authEmailRedirectTo = () => {
     const redirect = redirectFromQuery || (accountRole === "pro" ? "/pro/dashboard" : "/project");
     return authCallbackUrl(
-      `/sign-in?mode=signin&confirmed=1&redirect=${encodeURIComponent(redirect)}`,
+      `/sign-in?mode=signin&role=${accountRole}&confirmed=1&redirect=${encodeURIComponent(redirect)}`,
     );
   };
 
@@ -148,12 +161,31 @@ export default function SignInPage() {
 
   const handleSendOTP = async () => {
     if (phone.length < 10) return;
+    const sb = getSupabase();
+    if (!sb) {
+      setAuthError("Phone sign-in is not available on this deployment.");
+      return;
+    }
+    setAuthError("");
+    setAuthNotice("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setStep("otp");
-    setResendTimer(30);
-    setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    try {
+      const { error } = await sb.auth.signInWithOtp({
+        phone: `+91${phone}`,
+        options: {
+          shouldCreateUser: requestedSignUp,
+          data: requestedSignUp ? { role: accountRole } : undefined,
+        },
+      });
+      if (error) throw error;
+      setStep("otp");
+      setResendTimer(60);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    } catch (err) {
+      setAuthError(err?.message || "Could not send the verification code.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const tryFinishEmailAuth = async (session) => {
@@ -168,23 +200,10 @@ export default function SignInPage() {
     const hasExplicitRole = requestedRole === "pro" || requestedRole === "homeowner";
     const signInIntent = hasExplicitRole ? requestedRole : accountRole;
 
-    // The database trigger creates OAuth profiles as homeowners by default.
-    // Apply the selected role only for an explicit create-account flow. A
-    // normal Google sign-in must never rewrite an existing account's role.
-    if (
-      searchParams.get("oauth") === "1" &&
-      searchParams.get("signup") === "1" &&
-      hasExplicitRole &&
-      profile &&
-      profile.role !== requestedRole
-    ) {
-      await updateUserProfileRole(requestedRole);
-      profile = await fetchUserProfile(user.id);
-    }
     if (profile?.full_name?.trim()) {
       const resolvedRole = await establishHmSession(user, profile, { signInIntent });
       navigate(getPostLoginPath(resolvedRole, redirectFromQuery), { replace: true });
-      return;
+      return true;
     }
     const meta = user.user_metadata || {};
     const displayName =
@@ -200,6 +219,24 @@ export default function SignInPage() {
       if (digits.length >= 10) setPhone(digits.slice(-10));
     }
     setStep("details");
+    return true;
+  };
+
+  const handleContinueCurrentAccount = async () => {
+    const activeRole = currentSession?.role === "pro" ? "pro" : "homeowner";
+    navigate(getPostLoginPath(activeRole, redirectFromQuery), { replace: true });
+  };
+
+  const handleSignOutForRole = async () => {
+    setLoading(true);
+    const destination = portalPath(accountRole, requestedSignUp ? "signup" : "signin");
+    await signOutHm({ redirectTo: destination });
+  };
+
+  const handleRoleSelection = (role) => {
+    const destination = portalPath(role, "signin");
+    const separator = destination.includes("?") ? "&" : "?";
+    navigate(redirectFromQuery ? `${destination}${separator}redirect=${encodeURIComponent(redirectFromQuery)}` : destination);
   };
 
   // Finish OAuth or email confirmation after the browser/native callback returns.
@@ -443,7 +480,7 @@ export default function SignInPage() {
       otpRefs.current[index + 1]?.focus();
     }
     if (newOtp.every((d) => d !== "") && newOtp.join("").length === 6) {
-      handleVerifyOTP();
+      handleVerifyOTP(newOtp.join(""));
     }
   };
 
@@ -459,15 +496,33 @@ export default function SignInPage() {
       e.preventDefault();
       const newOtp = pasted.split("");
       setOtp(newOtp);
-      handleVerifyOTP();
+      handleVerifyOTP(newOtp.join(""));
     }
   };
 
-  const handleVerifyOTP = async () => {
+  const handleVerifyOTP = async (token = otp.join("")) => {
+    if (token.length !== 6) return;
+    const sb = getSupabase();
+    if (!sb) {
+      setAuthError("Phone sign-in is not available on this deployment.");
+      return;
+    }
+    setAuthError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    setStep("details");
+    try {
+      const { data, error } = await sb.auth.verifyOtp({
+        phone: `+91${phone}`,
+        token,
+        type: "sms",
+      });
+      if (error) throw error;
+      if (!data.session) throw new Error("Verification succeeded without a session. Please try again.");
+      await tryFinishEmailAuth(data.session);
+    } catch (err) {
+      setAuthError(err?.message || "The verification code is invalid or expired.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleComplete = async () => {
@@ -523,11 +578,23 @@ export default function SignInPage() {
     }
   };
 
-  const handleResendOTP = () => {
+  const handleResendOTP = async () => {
     if (resendTimer > 0) return;
-    setOtp(["", "", "", "", "", ""]);
-    setResendTimer(30);
-    otpRefs.current[0]?.focus();
+    const sb = getSupabase();
+    if (!sb) return;
+    setLoading(true);
+    setAuthError("");
+    try {
+      const { error } = await sb.auth.resend({ type: "sms", phone: `+91${phone}` });
+      if (error) throw error;
+      setOtp(["", "", "", "", "", ""]);
+      setResendTimer(60);
+      otpRefs.current[0]?.focus();
+    } catch (err) {
+      setAuthError(err?.message || "Could not resend the verification code.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -580,51 +647,107 @@ export default function SignInPage() {
               >
                 <div className="text-center">
                   <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-                    {passwordRecovery ? "Set a new password" : requestedSignUp ? "Create Account" : "Sign In"}
+                    {passwordRecovery
+                      ? "Set a new password"
+                      : !roleSelected
+                      ? "Sign in to BuildGuru"
+                      : requestedSignUp
+                      ? accountRole === "pro" ? "Create a professional account" : "Create a homeowner account"
+                      : accountRole === "pro" ? "Professional sign in" : "Homeowner sign in"}
                   </h2>
                   <p className="text-muted-foreground font-body text-base">
                     {passwordRecovery
                       ? "Choose a secure password and confirm it below."
+                      : !roleSelected
+                      ? "Choose how you are entering today. Your role stays active until you sign out."
                       : requestedSignUp
-                      ? "Join BuildGuru and bring your dream home to life."
-                      : "Sign in to start your homemaking journey."}
+                      ? accountRole === "pro"
+                        ? "Publish your work, manage your profile, and respond to qualified projects."
+                        : "Save designs, estimates, professionals, and project progress in one account."
+                      : accountRole === "pro"
+                        ? "Access your portfolio, leads, and professional workspace."
+                        : "Access your saved designs, estimates, and project workspace."}
                   </p>
                 </div>
 
-                {!passwordRecovery && (
-                  <div className="rounded-xl border-2 border-border p-1.5 bg-card">
-                    <div className="grid grid-cols-2 gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setAccountRole("homeowner")}
-                        className={`hm-mobile-auth-role rounded-lg px-3 py-2 text-sm font-body font-semibold transition-colors ${
-                          accountRole === "homeowner"
-                            ? "bg-accent/15 text-copper"
-                            : "text-muted-foreground hover:bg-muted/40"
-                        }`}
-                      >
-                        Homeowner
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setAccountRole("pro")}
-                        className={`hm-mobile-auth-role rounded-lg px-3 py-2 text-sm font-body font-semibold transition-colors ${
-                          accountRole === "pro"
-                            ? "bg-accent/15 text-copper"
-                            : "text-muted-foreground hover:bg-muted/40"
-                        }`}
-                      >
-                        Professional
-                      </button>
-                    </div>
-                    <p className="mt-2 px-1 text-[11px] leading-relaxed text-muted-foreground font-body">
+                {!passwordRecovery && !roleSelected ? (
+                  <div className="grid gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleRoleSelection("homeowner")}
+                      className="flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left transition-colors hover:border-copper/50 hover:bg-copper/5"
+                    >
+                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-copper/10 text-copper">
+                        <Home className="h-5 w-5" />
+                      </span>
+                      <span>
+                        <span className="block font-body text-sm font-bold text-foreground">Continue as a homeowner</span>
+                        <span className="mt-1 block font-body text-xs text-muted-foreground">Plan, design, estimate, hire, and manage a project.</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRoleSelection("pro")}
+                      className="flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left transition-colors hover:border-copper/50 hover:bg-copper/5"
+                    >
+                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-copper/10 text-copper">
+                        <Briefcase className="h-5 w-5" />
+                      </span>
+                      <span>
+                        <span className="block font-body text-sm font-bold text-foreground">Continue as a professional</span>
+                        <span className="mt-1 block font-body text-xs text-muted-foreground">Access your portfolio, leads, and professional workspace.</span>
+                      </span>
+                    </button>
+                  </div>
+                ) : null}
+
+                {!passwordRecovery && roleSelected && (
+                  <div className="rounded-xl border-2 border-border p-3.5 bg-card">
+                    <p className="m-0 text-sm font-body font-semibold text-foreground">
+                      {accountRole === "pro" ? "Professional account" : "Homeowner account"}
+                    </p>
+                    <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground font-body">
                       {accountRole === "pro"
-                        ? "Build your portfolio, then go live for homeowners to find you."
-                        : "Save projects and pick up where you left off on any device."}
+                        ? "For architects, contractors, designers, engineers, trades, and suppliers."
+                        : "For people planning, building, renovating, or managing their property."}
                     </p>
                   </div>
                 )}
 
+                {!passwordRecovery && roleSelected && currentSession?.supabaseUserId ? (
+                  <div className="rounded-xl border border-copper/25 bg-copper/5 p-3.5">
+                    <p className="m-0 text-sm font-body font-semibold text-foreground">
+                      Signed in as {currentSession.profile?.email || currentSession.profile?.name || "your account"}
+                    </p>
+                    <p className="mt-1 mb-3 text-xs leading-relaxed text-muted-foreground font-body">
+                      You are signed in in {currentSession.role === "pro" ? "professional" : "homeowner"} mode.
+                      {currentSession.role === accountRole
+                        ? " Continue to your workspace below."
+                        : ` Sign out before entering ${accountRole === "pro" ? "professional" : "homeowner"} mode.`}
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={currentSession.role === accountRole ? handleContinueCurrentAccount : handleSignOutForRole}
+                      disabled={loading}
+                      className="w-full rounded-xl py-5 font-body text-sm font-semibold"
+                    >
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                      {currentSession.role === accountRole
+                        ? `Continue in ${accountRole === "pro" ? "professional" : "homeowner"} mode`
+                        : `Sign out to use ${accountRole === "pro" ? "professional" : "homeowner"} mode`}
+                    </Button>
+                  </div>
+                ) : null}
+
+                {!passwordRecovery && roleSelected && currentSession === undefined ? (
+                  <div className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Checking your session…
+                  </div>
+                ) : null}
+
+                {roleSelected && (passwordRecovery || currentSession === null) ? (
+                  <>
                   {!supabaseConfigured ? (
                     <p className="rounded-lg border border-amber-500/40 bg-amber-50 px-3 py-2 font-body text-sm text-amber-900">
                       Sign-in is temporarily unavailable. Please try again later.
@@ -737,7 +860,7 @@ export default function SignInPage() {
                         ) : (
                           <Phone className="w-4 h-4 mr-2" />
                         )}
-                        {loading ? "Sending OTP..." : (isSignUp ? "Send OTP to verify" : "Send OTP")}
+                        {loading ? "Sending OTP..." : (requestedSignUp ? "Send OTP to verify" : "Send OTP")}
                       </Button>
                     </>
                   )}
@@ -861,7 +984,7 @@ export default function SignInPage() {
                           <path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.44.34-2.1V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
                           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.16-3.16A10.96 10.96 0 0 0 12 1 11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z" />
                         </svg>
-                        {googleOnlySignUp ? "Create account with Google" : "Continue with Google"}
+                        {requestedSignUp ? "Create account with Google" : "Sign in with Google"}
                       </Button>
                     </>
                   ) : null}
@@ -874,23 +997,32 @@ export default function SignInPage() {
                   </p>}
 
                   {/* Mode Toggle */}
-                  {!passwordRecovery && EMAIL_SIGNUP_ENABLED && <div className="pt-2 border-t border-border">
+                  {!passwordRecovery && <div className="pt-2 border-t border-border space-y-2">
                     <p className="text-center font-body text-sm text-muted-foreground">
-                      {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+                      {requestedSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
                       <button
                         type="button"
                         onClick={() => {
-                          setMode(isSignUp ? "signin" : "signup");
-                          setAuthPassword("");
-                          setConfirmPassword("");
-                          setAuthError("");
+                          navigate(portalPath(accountRole, requestedSignUp ? "signin" : "signup"));
                         }}
                         className="text-copper font-semibold hover:underline"
                       >
-                        {isSignUp ? "Sign In" : "Sign Up"}
+                        {requestedSignUp ? "Sign In" : "Sign Up"}
+                      </button>
+                    </p>
+                    <p className="text-center font-body text-xs text-muted-foreground">
+                      {accountRole === "pro" ? "Looking for your homeowner account?" : "Are you an architect, contractor, or other professional?"}{" "}
+                      <button
+                        type="button"
+                        onClick={() => navigate(portalPath(accountRole === "pro" ? "homeowner" : "pro", requestedSignUp ? "signup" : "signin"))}
+                        className="text-copper font-semibold hover:underline"
+                      >
+                        {accountRole === "pro" ? "Homeowner access" : requestedSignUp ? "Join as a professional" : "Professional sign in"}
                       </button>
                     </p>
                   </div>}
+                  </>
+                ) : null}
                 </motion.div>
               )}
 

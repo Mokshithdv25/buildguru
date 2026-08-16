@@ -9,7 +9,7 @@ export function isHomeownerSignedIn() {
 
 export function buildSignInRedirect(returnPath) {
   const path = returnPath && returnPath.startsWith("/") ? returnPath : "/build";
-  return `/sign-in?mode=signin&role=homeowner&redirect=${encodeURIComponent(path)}`;
+  return `/sign-in?redirect=${encodeURIComponent(path)}`;
 }
 
 export function navigateToHomeownerFlow(navigate, path, options) {
@@ -20,7 +20,7 @@ export function navigateToHomeownerFlow(navigate, path, options) {
   }
   const session = readHmSession();
   if (session?.supabaseUserId && session.role === "pro") {
-    navigate(`/sign-in?role=homeowner&redirect=${encodeURIComponent(target)}`, options);
+    navigate(`/sign-in?redirect=${encodeURIComponent(target)}`, options);
     return;
   }
   navigate(buildSignInRedirect(target), options);
