@@ -207,7 +207,8 @@ class LaunchContractsTest(unittest.TestCase):
         dashboard = (ROOT / "frontend/src/pages/ProDashboard.jsx").read_text()
         for fake_label in ("Leads in pipeline", "Active projects", "Quote requests", "Sharma Residence"):
             self.assertNotIn(fake_label, dashboard)
-        self.assertIn("Your public directory listing", dashboard)
+        self.assertIn("Real actions derived from your pipeline and portfolio", dashboard)
+        self.assertIn("Homeowner projects waiting for review", dashboard)
 
     def test_checklists_drive_persisted_project_progress(self):
         project_api = (ROOT / "frontend/src/lib/projectFlowApi.js").read_text()
@@ -244,6 +245,12 @@ class LaunchContractsTest(unittest.TestCase):
         self.assertIn("Capacitor.isNativePlatform()", subscriptions)
         self.assertIn("!isNativeApp && billingEnabled ? <button", subscriptions)
         self.assertIn("displays plan status only", subscriptions)
+
+    def test_native_build_prunes_developer_only_pages(self):
+        package = (ROOT / "frontend/package.json").read_text()
+        pruner = (ROOT / "frontend/scripts/prune-native-build.js").read_text()
+        self.assertIn("node scripts/prune-native-build.js", package)
+        self.assertIn('"razorpay-test.html"', pruner)
 
     def test_client_build_rejects_secrets_and_native_auth_is_pkce_only(self):
         verifier = (ROOT / "frontend/scripts/verify-mobile-env.js").read_text()
@@ -456,11 +463,11 @@ class LaunchContractsTest(unittest.TestCase):
         self.assertIn("Work With Me", mobile_profile)
         self.assertIn("hm-m-create-portfolio-link", mobile_profile)
         self.assertIn("hm-m-primary-dock", mobile_profile)
-        self.assertIn("Intelligence that stays useful", mobile_home)
+        self.assertIn("Your Indian home project, clear from idea to handover", mobile_home)
         self.assertIn('hmLogoMarkSrc', mobile_home)
         self.assertIn('mobile_flow_build.jpg', mobile_home)
         self.assertIn('hm-m-quick-media', mobile_home)
-        self.assertIn("What do you want to do?", mobile_home)
+        self.assertIn("What do you need today?", mobile_home)
         self.assertIn("Continue where you left off", mobile_home)
         self.assertIn("hm-m-resume-card", mobile_home)
         self.assertIn("hm-m-feed-skeleton", mobile_home)
@@ -468,7 +475,7 @@ class LaunchContractsTest(unittest.TestCase):
         self.assertIn("Search professionals", mobile_pros)
         self.assertIn("hm-m-results-header", mobile_pros)
         self.assertIn("hm-m-pro-skeleton", mobile_pros)
-        self.assertIn("From inspiration to a build-ready project", mobile_design)
+        self.assertIn("Turn an idea into a real plan", mobile_design)
         self.assertIn('mobile_design_hero.jpg', mobile_design)
         self.assertIn('hmLogoMarkSrc', mobile_header)
         self.assertIn("includeProCount = false", mobile_hub)
