@@ -1,6 +1,6 @@
 import { getSupabase } from "./supabaseClient";
 
-/** Persistent session row: email + role + profile (requires buildguru_single_setup.sql). */
+/** Persistent identity/profile row. `role` is a legacy/default mode, not exclusive membership. */
 export async function fetchMySession() {
   const sb = getSupabase();
   if (!sb) return null;
@@ -42,7 +42,7 @@ export async function upsertUserProfile({ fullName, phone, city, role }) {
   return row;
 }
 
-/** Persist the homeowner/pro choice made at the start of an OAuth flow. */
+/** Persist a legacy/default mode. Active workspace mode is stored in the local session. */
 export async function updateUserProfileRole(role) {
   const sb = getSupabase();
   if (!sb) return null;

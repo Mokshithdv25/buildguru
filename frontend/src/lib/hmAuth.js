@@ -5,10 +5,19 @@ import { clearAllPortfolioMediaCaches, setPortfolioMedia } from "./portfolioStor
 
 const LAST_AUTH_USER_KEY = "hm_last_auth_user_id";
 export const HM_SESSION_CLEARED_EVENT = "hm-session-cleared";
+export const HM_SESSION_CHANGED_EVENT = "hm-session-changed";
 
 function notifySessionCleared() {
   try {
     window.dispatchEvent(new Event(HM_SESSION_CLEARED_EVENT));
+  } catch {
+    /* ignore */
+  }
+}
+
+function notifySessionChanged() {
+  try {
+    window.dispatchEvent(new Event(HM_SESSION_CHANGED_EVENT));
   } catch {
     /* ignore */
   }
@@ -102,18 +111,19 @@ export function ensureUserDeviceIsolation(userId) {
 }
 
 /**
- * Role for this session: persisted server profile is authoritative for existing users.
- * Signup intent is only a fallback until the profile row has been created.
+ * Role is an active workspace mode, not a permanent account classification.
+ * The same Supabase user can enter either mode; preserve the current device
+ * choice when background auth hydration runs without an explicit intent.
  */
 export function resolveSessionRole({ profile, user, signInIntent }) {
-  if (profile?.role === "pro" || profile?.role === "homeowner") return profile.role;
-  const meta = user?.user_metadata?.role;
-  if (meta === "pro" || meta === "homeowner") return meta;
   if (signInIntent === "pro" || signInIntent === "homeowner") return signInIntent;
   const existing = readHmSession();
   if (existing?.supabaseUserId === user?.id && (existing.role === "pro" || existing.role === "homeowner")) {
     return existing.role;
   }
+  if (profile?.role === "pro" || profile?.role === "homeowner") return profile.role;
+  const meta = user?.user_metadata?.role;
+  if (meta === "pro" || meta === "homeowner") return meta;
   return "homeowner";
 }
 
@@ -221,6 +231,7 @@ export async function establishHmSession(user, profile, { signInIntent } = {}) {
   ensureUserDeviceIsolation(user.id);
   const activeRole = resolveSessionRole({ profile, user, signInIntent });
   persistHmSessionFromSupabase(user, profile, { activeRole });
+  notifySessionChanged();
   if (activeRole === "pro") {
     try {
       await syncProPortfolioFromServer(user.id);
@@ -232,7 +243,7 @@ export async function establishHmSession(user, profile, { signInIntent } = {}) {
 }
 
 /** Clear local session and Supabase auth. Call after navigating away from guarded pages. */
-export async function signOutHm() {
+export async function signOutHm({ redirectTo = "/" } = {}) {
   clearHmSessionState();
 
   const sb = getSupabase();
@@ -247,5 +258,8 @@ export async function signOutHm() {
   notifySessionCleared(); // ensure listeners refresh after Supabase clears its session
   // Several data modules hold the original Supabase client singleton. A hard
   // navigation destroys that in-memory client so a later sign-in starts cleanly.
-  if (typeof window !== "undefined") window.location.replace("/");
+  if (typeof window !== "undefined") {
+    const safeRedirect = redirectTo.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/";
+    window.location.replace(safeRedirect);
+  }
 }

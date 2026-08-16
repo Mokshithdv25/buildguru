@@ -77,8 +77,11 @@ function DesktopRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route
         path="/sign-in"
-        element={AUTH_UI_ENABLED ? <SignInErrorBoundary><SignInPage /></SignInErrorBoundary> : <Navigate to="/" replace />}
+        element={AUTH_UI_ENABLED ? <SignInErrorBoundary><SignInPage portalMode="signin" /></SignInErrorBoundary> : <Navigate to="/" replace />}
       />
+      <Route path="/join" element={AUTH_UI_ENABLED ? <SignInErrorBoundary><SignInPage portalRole="homeowner" portalMode="signup" /></SignInErrorBoundary> : <Navigate to="/" replace />} />
+      <Route path="/pro/sign-in" element={AUTH_UI_ENABLED ? <SignInErrorBoundary><SignInPage portalRole="pro" portalMode="signin" /></SignInErrorBoundary> : <Navigate to="/" replace />} />
+      <Route path="/pro/join" element={AUTH_UI_ENABLED ? <SignInErrorBoundary><SignInPage portalRole="pro" portalMode="signup" /></SignInErrorBoundary> : <Navigate to="/" replace />} />
       <Route path="/account" element={<AccountPage />} />
       <Route path="/account/settings" element={<AccountPage />} />
       <Route path="/subscriptions" element={<SubscriptionsPage />} />

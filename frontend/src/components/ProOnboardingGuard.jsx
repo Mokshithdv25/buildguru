@@ -17,7 +17,7 @@ export default function ProOnboardingGuard({ children }) {
     if (!AUTH_UI_ENABLED) return;
     if (authLoading) return;
     if (!signedIn) {
-      navigate(`/sign-in?mode=signup&role=pro&redirect=${encodeURIComponent(returnPath)}`, { replace: true });
+      navigate(`/pro/join?redirect=${encodeURIComponent(returnPath)}`, { replace: true });
     }
   }, [authLoading, signedIn, navigate, returnPath]);
 

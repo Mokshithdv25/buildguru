@@ -99,7 +99,7 @@ export default function MobileAppRoutes() {
           AUTH_UI_ENABLED ? (
             <MobileShell hideTabs>
               <SignInErrorBoundary>
-                <SignInPage />
+                <SignInPage portalMode="signin" />
               </SignInErrorBoundary>
             </MobileShell>
           ) : (
@@ -107,6 +107,9 @@ export default function MobileAppRoutes() {
           )
         }
       />
+      <Route path="/join" element={AUTH_UI_ENABLED ? <MobileShell hideTabs><SignInErrorBoundary><SignInPage portalRole="homeowner" portalMode="signup" /></SignInErrorBoundary></MobileShell> : <Navigate to="/" replace />} />
+      <Route path="/pro/sign-in" element={AUTH_UI_ENABLED ? <MobileShell hideTabs><SignInErrorBoundary><SignInPage portalRole="pro" portalMode="signin" /></SignInErrorBoundary></MobileShell> : <Navigate to="/" replace />} />
+      <Route path="/pro/join" element={AUTH_UI_ENABLED ? <MobileShell hideTabs><SignInErrorBoundary><SignInPage portalRole="pro" portalMode="signup" /></SignInErrorBoundary></MobileShell> : <Navigate to="/" replace />} />
       <Route path="/shop" element={withShell(MobileShopPage)} />
       <Route path="/project/shop" element={withShell(MobileShopPage)} />
       <Route path="/documents" element={<HomeownerFlowGuard>{withShell(MobileDocumentsPage)}</HomeownerFlowGuard>} />

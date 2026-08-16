@@ -70,7 +70,7 @@
     "build": "GENERATE_SOURCEMAP=false craco build",
     "verify:client-env": "node scripts/verify-mobile-env.js",
     "verify:mobile-env": "npm run verify:client-env",
-    "build:mobile": "npm run verify:client-env && PUBLIC_URL=. GENERATE_SOURCEMAP=false craco build",
+    "build:mobile": "npm run verify:client-env && PUBLIC_URL=. GENERATE_SOURCEMAP=false craco build && node scripts/prune-native-build.js",
     "test": "craco test",
     "cap:sync": "npm run build:mobile && npx cap sync",
     "cap:open:ios": "npx cap open ios",

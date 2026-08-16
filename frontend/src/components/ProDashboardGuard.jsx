@@ -17,7 +17,7 @@ export default function ProDashboardGuard({ children }) {
     if (authLoading) return;
     if (!signedIn) {
       const redirect = encodeURIComponent(`${location.pathname}${location.search}`);
-      navigate(`/sign-in?mode=signin&role=pro&redirect=${redirect}`, { replace: true });
+      navigate(`/pro/sign-in?redirect=${redirect}`, { replace: true });
       return;
     }
     if (session?.role !== "pro") {
