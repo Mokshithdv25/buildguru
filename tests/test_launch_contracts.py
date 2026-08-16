@@ -249,8 +249,10 @@ class LaunchContractsTest(unittest.TestCase):
     def test_native_build_prunes_developer_only_pages(self):
         package = (ROOT / "frontend/package.json").read_text()
         pruner = (ROOT / "frontend/scripts/prune-native-build.js").read_text()
+        workflow = (ROOT / ".github/workflows/launch-checks.yml").read_text()
         self.assertIn("node scripts/prune-native-build.js", package)
         self.assertIn('"razorpay-test.html"', pruner)
+        self.assertIn("npx cap sync android", workflow)
 
     def test_client_build_rejects_secrets_and_native_auth_is_pkce_only(self):
         verifier = (ROOT / "frontend/scripts/verify-mobile-env.js").read_text()

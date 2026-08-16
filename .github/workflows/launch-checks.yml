@@ -73,7 +73,7 @@ jobs:
           cache: gradle
       - run: npm ci --legacy-peer-deps
       - name: Build and copy the native web bundle
-        run: npm run build:mobile && npx cap copy android
+        run: npm run build:mobile && npx cap sync android
         env:
           CI: "true"
           REACT_APP_BACKEND_URL: https://api.example.com
