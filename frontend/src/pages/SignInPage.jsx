@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { HM_HEADER_BAR_CHROME_CLASS, HM_WORDMARK_TITLE_CLASS, hmLogoMarkSrc } from "../lib/hmBrand";
 import { getSupabase, isSupabaseConfigured, getSupabaseInitError } from "../lib/supabaseClient";
 import { fetchUserProfile, upsertUserProfile } from "../lib/userProfileApi";
-import { establishHmSession, getPostLoginPath, signOutHm } from "../lib/hmAuth";
+import { establishHmSession, signOutHm } from "../lib/hmAuth";
+import { resolvePostLoginPath } from "../lib/postLoginRoute";
 import { useHmSession } from "../hooks/useHmSession";
 import { authCallbackUrl, openNativeAuthUrl } from "../lib/nativeAuth";
 import { isNativeApp } from "../lib/capacitorPlatform";
@@ -208,7 +209,8 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
 
     if (profile?.full_name?.trim()) {
       const resolvedRole = await establishHmSession(user, profile, { signInIntent });
-      navigate(getPostLoginPath(resolvedRole, redirectFromQuery), { replace: true });
+      const destination = await resolvePostLoginPath(resolvedRole, redirectFromQuery, { userId: user.id });
+      navigate(destination, { replace: true });
       return true;
     }
     const meta = user.user_metadata || {};
@@ -230,7 +232,10 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
 
   const handleContinueCurrentAccount = async () => {
     const activeRole = currentSession?.role === "pro" ? "pro" : "homeowner";
-    navigate(getPostLoginPath(activeRole, redirectFromQuery), { replace: true });
+    const destination = await resolvePostLoginPath(activeRole, redirectFromQuery, {
+      userId: currentSession?.supabaseUserId,
+    });
+    navigate(destination, { replace: true });
   };
 
   const handleSignOutForRole = async () => {
@@ -523,6 +528,8 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
     if (!name.trim()) return;
     setAuthError("");
     setLoading(true);
+    let postLoginRole = accountRole;
+    let postLoginUserId = currentSession?.supabaseUserId;
     try {
       const sb = getSupabase();
       if (sb) {
@@ -542,7 +549,8 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
           } catch (_) {
             /* ignore */
           }
-          await establishHmSession(session.user, profile, { signInIntent: accountRole });
+          postLoginRole = await establishHmSession(session.user, profile, { signInIntent: accountRole });
+          postLoginUserId = session.user.id;
         }
       } else {
         await new Promise((r) => setTimeout(r, 800));
@@ -561,9 +569,12 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
           // ignore
         }
       }
+      const destination = await resolvePostLoginPath(postLoginRole, redirectFromQuery, {
+        userId: postLoginUserId,
+      });
       setStep("done");
       setTimeout(() => {
-        navigate(getPostLoginPath(accountRole, redirectFromQuery), { replace: true });
+        navigate(destination, { replace: true });
       }, 1800);
     } catch (err) {
       setAuthError(err?.message || "Could not save your profile.");
