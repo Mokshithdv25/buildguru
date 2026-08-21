@@ -100,6 +100,21 @@ function compactMaterial(item) {
   };
 }
 
+function compactBid(bid) {
+  if (!bid) return null;
+  return {
+    pro: trimText(bid.pro_name || "Professional", 120),
+    craft: bid.craft || null,
+    city: bid.pro_city || null,
+    amountInr: Number(bid.bid_amount_inr || 0),
+    timelineWeeks: bid.bid_timeline_weeks ?? null,
+    decision: bid.homeowner_decision || "pending",
+    invited: Boolean(bid.was_invited),
+    scope: trimText(bid.bid_scope_note || "", 320),
+    submittedAt: bid.bid_submitted_at || null,
+  };
+}
+
 function compactAction(action) {
   if (!action) return null;
   return {
@@ -161,6 +176,7 @@ export function buildHubAssistantContext({
   payments = [],
   materials = [],
   agentActions = [],
+  bids = [],
 }) {
   const compactTasks = (tasks || []).map(compactTask).filter(Boolean).slice(0, MAX_TASKS);
   const compactMsgs = (messages || []).map(compactMessage).filter(Boolean).slice(-MAX_MESSAGES);
@@ -171,6 +187,9 @@ export function buildHubAssistantContext({
   const compactPayments = (payments || []).map(compactPayment).filter(Boolean).slice(0, MAX_PAYMENTS);
   const compactMaterials = (materials || []).map(compactMaterial).filter(Boolean).slice(0, MAX_MATERIALS);
   const compactActions = (agentActions || []).map(compactAction).filter(Boolean).slice(0, 20);
+  const compactBids = (bids || []).map(compactBid).filter(Boolean).slice(0, 20);
+  const bidAmounts = compactBids.map((bid) => bid.amountInr).filter((value) => value > 0);
+  const lowestBidInr = bidAmounts.length ? Math.min(...bidAmounts) : null;
   const artifactRefs = [
     compactBrief(brief) ? "project brief" : null,
     buildV0Summary(v0Pack)?.hasEstimate ? "AI v0 estimate" : null,
@@ -181,6 +200,7 @@ export function buildHubAssistantContext({
     compactPayments.length ? "payment ledger" : null,
     compactMaterials.length ? "material plan" : null,
     compactActions.length ? "approval log" : null,
+    compactBids.length ? "contractor bids" : null,
   ].filter(Boolean);
 
   return {
@@ -212,6 +232,11 @@ export function buildHubAssistantContext({
     payments: compactPayments,
     materials: compactMaterials,
     agentActions: compactActions,
+    bids: compactBids,
+    bidCount: compactBids.length,
+    newBidCount: compactBids.filter((bid) => bid.decision === "pending").length,
+    lowestBidInr,
+    acceptedBidPro: compactBids.find((bid) => bid.decision === "accepted")?.pro || null,
     artifactRefs,
     postedBanner,
     wantsMarketplaceQuotes,

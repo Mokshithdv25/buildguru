@@ -28,10 +28,14 @@ client-side claim path.
 
 | Database state | Run in this order |
 | --- | --- |
-| Existing BuildGuru production schema | `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` |
-| Empty Supabase project | `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` |
-| Older v1/v1.1/v1.2 schema missing current columns or buckets | `buildguru_supabase_align.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` |
-| Intentionally discard all BuildGuru data | Empty the four app buckets through Storage Admin, delete disposable users through Auth Admin, then `buildguru_production_reset.sql` → `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` |
+| Existing BuildGuru production schema | `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
+| Empty Supabase project | `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
+| Older v1/v1.1/v1.2 schema missing current columns or buckets | `buildguru_supabase_align.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
+| Intentionally discard all BuildGuru data | Empty the four app buckets through Storage Admin, delete disposable users through Auth Admin, then `buildguru_production_reset.sql` → `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
+
+`buildguru_project_bids.sql` must run after `buildguru_pro_leads.sql` because it alters `project_lead_responses` and replaces `can_respond_to_project` and `pro_lead_opportunities`.
+
+`buildguru_operational_hardening.sql` runs last. It contains the low-risk function and index hardening verified against production. `buildguru_backend_hardening.sql` is a staged proposal for moving privileged helpers behind a non-exposed schema and converting public API views to `security_invoker`; do not add it to a production rollout until it has passed a staging rehearsal and received an explicit change-window approval.
 
 `buildguru_single_setup.sql` is now fail-closed: it enables RLS, revokes anonymous table access, and creates private buckets without broad policies. The app is not ready until the hardening and workspace scripts also succeed, but an interrupted bootstrap does not expose the database.
 
@@ -48,6 +52,7 @@ client-side claim path.
 - A backend-only, atomic UTC-day counter that limits real AI image-pack requests per user.
 - Workspace tables and progress triggers used by the web and native project hub.
 - A professional lead inbox backed by a privacy-safe homeowner-project projection. It omits homeowner IDs, contact details, full location, and raw brief content; each professional can modify only responses tied to their own portfolio.
+- A two-way bidding loop: professionals submit structured bids (amount, timeline, scope note), the project owner reads them through `project_bids_for_owner`, and decisions are recorded through `set_project_bid_decision` so a homeowner can never rewrite a bid amount. Professional contact details stay hidden until the homeowner shortlists or accepts, and homeowner contact details are released only through `pro_awarded_projects` after acceptance. Homeowners may invite specific published professionals to bid via `project_pro_invites`.
 - An owner-scoped editable material takeoff and an approval log for AI-suggested follow-ups, professional shortlists, document reviews, and material-plan decisions.
 - Public career listings and OAuth-free applications with private work-sample uploads, plus a separate trusted hiring-admin membership. Applicants may explicitly publish the safe portfolio projection; email and phone are never included in that public view.
 
@@ -58,6 +63,7 @@ Run the readiness contract first. It must return `true`:
 ```sql
 select public.launch_schema_ready();
 select public.project_intelligence_ready();
+select public.project_bids_ready();
 ```
 
 Then inspect RLS directly. Every listed table must report `rls_enabled = true`.
@@ -74,8 +80,8 @@ where n.nspname = 'public'
     'project_stages', 'project_tasks', 'project_messages', 'project_documents',
     'project_team_members', 'project_payments', 'billing_orders',
     'user_entitlements', 'ai_usage_daily', 'project_lead_responses',
-    'project_material_items', 'project_agent_actions', 'career_admins',
-    'career_jobs', 'career_applications'
+    'project_pro_invites', 'project_material_items', 'project_agent_actions',
+    'career_admins', 'career_jobs', 'career_applications'
   )
 order by c.relname;
 ```

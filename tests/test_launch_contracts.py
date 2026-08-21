@@ -10,6 +10,24 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class LaunchContractsTest(unittest.TestCase):
+    def test_estimate_contract_is_boq_style_and_exportable(self):
+        server = (ROOT / "backend/server.py").read_text()
+        estimate_ui = (ROOT / "frontend/src/components/V0MockResults.jsx").read_text()
+        for field in (
+            "estimate_basis",
+            "assumptions",
+            "exclusions",
+            "confidence",
+            "quantity",
+            "unit_rate_inr",
+            "low_inr",
+            "high_inr",
+        ):
+            self.assertIn(field, server)
+        self.assertIn("Download CSV", estimate_ui)
+        self.assertIn("Working estimate for professional validation", estimate_ui)
+        self.assertIn("Expected / range", estimate_ui)
+
     def test_project_post_status_matches_database_constraint(self):
         project_api = (ROOT / "frontend/src/lib/projectFlowApi.js").read_text()
         for sql_name in (
@@ -20,6 +38,74 @@ class LaunchContractsTest(unittest.TestCase):
             sql = (ROOT / "db" / sql_name).read_text()
             self.assertIn("open_for_quotes", sql, sql_name)
         self.assertIn('"open_for_quotes"', project_api)
+
+    def test_bids_are_pro_written_and_homeowner_read_only(self):
+        sql = (ROOT / "db/buildguru_project_bids.sql").read_text()
+        # Homeowners may read bids on their own projects but must never be able to
+        # rewrite a submitted price, so no update/insert policy may exist for them.
+        self.assertIn('create policy "project_lead_responses_select_project_owner"', sql)
+        self.assertIn("public.project_owned_by_user(project_id)", sql)
+        self.assertNotIn("project_lead_responses_update_project_owner", sql)
+        self.assertNotIn("project_lead_responses_insert_project_owner", sql)
+        # A professional's private pipeline state stays hidden from the homeowner.
+        self.assertIn("bid_submitted_at is not null\n    and public.project_owned_by_user(project_id)", sql)
+        # The only homeowner write path is the security-definer decision function.
+        self.assertIn("create or replace function public.set_project_bid_decision(", sql)
+        self.assertIn("security definer", sql)
+        self.assertIn("raise exception 'Bid not found for this project'", sql)
+
+    def test_contact_details_stay_gated_until_a_bid_is_accepted(self):
+        sql = (ROOT / "db/buildguru_project_bids.sql").read_text()
+        # Professional contact is withheld from the homeowner-facing bid view until
+        # they shortlist or accept.
+        self.assertIn(
+            "case when r.homeowner_decision in ('shortlisted', 'accepted') then pf.phone else null end as pro_phone",
+            sql,
+        )
+        self.assertIn(
+            "case when r.homeowner_decision in ('shortlisted', 'accepted') then pf.email else null end as pro_email",
+            sql,
+        )
+        # Homeowner contact reaches a professional only through the awarded view.
+        self.assertIn("create or replace view public.pro_awarded_projects", sql)
+        self.assertIn("where r.homeowner_decision = 'accepted'", sql)
+        # The columns a professional receives must stay free of homeowner identity.
+        # Only the select list is checked; the where clause legitimately matches the
+        # professional's own portfolio on owner_user_id.
+        opportunity_view = sql.split("create or replace view public.pro_lead_opportunities")[1]
+        selected_columns = opportunity_view.split("from public.projects p")[0]
+        for leaked in (
+            "p.owner_user_id",
+            "as location",
+            "dream_vision",
+            "inspirations_json",
+            "brief_json as",
+            "up.phone",
+            "up.email",
+        ):
+            self.assertNotIn(leaked, selected_columns, leaked)
+        # The street address is only ever narrowed to a city label.
+        self.assertIn("split_part(p.location, ',', 1)", selected_columns)
+
+    def test_bid_submission_status_matches_database_constraint(self):
+        sql = (ROOT / "db/buildguru_project_bids.sql").read_text()
+        leads_api = (ROOT / "frontend/src/lib/proLeadsApi.js").read_text()
+        bids_api = (ROOT / "frontend/src/lib/projectBidsApi.js").read_text()
+        self.assertIn("'viewed', 'interested', 'bid_submitted', 'proposal_sent', 'won', 'declined'", sql)
+        self.assertIn('"bid_submitted"', leads_api)
+        self.assertIn("check (homeowner_decision in ('pending', 'shortlisted', 'accepted', 'declined'))", sql)
+        self.assertIn('["pending", "shortlisted", "accepted", "declined"]', bids_api)
+        # A bid row without an amount is meaningless, and the client must agree.
+        self.assertIn("check (bid_submitted_at is null or bid_amount_inr is not null)", sql)
+        self.assertIn("Enter your bid amount in rupees.", leads_api)
+
+    def test_pro_lead_visibility_requires_a_synced_pro_role(self):
+        sql = (ROOT / "db/buildguru_project_bids.sql").read_text()
+        auth = (ROOT / "frontend/src/lib/hmAuth.js").read_text()
+        self.assertIn("up.role = 'pro'", sql)
+        # Entering the pro workspace must persist the role the lead view checks,
+        # otherwise a returning professional sees an empty inbox.
+        self.assertIn('updateUserProfileRole("pro")', auth)
 
     def test_metered_backend_routes_require_a_user(self):
         server = (ROOT / "backend/server.py").read_text()
@@ -165,8 +251,8 @@ class LaunchContractsTest(unittest.TestCase):
         env_example = (ROOT / "backend/.env.example").read_text()
         render = (ROOT / "render.yaml").read_text()
         for config in (env_example, render):
-            self.assertIn("https://www.buildguru.online", config)
-            self.assertIn("https://buildguru.online", config)
+            self.assertIn("https://www.buildguru.ai", config)
+            self.assertIn("https://buildguru.ai", config)
             self.assertIn("https://localhost", config)
             self.assertIn("capacitor://localhost", config)
         self.assertIn("CORS_ORIGIN_REGEX=", env_example)

@@ -7,9 +7,9 @@
 - Primary category: Lifestyle
 - Secondary category: Productivity
 - Age rating draft: 4+
-- Support URL: https://www.buildguru.online
-- Marketing URL: https://www.buildguru.online
-- Privacy policy URL: https://www.buildguru.online/privacy
+- Support URL: https://www.buildguru.ai
+- Marketing URL: https://www.buildguru.ai
+- Privacy policy URL: https://www.buildguru.ai/privacy
 
 ## iOS metadata
 

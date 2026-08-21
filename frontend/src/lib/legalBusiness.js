@@ -6,14 +6,14 @@ export const LEGAL_BUSINESS_ADDRESS = (process.env.REACT_APP_LEGAL_BUSINESS_ADDR
 export const SUPPORT_EMAIL = (process.env.REACT_APP_SUPPORT_EMAIL || "").trim();
 
 export const PUBLIC_WEB_ORIGIN =
-  (process.env.REACT_APP_PUBLIC_WEB_URL || "https://www.buildguru.online").replace(/\/$/, "");
+  (process.env.REACT_APP_PUBLIC_WEB_URL || "https://www.buildguru.ai").replace(/\/$/, "");
 
 /** Footer line: brand + registered name when configured. */
 export function legalEntityLine() {
   if (LEGAL_BUSINESS_NAME) {
     return `BuildGuru is a product of ${LEGAL_BUSINESS_NAME}.`;
   }
-  return "BuildGuru · buildguru.online";
+  return "BuildGuru · buildguru.ai";
 }
 
 /** Optional registered-office detail for legal pages. */

@@ -86,9 +86,19 @@ export function parseProCommand(message, ctx = {}) {
   }
   if (/\b(which|what).*\b(leads?|opportunities).*\b(attention|priority|urgent|today)\b/.test(t)) {
     const leads = Array.isArray(ctx.leads) ? ctx.leads : [];
-    const priorities = leads.filter((lead) => lead.status === "new" || lead.status === "proposal_sent" || lead.targeted).slice(0, 6);
+    const priorities = leads
+      .filter((lead) => lead.homeownerDecision === "accepted" || lead.status === "new" || lead.status === "bid_submitted" || lead.status === "proposal_sent" || lead.targeted)
+      .slice(0, 6);
+    const priorityReason = (lead) => {
+      if (lead.homeownerDecision === "accepted") return "bid accepted — start the engagement";
+      if (lead.homeownerDecision === "shortlisted") return "shortlisted by the homeowner";
+      if (lead.status === "bid_submitted") return "bid awaiting a decision";
+      if (lead.status === "proposal_sent") return "proposal follow-up";
+      if (lead.targeted) return "sent directly to you";
+      return "new";
+    };
     const rows = priorities.length
-      ? priorities.map((lead) => `○ ${lead.title} · ${lead.city || "Location pending"} · ${lead.status === "proposal_sent" ? "proposal follow-up" : lead.targeted ? "sent directly to you" : "new"}`).join("\n")
+      ? priorities.map((lead) => `○ ${lead.title} · ${lead.city || "Location pending"} · ${priorityReason(lead)}`).join("\n")
       : "No homeowner leads need immediate attention.";
     return { kind: "reply", text: `**Lead priorities:**\n${rows}\nSources: homeowner lead inbox.` };
   }

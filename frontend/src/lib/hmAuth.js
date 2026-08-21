@@ -1,6 +1,6 @@
 import { fetchOwnedPortfolio } from "./api";
 import { clearSupabaseLocalSession, getSupabase } from "./supabaseClient";
-import { persistHmSessionFromSupabase } from "./userProfileApi";
+import { persistHmSessionFromSupabase, updateUserProfileRole } from "./userProfileApi";
 import { clearAllPortfolioMediaCaches, setPortfolioMedia } from "./portfolioStorage";
 
 const LAST_AUTH_USER_KEY = "hm_last_auth_user_id";
@@ -233,6 +233,16 @@ export async function establishHmSession(user, profile, { signInIntent } = {}) {
   persistHmSessionFromSupabase(user, profile, { activeRole });
   notifySessionChanged();
   if (activeRole === "pro") {
+    // Server-side lead visibility is gated on user_profiles.role = 'pro'. Without
+    // this sync a returning pro keeps a stale 'homeowner' row and sees an empty
+    // lead inbox even though the local workspace mode is correct.
+    if (profile?.role !== "pro") {
+      try {
+        await updateUserProfileRole("pro");
+      } catch (_) {
+        /* profile row may not exist yet; sign-up path writes it */
+      }
+    }
     try {
       await syncProPortfolioFromServer(user.id);
     } catch (_) {

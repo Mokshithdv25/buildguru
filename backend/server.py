@@ -1381,6 +1381,10 @@ class AIEstimatePlanResponse(BaseModel):
     milestones: List[dict]
     project_summary: Optional[str] = None
     total_indicative_inr: Optional[int] = None
+    estimate_basis: Optional[str] = None
+    assumptions: List[str] = Field(default_factory=list)
+    exclusions: List[str] = Field(default_factory=list)
+    confidence: Literal["low", "medium", "high"] = "low"
     mock: bool = True
     provider_note: Optional[str] = None
 
@@ -1414,12 +1418,26 @@ def _parse_estimate_plan_json(parsed: dict) -> Optional[AIEstimatePlanResponse]:
     total = 0
     normalized_lines = []
     for line in estimate_lines:
+        quantity = max(float(line.get("quantity", 0) or 0), 0)
+        unit_rate = max(int(float(line.get("unit_rate_inr", 0) or 0)), 0)
         amount = int(float(line.get("amount_inr", 0) or 0))
+        if amount <= 0 and quantity > 0 and unit_rate > 0:
+            amount = int(round(quantity * unit_rate))
+        amount = max(amount, 0)
+        low = max(int(float(line.get("low_inr", 0) or 0)), 0) or int(round(amount * 0.9))
+        high = max(int(float(line.get("high_inr", 0) or 0)), 0) or int(round(amount * 1.1))
+        if high < low:
+            low, high = high, low
         total += max(amount, 0)
         normalized_lines.append(
             {
                 "label": str(line.get("label") or "Line item"),
-                "amount_inr": max(amount, 0),
+                "quantity": quantity or None,
+                "unit": str(line.get("unit") or "allowance")[:40],
+                "unit_rate_inr": unit_rate or None,
+                "amount_inr": amount,
+                "low_inr": low,
+                "high_inr": high,
                 "note": str(line.get("note") or ""),
             }
         )
@@ -1437,6 +1455,10 @@ def _parse_estimate_plan_json(parsed: dict) -> Optional[AIEstimatePlanResponse]:
         milestones=normalized_milestones,
         project_summary=summary,
         total_indicative_inr=total,
+        estimate_basis=str(parsed.get("estimate_basis") or "Structured homeowner brief and regional market allowances."),
+        assumptions=[str(item)[:240] for item in (parsed.get("assumptions") or [])[:8]],
+        exclusions=[str(item)[:240] for item in (parsed.get("exclusions") or [])[:8]],
+        confidence=str(parsed.get("confidence") or "low").lower() if str(parsed.get("confidence") or "").lower() in {"low", "medium", "high"} else "low",
         mock=False,
         provider_note="",
     )
@@ -1467,20 +1489,24 @@ def _estimate_system_prompt(flow: FlowKind) -> str:
     if flow == "remodel":
         return (
             "You are an interior remodel cost estimator for Indian homes (single room or zone only). "
-            "Return strict JSON only with keys: estimate_lines, milestones, project_summary. "
-            "estimate_lines: array of {label, amount_inr, note} — 4-6 lines for ROOM-SCALE work only "
+            "Return strict JSON only with keys: estimate_lines, milestones, project_summary, estimate_basis, assumptions, exclusions, confidence. "
+            "estimate_lines: array of {label, quantity, unit, unit_rate_inr, amount_inr, low_inr, high_inr, note} — 6-10 measurable lines for ROOM-SCALE work only "
             "(demolition/prep, civil/carpentry, electrical/lighting, finishes/fixtures, soft furnishings, contingency). "
             "NEVER include whole-house items: no RCC frame, no structure & shell, no G+1/3BHK, no foundation, "
             "no external works, no boundary wall, no facade package. "
             "milestones: array of {title, timeframe} for a remodel (design lock, procurement, execution, handover). "
             "The sum of amount_inr MUST stay within the homeowner budgetInr in the brief (use 90-100% of cap; "
             "contingency is one line inside the cap, not on top). "
-            "project_summary: 2-3 sentences referencing room, budget band, and timeline only. No markdown."
+            "confidence must be low, medium, or high and must reflect the completeness of dimensions and specifications. "
+            "assumptions and exclusions must be explicit arrays. project_summary: 2-3 sentences referencing room, budget band, and timeline only. No markdown."
         )
     return (
         "You are a construction planning assistant for Indian residential new-build projects. "
-        "Return strict JSON only with keys: estimate_lines, milestones, project_summary. "
-        "estimate_lines: array of {label, amount_inr, note}. "
+        "Return strict JSON only with keys: estimate_lines, milestones, project_summary, estimate_basis, assumptions, exclusions, confidence. "
+        "estimate_lines: array of {label, quantity, unit, unit_rate_inr, amount_inr, low_inr, high_inr, note}. "
+        "Use 8-14 measurable BOQ-style lines. Use quantity x unit rate when the brief supports it; otherwise use unit=allowance and explain why. "
+        "low_inr and high_inr must express a defensible market range around amount_inr. assumptions and exclusions must be explicit arrays. "
+        "confidence must be low, medium, or high based on brief completeness. "
         "milestones: array of {title, timeframe}. "
         "Use realistic INR ranges for the city/region in the brief. No markdown."
     )
@@ -1521,10 +1547,14 @@ def _remodel_estimate_from_brief(brief: dict) -> AIEstimatePlanResponse:
     for label, pct, note in weights[:-1]:
         amt = int(round(cap * pct))
         running += amt
-        estimate_lines.append({"label": label, "amount_inr": amt, "note": note})
+        estimate_lines.append({
+            "label": label, "quantity": 1, "unit": "allowance", "unit_rate_inr": amt,
+            "amount_inr": amt, "low_inr": int(round(amt * 0.9)), "high_inr": int(round(amt * 1.1)), "note": note,
+        })
     last_amt = max(cap - running, 0)
     estimate_lines.append(
-        {"label": weights[-1][0], "amount_inr": last_amt, "note": weights[-1][2]}
+        {"label": weights[-1][0], "quantity": 1, "unit": "allowance", "unit_rate_inr": last_amt,
+         "amount_inr": last_amt, "low_inr": last_amt, "high_inr": last_amt, "note": weights[-1][2]}
     )
     total = sum(int(x["amount_inr"]) for x in estimate_lines)
 
@@ -1541,6 +1571,14 @@ def _remodel_estimate_from_brief(brief: dict) -> AIEstimatePlanResponse:
             f"(≈ {total // 100_000} L all-in, ex-GST). Room-size allowances only — not a full-home build."
         ),
         total_indicative_inr=total,
+        estimate_basis=f"Homeowner budget cap, {room} scope, {finish} finish tier, and location-level allowances for {loc}.",
+        assumptions=[
+            "Existing structure and concealed services are serviceable unless noted otherwise.",
+            "Quantities remain allowances until site measurement and working drawings are complete.",
+            "Rates assume normal site access and standard working hours.",
+        ],
+        exclusions=["GST and statutory fees", "Structural remediation", "Temporary accommodation and owner-supplied appliances"],
+        confidence="low",
         mock=False,
         provider_note="Remodel estimate aligned to your wizard budget (room scope).",
     )
@@ -1568,7 +1606,7 @@ def _grok_estimate_plan(
         f"Structured constraints:\n{constraints}\n\n"
         f"Full brief JSON: {brief_json}\n"
         f"Image bundle JSON: {image_json}\n"
-        "Return 4-6 estimate_lines and 4-6 milestones."
+        "Return a BOQ-style estimate with 8-14 measurable lines for a new build or 6-10 for a remodel, plus 4-6 milestones, assumptions, exclusions, basis, and confidence."
     )
 
     try:
@@ -2554,11 +2592,19 @@ def _mock_estimate_plan(flow: FlowKind, brief: dict, image_bundle: Optional[dict
         mock.provider_note = None
         return mock
 
+    seed_lines = [
+        ("Structure & shell (indicative)", 2650000, f"{loc} floor plan + exterior v0"),
+        ("Exterior facade package", 620000, "Elevation style + materials allowance"),
+        ("Core interiors (indicative)", 980000, "Kitchen, wardrobes, baths baseline"),
+        ("Services (MEP rough-in)", 540000, "Electrical, plumbing, basic HVAC points"),
+    ]
     estimate_lines = [
-        {"label": "Structure & shell (indicative)", "amount_inr": 2650000, "note": f"{loc} floor plan + exterior v0"},
-        {"label": "Exterior facade package", "amount_inr": 620000, "note": "Elevation style + materials allowance"},
-        {"label": "Core interiors (indicative)", "amount_inr": 980000, "note": "Kitchen, wardrobes, baths baseline"},
-        {"label": "Services (MEP rough-in)", "amount_inr": 540000, "note": "Electrical, plumbing, basic HVAC points"},
+        {
+            "label": label, "quantity": 1, "unit": "allowance", "unit_rate_inr": amount,
+            "amount_inr": amount, "low_inr": int(round(amount * 0.85)),
+            "high_inr": int(round(amount * 1.15)), "note": note,
+        }
+        for label, amount, note in seed_lines
     ]
     summary = f"Indicative new-home estimate and milestones for {loc}."
     total = sum(int(x["amount_inr"]) for x in estimate_lines if isinstance(x.get("amount_inr"), (int, float)))
@@ -2572,6 +2618,10 @@ def _mock_estimate_plan(flow: FlowKind, brief: dict, image_bundle: Optional[dict
         ],
         project_summary=summary,
         total_indicative_inr=total,
+        estimate_basis=f"Early new-home brief and broad construction allowances for {loc}.",
+        assumptions=["Built-up area and specification schedule require professional confirmation."],
+        exclusions=["Land", "GST and statutory fees", "Loose furniture and finance costs"],
+        confidence="low",
         mock=True,
         provider_note=None,
     )
@@ -2600,7 +2650,7 @@ def _openai_estimate_plan(flow: FlowKind, brief: dict, image_bundle: Optional[di
         f"Structured constraints:\n{constraints}\n\n"
         f"Brief JSON: {brief_json}\n"
         f"Image bundle JSON: {image_json}\n"
-        "Return 4-6 estimate lines and 4-6 milestones."
+        "Return a BOQ-style estimate with 8-14 measurable lines for a new build or 6-10 for a remodel, plus 4-6 milestones, assumptions, exclusions, basis, and confidence."
     )
 
     try:
@@ -2768,20 +2818,21 @@ def _grok_hub_assistant(message: str, ctx: dict) -> Optional[dict]:
     system = (
         "You are Homi, a warm concise agentic assistant inside BuildGuru project management. "
         "Answer using ONLY the active Project context JSON as ground truth. It may include a structured brief, AI v0 estimate summary, "
-        "task board, site messages, document register metadata, payment ledger, editable material plan, and approval log. "
-        "Do not invent tasks, document contents, messages, quantities, payments, progress, brands, or approvals that are not in context. "
+        "task board, site messages, document register metadata, payment ledger, editable material plan, approval log, and professional bids. "
+        "Do not invent tasks, document contents, messages, quantities, payments, progress, brands, bids, or approvals that are not in context. "
         "Document metadata is not document body text; never imply you read file contents unless extracted content is explicitly present. "
         "If data is missing, say what is missing and suggest the next step. "
         f"User role: {role}. Surface: {surface}. "
-        "For homeowners, help manage scope, takeoff, shopping choices, professional matching, tasks, timeline, budget, approvals, and handoff. "
+        "For homeowners, help manage scope, takeoff, shopping choices, professional matching, bid comparison, tasks, timeline, budget, approvals, and handoff. "
+        "When comparing bids, quote only the amounts, timelines, and scope notes present in context.bids, and note what a bid excludes rather than assuming parity. "
         "For professionals, brief them on only the leads and project artifacts explicitly shared in context. "
-        "Suggestions are drafts: never claim a message was sent, a professional was hired, or materials were ordered without an executed approval record. "
+        "Suggestions are drafts: never claim a message was sent, a bid was accepted, a professional was hired, or materials were ordered without an executed approval record. "
         "For a daily briefing, summarize what changed, blockers or risks, today's next actions, and decisions awaiting approval. "
         "Reply in 2-4 short sentences unless the user asks for a list (then use short bullet lines). "
         "End factual project answers with a short 'Sources:' line using only names in context.artifactRefs. Use plain text (no markdown headers). "
         "If the user wants navigation, include JSON action on its own line as: "
         'ACTION:{"type":"nav","nav":"Tasks"} OR ACTION:{"type":"path","path":"/build/new-home"} '
-        'OR ACTION:{"type":"addTask","title":"..."}. Valid nav: Overview, Timeline, Tasks, Budget, Materials, Site Feed, Settings.'
+        'OR ACTION:{"type":"addTask","title":"..."}. Valid nav: Overview, Bids, Timeline, Tasks, Budget, Materials, Site Feed, Settings.'
     )
     user_prompt = f"Project context JSON:\n{ctx_json}\n\nUser message:\n{message}"
     try:
@@ -2990,7 +3041,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_origins=_csv_env(
         "CORS_ORIGINS",
-        "https://www.buildguru.online,https://buildguru.online,http://localhost:3000,http://127.0.0.1:3000",
+        "https://www.buildguru.ai,https://buildguru.ai,https://www.buildguru.online,https://buildguru.online,http://localhost:3000,http://127.0.0.1:3000",
     ),
     allow_origin_regex=os.getenv(
         "CORS_ORIGIN_REGEX",

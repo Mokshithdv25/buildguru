@@ -85,6 +85,26 @@ function sumEstimateLines(lines) {
   }, 0);
 }
 
+function estimateCsv(planBundle) {
+  const rows = [["Line item", "Quantity", "Unit", "Unit rate INR", "Low INR", "Expected INR", "High INR", "Basis / note"]];
+  (planBundle?.estimate_lines || []).forEach((line) => rows.push([
+    line.label, line.quantity ?? "", line.unit || "", line.unit_rate_inr ?? "",
+    line.low_inr ?? "", line.amount_inr ?? "", line.high_inr ?? "", line.note || "",
+  ]));
+  rows.push(["Indicative subtotal", "", "", "", "", planBundle?.total_indicative_inr ?? sumEstimateLines(planBundle?.estimate_lines), "", "Ex-GST unless stated"]);
+  return rows.map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+}
+
+function downloadEstimateCsv(planBundle) {
+  const blob = new Blob([estimateCsv(planBundle)], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `buildguru-estimate-${new Date().toISOString().slice(0, 10)}.csv`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 /**
  * Indicative cost breakdown from plan/estimate API (or mock).
  */
@@ -106,17 +126,21 @@ export function V0EstimateSection({ planBundle, title = "Design plan estimate (f
         background: "linear-gradient(180deg,#FFFBF7,#FDFBF8)",
       }}
     >
-      <div style={{ padding: "14px 16px", borderBottom: "1px solid #EDE8E0", background: "#FBF6F0" }}>
-        <div style={{ fontWeight: 800, fontSize: 15, color: "#1C1917" }}>{title}</div>
+      <div style={{ padding: "14px 16px", borderBottom: "1px solid #EDE8E0", background: "#FBF6F0", display: "flex", justifyContent: "space-between", gap: 16, alignItems: "flex-start" }}>
+        <div><div style={{ fontWeight: 800, fontSize: 15, color: "#1C1917" }}>{title}</div>
         <div style={{ fontSize: 12, color: "#78716C", marginTop: 4, lineHeight: 1.45 }}>
-          Ballpark line items to discuss with your architect — not a final quote or contract price. Generated from your brief.
-        </div>
+          Working estimate for professional validation. Range, quantity, and rate quality improve as dimensions and specifications are confirmed.
+        </div></div>
+        <button type="button" onClick={() => downloadEstimateCsv(planBundle)} style={{ border: "1px solid #C85F2B", color: "#A54818", background: "#fff", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}>Download CSV</button>
       </div>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+      <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 760 }}>
         <thead>
           <tr style={{ textAlign: "left", color: "#78716C", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.04em" }}>
             <th style={{ padding: "10px 16px", fontWeight: 700, borderBottom: "1px solid #EDE8E0" }}>Line item</th>
-            <th style={{ padding: "10px 16px", fontWeight: 700, borderBottom: "1px solid #EDE8E0", textAlign: "right" }}>Estimate</th>
+            <th style={{ padding: "10px 10px", fontWeight: 700, borderBottom: "1px solid #EDE8E0", textAlign: "right" }}>Qty</th>
+            <th style={{ padding: "10px 10px", fontWeight: 700, borderBottom: "1px solid #EDE8E0" }}>Unit</th>
+            <th style={{ padding: "10px 10px", fontWeight: 700, borderBottom: "1px solid #EDE8E0", textAlign: "right" }}>Rate</th>
+            <th style={{ padding: "10px 16px", fontWeight: 700, borderBottom: "1px solid #EDE8E0", textAlign: "right" }}>Expected / range</th>
           </tr>
         </thead>
         <tbody>
@@ -126,24 +150,35 @@ export function V0EstimateSection({ planBundle, title = "Design plan estimate (f
                 <div style={{ fontWeight: 600 }}>{row.label}</div>
                 {row.note ? <div style={{ fontSize: 11, color: "#78716C", marginTop: 4, lineHeight: 1.4 }}>{row.note}</div> : null}
               </td>
+              <td style={{ padding: "12px 10px", textAlign: "right", verticalAlign: "top" }}>{row.quantity ?? "—"}</td>
+              <td style={{ padding: "12px 10px", verticalAlign: "top" }}>{row.unit || "allowance"}</td>
+              <td style={{ padding: "12px 10px", textAlign: "right", whiteSpace: "nowrap", verticalAlign: "top" }}>{row.unit_rate_inr ? formatInr(row.unit_rate_inr) : "—"}</td>
               <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 700, color: "#1C1917", whiteSpace: "nowrap", verticalAlign: "top" }}>
-                {formatInr(row.amount_inr)}
+                <div>{formatInr(row.amount_inr)}</div>
+                {row.low_inr || row.high_inr ? <div style={{ fontSize: 11, color: "#78716C", fontWeight: 500, marginTop: 3 }}>{formatInr(row.low_inr)}–{formatInr(row.high_inr)}</div> : null}
               </td>
             </tr>
           ))}
         </tbody>
         <tfoot>
           <tr style={{ background: "#FDF8F3" }}>
-            <td style={{ padding: "14px 16px", fontWeight: 800, color: "#1C1917" }}>Indicative subtotal (ex-GST)</td>
+            <td colSpan={4} style={{ padding: "14px 16px", fontWeight: 800, color: "#1C1917" }}>Indicative subtotal (ex-GST)</td>
             <td style={{ padding: "14px 16px", textAlign: "right", fontWeight: 800, fontSize: 16, color: OR, fontVariantNumeric: "tabular-nums" }}>
               {formatInr(total)}
             </td>
           </tr>
         </tfoot>
-      </table>
+      </table></div>
       {planBundle?.project_summary ? (
         <div style={{ padding: "12px 16px 16px", fontSize: 12, color: "#57534E", lineHeight: 1.55, borderTop: "1px solid #EDE8E0" }}>
           {planBundle.project_summary}
+        </div>
+      ) : null}
+      {(planBundle?.estimate_basis || planBundle?.assumptions?.length || planBundle?.exclusions?.length) ? (
+        <div style={{ padding: "14px 16px 16px", borderTop: "1px solid #EDE8E0", display: "grid", gap: 12, fontSize: 12, lineHeight: 1.5 }}>
+          <div><strong>Estimate basis</strong><div style={{ color: "#57534E", marginTop: 3 }}>{planBundle.estimate_basis || "Structured brief and regional allowances."} · Confidence: {planBundle.confidence || "low"}</div></div>
+          {planBundle.assumptions?.length ? <div><strong>Assumptions</strong><ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>{planBundle.assumptions.map((item) => <li key={item}>{item}</li>)}</ul></div> : null}
+          {planBundle.exclusions?.length ? <div><strong>Exclusions</strong><ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>{planBundle.exclusions.map((item) => <li key={item}>{item}</li>)}</ul></div> : null}
         </div>
       ) : null}
     </div>
