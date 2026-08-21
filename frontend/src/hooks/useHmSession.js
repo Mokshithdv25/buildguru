@@ -8,6 +8,7 @@ import {
   readHmSession,
 } from "../lib/hmAuth";
 import { fetchUserProfile } from "../lib/userProfileApi";
+import { readOAuthSignInIntent } from "../lib/authIntent";
 
 /** Reactive homeowner/pro session from localStorage + Supabase auth events. */
 export function useHmSession() {
@@ -45,7 +46,9 @@ export function useHmSession() {
         } catch (_) {
           /* ignore */
         }
-        await establishHmSession(sbSession.user, profile);
+        await establishHmSession(sbSession.user, profile, {
+          signInIntent: readOAuthSignInIntent()?.role,
+        });
         if (!cancelled) refresh();
       } catch (_) {
         if (!cancelled) setSession(readHmSession());

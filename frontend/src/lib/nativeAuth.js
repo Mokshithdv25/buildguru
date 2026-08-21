@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { getSupabase } from "./supabaseClient";
+import { clearOAuthSignInIntent } from "./authIntent";
 
 export const NATIVE_AUTH_CALLBACK = "in.buildguru.app://auth/callback";
 
@@ -69,11 +70,7 @@ export async function handleNativeAuthCallback(url) {
   }
 
   if (callbackError) {
-    try {
-      localStorage.removeItem("hm_oauth_pending");
-    } catch {
-      /* ignore */
-    }
+    clearOAuthSignInIntent();
     const errorUrl = new URL(nextPath, window.location.origin);
     errorUrl.searchParams.delete("oauth");
     errorUrl.searchParams.delete("confirmed");
