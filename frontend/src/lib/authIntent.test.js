@@ -1,5 +1,6 @@
 import {
   clearOAuthSignInIntent,
+  getOAuthRootRecoveryPath,
   hasPendingOAuthSignIn,
   persistOAuthSignInIntent,
   readOAuthSignInIntent,
@@ -11,10 +12,14 @@ describe("OAuth workspace intent", () => {
 
   test("preserves an explicit homeowner selection across the OAuth redirect", () => {
     jest.spyOn(Date, "now").mockReturnValue(1_000_000);
-    persistOAuthSignInIntent("homeowner");
+    persistOAuthSignInIntent("homeowner", { redirectPath: "/project/design" });
 
     expect(hasPendingOAuthSignIn()).toBe(true);
-    expect(readOAuthSignInIntent()).toEqual({ role: "homeowner", createdAt: 1_000_000 });
+    expect(readOAuthSignInIntent()).toEqual({
+      role: "homeowner",
+      redirectPath: "/project/design",
+      createdAt: 1_000_000,
+    });
   });
 
   test("does not accept an expired role selection", () => {
@@ -32,5 +37,20 @@ describe("OAuth workspace intent", () => {
     clearOAuthSignInIntent();
 
     expect(hasPendingOAuthSignIn()).toBe(false);
+  });
+
+  test("recovers a homeowner OAuth callback that lands on the marketing root", () => {
+    const intent = { role: "homeowner", redirectPath: null, createdAt: 1_000_000 };
+
+    expect(getOAuthRootRecoveryPath("/", intent)).toBe("/sign-in?oauth=1&role=homeowner");
+    expect(getOAuthRootRecoveryPath("/project", intent)).toBeNull();
+  });
+
+  test("preserves a safe requested destination during root callback recovery", () => {
+    const intent = { role: "pro", redirectPath: "/pro/leads?status=new", createdAt: 1_000_000 };
+
+    expect(getOAuthRootRecoveryPath("/", intent)).toBe(
+      "/sign-in?oauth=1&role=pro&redirect=%2Fpro%2Fleads%3Fstatus%3Dnew",
+    );
   });
 });

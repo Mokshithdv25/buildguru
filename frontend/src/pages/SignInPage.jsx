@@ -305,7 +305,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
     setAuthError("");
     setLoading(true);
     try {
-      persistOAuthSignInIntent(accountRole);
+      persistOAuthSignInIntent(accountRole, { redirectPath: redirectFromQuery });
       const params = new URLSearchParams({ role: accountRole });
       if (requestedSignUp) params.set("signup", "1");
       if (redirectFromQuery) params.set("redirect", redirectFromQuery);

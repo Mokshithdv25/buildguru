@@ -6,18 +6,27 @@ function normalizeRole(role) {
   return role === "pro" || role === "homeowner" ? role : null;
 }
 
+function normalizeRedirectPath(path) {
+  const candidate = String(path || "").trim();
+  return candidate.startsWith("/") && !candidate.startsWith("//") ? candidate : null;
+}
+
 function storageAvailable() {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
 /** Persist the workspace selected before leaving the app for OAuth. */
-export function persistOAuthSignInIntent(role) {
+export function persistOAuthSignInIntent(role, { redirectPath = null } = {}) {
   const normalizedRole = normalizeRole(role);
   if (!normalizedRole || !storageAvailable()) return;
   try {
     localStorage.setItem(
       OAUTH_INTENT_KEY,
-      JSON.stringify({ role: normalizedRole, createdAt: Date.now() }),
+      JSON.stringify({
+        role: normalizedRole,
+        redirectPath: normalizeRedirectPath(redirectPath),
+        createdAt: Date.now(),
+      }),
     );
     // Keep this during one release cycle so callbacks started on the previous
     // frontend still complete after the new bundle is deployed.
@@ -40,11 +49,27 @@ export function readOAuthSignInIntent(now = Date.now()) {
       clearOAuthSignInIntent();
       return null;
     }
-    return { role, createdAt };
+    return {
+      role,
+      redirectPath: normalizeRedirectPath(parsed?.redirectPath),
+      createdAt,
+    };
   } catch (_) {
     clearOAuthSignInIntent();
     return null;
   }
+}
+
+/**
+ * Supabase falls back to the configured Site URL when a requested redirect is
+ * not allow-listed. Recover that root callback through the normal sign-in
+ * completion page so profile setup and role-specific navigation still run.
+ */
+export function getOAuthRootRecoveryPath(pathname, intent = readOAuthSignInIntent()) {
+  if (pathname !== "/" || !intent?.role) return null;
+  const params = new URLSearchParams({ oauth: "1", role: intent.role });
+  if (intent.redirectPath) params.set("redirect", intent.redirectPath);
+  return `/sign-in?${params.toString()}`;
 }
 
 export function hasPendingOAuthSignIn() {
