@@ -8,7 +8,7 @@ import { fetchUserProfile } from "./lib/userProfileApi";
 import { AUTH_UI_ENABLED } from "./lib/authMode";
 import { clearHmSessionState, establishHmSession } from "./lib/hmAuth";
 import { warmAiBackend } from "./lib/aiApi";
-import { readOAuthSignInIntent } from "./lib/authIntent";
+import { getOAuthRootRecoveryPath, readOAuthSignInIntent } from "./lib/authIntent";
 import { useMobileNative } from "./hooks/useMobileNative";
 import SignInErrorBoundary from "./components/SignInErrorBoundary";
 import ProOnboardingGuard from "./components/ProOnboardingGuard";
@@ -233,6 +233,7 @@ function App() {
 
     const syncSession = async (session) => {
       if (!session?.user) return;
+      const oauthIntent = readOAuthSignInIntent();
       let profile = null;
       try {
         profile = await fetchUserProfile(session.user.id);
@@ -240,8 +241,10 @@ function App() {
         /* table missing or RLS — still keep auth session */
       }
       await establishHmSession(session.user, profile, {
-        signInIntent: readOAuthSignInIntent()?.role,
+        signInIntent: oauthIntent?.role,
       });
+      const recoveryPath = getOAuthRootRecoveryPath(window.location.pathname, oauthIntent);
+      if (recoveryPath) window.location.replace(recoveryPath);
     };
 
     sb.auth.getSession().then(({ data: { session } }) => {
