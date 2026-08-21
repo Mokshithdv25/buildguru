@@ -12,6 +12,12 @@ import { establishHmSession, getPostLoginPath, signOutHm } from "../lib/hmAuth";
 import { useHmSession } from "../hooks/useHmSession";
 import { authCallbackUrl, openNativeAuthUrl } from "../lib/nativeAuth";
 import { isNativeApp } from "../lib/capacitorPlatform";
+import {
+  clearOAuthSignInIntent,
+  hasPendingOAuthSignIn,
+  persistOAuthSignInIntent,
+  readOAuthSignInIntent,
+} from "../lib/authIntent";
 
 const EMAIL_SIGNUP_ENABLED = process.env.REACT_APP_EMAIL_SIGNUP_ENABLED === "true";
 const PHONE_AUTH_ENABLED = process.env.REACT_APP_PHONE_AUTH_ENABLED === "true";
@@ -188,7 +194,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
     }
   };
 
-  const tryFinishEmailAuth = async (session) => {
+  const tryFinishEmailAuth = async (session, { signInIntent: suppliedIntent } = {}) => {
     const user = session.user;
     let profile = null;
     try {
@@ -196,7 +202,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
     } catch (_) {
       /* user_profiles table or policies not ready — continue to profile step */
     }
-    const requestedRole = searchParams.get("role");
+    const requestedRole = suppliedIntent || searchParams.get("role");
     const hasExplicitRole = requestedRole === "pro" || requestedRole === "homeowner";
     const signInIntent = hasExplicitRole ? requestedRole : accountRole;
 
@@ -241,14 +247,8 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
 
   // Finish OAuth or email confirmation after the browser/native callback returns.
   useEffect(() => {
-    let pending = null;
-    try {
-      pending = localStorage.getItem("hm_oauth_pending");
-    } catch (_) {
-      /* ignore */
-    }
     const callbackPending =
-      pending ||
+      hasPendingOAuthSignIn() ||
       searchParams.get("confirmed") === "1" ||
       searchParams.get("oauth") === "1" ||
       searchParams.get("recovery") === "1" ||
@@ -266,14 +266,16 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
         setLoading(false);
         return;
       }
-      try {
-        localStorage.removeItem("hm_oauth_pending");
-      } catch (_) {
-        /* ignore */
-      }
       setLoading(true);
       try {
-        await tryFinishEmailAuth(session);
+        const queryRole = searchParams.get("role");
+        const oauthRole = readOAuthSignInIntent()?.role;
+        const signInIntent =
+          queryRole === "pro" || queryRole === "homeowner"
+            ? queryRole
+            : oauthRole;
+        await tryFinishEmailAuth(session, { signInIntent });
+        clearOAuthSignInIntent();
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -303,11 +305,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
     setAuthError("");
     setLoading(true);
     try {
-      try {
-        localStorage.setItem("hm_oauth_pending", "1");
-      } catch (_) {
-        /* ignore */
-      }
+      persistOAuthSignInIntent(accountRole);
       const params = new URLSearchParams({ role: accountRole });
       if (requestedSignUp) params.set("signup", "1");
       if (redirectFromQuery) params.set("redirect", redirectFromQuery);
@@ -326,11 +324,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
       }
       // Browser is navigating to Google — leave loading on.
     } catch (err) {
-      try {
-        localStorage.removeItem("hm_oauth_pending");
-      } catch (_) {
-        /* ignore */
-      }
+      clearOAuthSignInIntent();
       setLoading(false);
       setAuthError(err?.message || "Google sign-in failed. Please try again.");
     }

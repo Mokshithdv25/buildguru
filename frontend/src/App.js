@@ -8,6 +8,7 @@ import { fetchUserProfile } from "./lib/userProfileApi";
 import { AUTH_UI_ENABLED } from "./lib/authMode";
 import { clearHmSessionState, establishHmSession } from "./lib/hmAuth";
 import { warmAiBackend } from "./lib/aiApi";
+import { readOAuthSignInIntent } from "./lib/authIntent";
 import { useMobileNative } from "./hooks/useMobileNative";
 import SignInErrorBoundary from "./components/SignInErrorBoundary";
 import ProOnboardingGuard from "./components/ProOnboardingGuard";
@@ -238,7 +239,9 @@ function App() {
       } catch (_) {
         /* table missing or RLS — still keep auth session */
       }
-      await establishHmSession(session.user, profile);
+      await establishHmSession(session.user, profile, {
+        signInIntent: readOAuthSignInIntent()?.role,
+      });
     };
 
     sb.auth.getSession().then(({ data: { session } }) => {

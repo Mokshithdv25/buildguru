@@ -2,6 +2,7 @@ import { fetchOwnedPortfolio } from "./api";
 import { clearSupabaseLocalSession, getSupabase } from "./supabaseClient";
 import { persistHmSessionFromSupabase, updateUserProfileRole } from "./userProfileApi";
 import { clearAllPortfolioMediaCaches, setPortfolioMedia } from "./portfolioStorage";
+import { clearOAuthSignInIntent } from "./authIntent";
 
 const LAST_AUTH_USER_KEY = "hm_last_auth_user_id";
 export const HM_SESSION_CLEARED_EVENT = "hm-session-cleared";
@@ -254,6 +255,7 @@ export async function establishHmSession(user, profile, { signInIntent } = {}) {
 
 /** Clear local session and Supabase auth. Call after navigating away from guarded pages. */
 export async function signOutHm({ redirectTo = "/" } = {}) {
+  clearOAuthSignInIntent();
   clearHmSessionState();
 
   const sb = getSupabase();
