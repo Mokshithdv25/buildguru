@@ -6,8 +6,8 @@
 - Package name: `in.buildguru.app`
 - Category: House & Home
 - Contact email: support@buildguru.online
-- Website: https://www.buildguru.online
-- Privacy policy: https://www.buildguru.online/privacy
+- Website: https://www.buildguru.ai
+- Privacy policy: https://www.buildguru.ai/privacy
 
 ## Short description
 

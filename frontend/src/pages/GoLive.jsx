@@ -91,7 +91,7 @@ export default function GoLive() {
 
   const profileUrl = publicProfileUrl(slug);
   const profileHost = (() => {
-    try { return new URL(profileUrl).host; } catch { return "www.buildguru.online"; }
+    try { return new URL(profileUrl).host; } catch { return "www.buildguru.ai"; }
   })();
   const shareMessage = `View my professional portfolio on BuildGuru: ${profileUrl}`;
 

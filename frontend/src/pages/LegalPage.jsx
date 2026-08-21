@@ -6,7 +6,7 @@ import { LEGAL_BUSINESS_NAME, SUPPORT_EMAIL, legalEntityDetailsParagraph } from 
 const aboutParagraph = () => {
   const details = legalEntityDetailsParagraph();
   const base =
-    "BuildGuru (buildguru.online) helps plan home construction and remodeling in India: AI-assisted design concepts and estimates, a project hub, a marketplace of professionals, and portfolio tools for professionals. By creating an account or using the platform you agree to these terms.";
+    "BuildGuru (buildguru.ai) helps plan home construction and remodeling in India: AI-assisted design concepts and estimates, a project hub, a marketplace of professionals, and portfolio tools for professionals. By creating an account or using the platform you agree to these terms.";
   if (LEGAL_BUSINESS_NAME) {
     return `BuildGuru is operated by ${LEGAL_BUSINESS_NAME}. ${details || ""} ${base}`.replace(/\s+/g, " ").trim();
   }

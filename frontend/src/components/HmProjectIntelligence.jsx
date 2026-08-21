@@ -1,34 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Bot, Check, FileSearch, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { listPublishedPortfolios } from "../lib/api";
+import { briefScopeWords, primaryCraftForBrief, rankPros } from "../lib/proMatching";
 import { craftLabel, proDisplayName } from "./PublishedProsDirectory";
 import { dispatchHomiCommand } from "./HmCommandCenter";
 import "./HmProjectIntelligence.css";
-
-function normalized(value) {
-  return String(value || "").trim().toLowerCase();
-}
-
-function scorePro(pro, { city, targetCraft, scopeWords }) {
-  let score = 45;
-  const reasons = [];
-  if (pro.craft === targetCraft) {
-    score += 25;
-    reasons.push(craftLabel(pro.craft));
-  }
-  if (city && normalized(pro.city).includes(normalized(city).split(",")[0])) {
-    score += 15;
-    reasons.push(`Works in ${pro.city}`);
-  }
-  const specialties = Array.isArray(pro.specialties) ? pro.specialties.map(normalized) : [];
-  const overlap = scopeWords.filter((word) => specialties.some((specialty) => specialty.includes(word)));
-  if (overlap.length) {
-    score += Math.min(10, overlap.length * 4);
-    reasons.push(`${overlap[0]} experience`);
-  }
-  score += Math.min(5, Math.round(Number(pro.profile_strength || 0) / 20));
-  return { ...pro, matchScore: Math.min(98, score), matchReasons: reasons.slice(0, 3) };
-}
 
 export default function HmProjectIntelligence({
   context,
@@ -46,12 +22,9 @@ export default function HmProjectIntelligence({
   const [loadingPros, setLoadingPros] = useState(false);
   const [savingKey, setSavingKey] = useState("");
   const [error, setError] = useState("");
-  const targetCraft = brief?.hasArchitect ? "contractor" : "architect";
+  const targetCraft = primaryCraftForBrief(brief);
   const city = brief?.city || brief?.location || context?.location || "";
-  const scopeWords = useMemo(() => {
-    const source = [brief?.room, brief?.homeType, brief?.mainGoal, ...(brief?.styles || [])].filter(Boolean).join(" ");
-    return normalized(source).split(/\s+/).filter((word) => word.length > 3).slice(0, 8);
-  }, [brief]);
+  const scopeWords = useMemo(() => briefScopeWords(brief), [brief]);
 
   useEffect(() => {
     let active = true;
@@ -59,11 +32,7 @@ export default function HmProjectIntelligence({
     listPublishedPortfolios({ limit: 50 })
       .then((rows) => {
         if (!active) return;
-        const ranked = (rows || [])
-          .map((pro) => scorePro(pro, { city, targetCraft, scopeWords }))
-          .sort((a, b) => b.matchScore - a.matchScore)
-          .slice(0, 3);
-        setPros(ranked);
+        setPros(rankPros(rows, { city, targetCraft, scopeWords, limit: 3 }));
       })
       .catch(() => {
         if (active) setPros([]);

@@ -37,7 +37,9 @@ import HmProjectAssistant from "../components/HmProjectAssistant";
 import HmCommandCenter from "../components/HmCommandCenter";
 import HmMorningBriefing from "../components/HmMorningBriefing";
 import HmProjectIntelligence from "../components/HmProjectIntelligence";
+import ProjectBidsPanel from "../components/ProjectBidsPanel";
 import ProjectMaterialsPanel from "../components/ProjectMaterialsPanel";
+import ProjectProMatches from "../components/ProjectProMatches";
 import ProjectTimelineEditor from "../components/ProjectTimelineEditor";
 import {
   loadProjectIntelligence,
@@ -45,6 +47,7 @@ import {
   removeProjectMaterial,
   saveProjectMaterial,
 } from "../lib/projectIntelligenceApi";
+import { listProjectBids, setBidDecision } from "../lib/projectBidsApi";
 import { browseQuotesUrl, isProjectPostedPhase } from "../lib/projectPostingFlow";
 
 const OR = "#C85F2B";
@@ -262,6 +265,7 @@ const MILESTONE_SEED = {
 
 const NAV = [
   { icon: "⊞", label: "Overview", path: null },
+  { icon: "📩", label: "Bids", path: null },
   { icon: "📅", label: "Timeline", path: null },
   { icon: "✓", label: "Tasks", path: null },
   { icon: "₹", label: "Budget", path: null },
@@ -416,6 +420,9 @@ export default function ProjectDashboard() {
   const [materialItems, setMaterialItems] = useState([]);
   const [agentActions, setAgentActions] = useState([]);
   const [intelligenceConfigured, setIntelligenceConfigured] = useState(true);
+  const [bids, setBids] = useState([]);
+  const [bidsConfigured, setBidsConfigured] = useState(true);
+  const [bidsLoading, setBidsLoading] = useState(false);
   const [projectTitleDraft, setProjectTitleDraft] = useState("");
   const [renamingProject, setRenamingProject] = useState(false);
   const [siteUploading, setSiteUploading] = useState(false);
@@ -582,6 +589,8 @@ export default function ProjectDashboard() {
       setMaterialItems([]);
       setAgentActions([]);
       setIntelligenceConfigured(true);
+      setBids([]);
+      setBidsConfigured(true);
       return;
     }
     const run = async () => {
@@ -628,6 +637,18 @@ export default function ProjectDashboard() {
           setAgentActions([]);
           setIntelligenceConfigured(false);
         }
+        setBidsLoading(true);
+        try {
+          const bidResult = await listProjectBids(projectId);
+          setBids(bidResult.bids || []);
+          setBidsConfigured(bidResult.configured);
+        } catch (bidError) {
+          console.warn("Could not load project bids:", bidError?.message || bidError);
+          setBids([]);
+          setBidsConfigured(false);
+        } finally {
+          setBidsLoading(false);
+        }
         const ms = board.v0Pack?.estimate?.milestones;
         if (Array.isArray(ms) && ms.length) {
           setMilestonesByPhase({
@@ -652,6 +673,11 @@ export default function ProjectDashboard() {
 
   const filteredTasks = useMemo(() => tasks.filter((t) => t.phase === selectedPhase), [tasks, selectedPhase]);
   const filteredMsgs = useMemo(() => msgs.filter((m) => m.phase === selectedPhase), [msgs, selectedPhase]);
+  const newBidCount = useMemo(
+    () => bids.filter((bid) => (bid.homeowner_decision || "pending") === "pending").length,
+    [bids],
+  );
+  const acceptedBid = useMemo(() => bids.find((bid) => bid.homeowner_decision === "accepted") || null, [bids]);
   const phaseMilestones = milestonesByPhase[selectedPhase] || [];
   const fundingSnapshot = useMemo(() => {
     if (!isLiveProject) return PROJECT_FUNDING;
@@ -739,10 +765,12 @@ export default function ProjectDashboard() {
         timeline: activeProjectMeta?.timeline_completion || briefData?.timeline || "",
         postedBanner: showPostedBanner,
         wantsMarketplaceQuotes: !briefHasOwnPros,
+        bids,
         hubQuery,
         signInPath: signInRedirectPath,
       }),
     [
+      bids,
       isSignedIn,
       hmSession,
       activeProjectId,
@@ -788,6 +816,15 @@ export default function ProjectDashboard() {
     const saved = await recordAgentDecision({ projectId: activeProjectId, ...decision });
     setAgentActions((current) => [saved, ...current]);
     return saved;
+  };
+
+  // Accepting a bid also unlocks the professional's contact details, which the
+  // server only reveals on re-read, so refresh the list instead of patching it.
+  const decideBid = async ({ bidId, decision }) => {
+    await setBidDecision({ bidId, decision });
+    const refreshed = await listProjectBids(activeProjectId);
+    setBids(refreshed.bids || []);
+    setBidsConfigured(refreshed.configured);
   };
 
   const saveProjectSchedule = async (schedule) => {
@@ -1225,6 +1262,22 @@ export default function ProjectDashboard() {
               >
                 <span style={{ fontSize: 15 }}>{n.icon}</span>
                 {n.label}
+                {n.label === "Bids" && newBidCount > 0 ? (
+                  <span
+                    aria-label={`${newBidCount} new bids`}
+                    style={{
+                      marginLeft: "auto",
+                      background: OR,
+                      color: "#fff",
+                      borderRadius: 999,
+                      padding: "1px 7px",
+                      fontSize: 10,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {newBidCount}
+                  </span>
+                ) : null}
               </div>
             );
           })}
@@ -1335,13 +1388,13 @@ export default function ProjectDashboard() {
               <strong>Project posted.</strong>{" "}
               {briefHasOwnPros
                 ? "You chose to bring your own team — invite architects and contractors under Team, then track quotes and site work here."
-                : "Your brief and v0 pack are live for marketplace pros — browse Find Pros to connect, compare proposals, and hire for the next scope."}
+                : "Your brief is live for verified professionals. Invite the matches below to bid, then compare priced bids side by side under Bids."}
             </div>
             <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
               {!briefHasOwnPros ? (
                 <button
                   type="button"
-                  onClick={() => navigate(browseQuotesUrl({ projectId: activeProjectId, city: briefData?.city }))}
+                  onClick={() => setActiveNav("Bids")}
                   style={{
                     background: OR,
                     color: "#fff",
@@ -1353,7 +1406,7 @@ export default function ProjectDashboard() {
                     cursor: "pointer",
                   }}
                 >
-                  Find pros & quotes
+                  Invite pros & see bids
                 </button>
               ) : (
                 <button
@@ -1572,6 +1625,43 @@ export default function ProjectDashboard() {
               pendingTasks={pendingTasks}
               onNavigatePath={(path) => navigate(path)}
             />
+            {isLiveProject && !briefHasOwnPros && bids.length ? (
+              <button
+                type="button"
+                onClick={() => setActiveNav("Bids")}
+                style={{
+                  ...panel,
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  marginBottom: 14,
+                  padding: "14px 18px",
+                  border: `1px solid ${acceptedBid ? "#A7F3D0" : "#F0DCC8"}`,
+                  textAlign: "left",
+                  cursor: "pointer",
+                  font: "inherit",
+                }}
+              >
+                <span style={{ fontSize: 13.5, color: "#57534E", lineHeight: 1.5 }}>
+                  {acceptedBid
+                    ? `You accepted ${acceptedBid.pro_name}'s bid of ${formatInrShort(acceptedBid.bid_amount_inr)}.`
+                    : `${bids.length} professional ${bids.length === 1 ? "bid" : "bids"} on this project${newBidCount ? ` — ${newBidCount} still need a decision.` : "."}`}
+                </span>
+                <span style={{ color: OR, fontSize: 12, fontWeight: 800, flexShrink: 0 }}>Open bids →</span>
+              </button>
+            ) : null}
+            {isLiveProject && !briefHasOwnPros && showPostedBanner ? (
+              <div style={{ marginBottom: 14 }}>
+                <ProjectProMatches
+                  projectId={activeProjectId}
+                  brief={briefData || {}}
+                  onNavigatePath={(path) => navigate(path)}
+                />
+              </div>
+            ) : null}
             <HmCommandCenter />
             {isLiveProject ? (
               <HmProjectIntelligence
@@ -1914,6 +2004,30 @@ export default function ProjectDashboard() {
           </div>
 
           </>
+          )}
+
+          {hubReady && activeNav === "Bids" && (
+            <ProjectBidsPanel
+              bids={bids}
+              configured={bidsConfigured}
+              loading={bidsLoading}
+              budgetMax={activeProjectMeta?.budget_max || briefData?.budgetInr}
+              onDecision={decideBid}
+              onNavigatePath={(path) => navigate(path)}
+              onFindPros={() => navigate(browseQuotesUrl({ projectId: activeProjectId, city: briefData?.city }))}
+              matchesSlot={
+                isLiveProject ? (
+                  <div style={{ marginTop: 22 }}>
+                    <ProjectProMatches
+                      projectId={activeProjectId}
+                      brief={briefData || {}}
+                      onNavigatePath={(path) => navigate(path)}
+                      compact={bids.length > 0}
+                    />
+                  </div>
+                ) : null
+              }
+            />
           )}
 
           {hubReady && activeNav === "Materials" && (

@@ -21,7 +21,9 @@ import HmProjectAssistant from "../../components/HmProjectAssistant";
 import HmCommandCenter from "../../components/HmCommandCenter";
 import HmMorningBriefing from "../../components/HmMorningBriefing";
 import HmProjectIntelligence from "../../components/HmProjectIntelligence";
+import ProjectBidsPanel from "../../components/ProjectBidsPanel";
 import ProjectMaterialsPanel from "../../components/ProjectMaterialsPanel";
+import ProjectProMatches from "../../components/ProjectProMatches";
 import ProjectTimelineEditor from "../../components/ProjectTimelineEditor";
 import { listProjectDocuments, listProjectPayments, updateProjectTitle } from "../../lib/projectWorkspaceApi";
 import {
@@ -30,6 +32,7 @@ import {
   removeProjectMaterial,
   saveProjectMaterial,
 } from "../../lib/projectIntelligenceApi";
+import { listProjectBids, setBidDecision } from "../../lib/projectBidsApi";
 
 const PROJECT_TOOLS = [
   { label: "Documents", path: "/documents", icon: "📄" },
@@ -50,6 +53,7 @@ export default function MobileProjectPage() {
   const stagesRef = useRef(null);
   const tasksRef = useRef(null);
   const materialsRef = useRef(null);
+  const bidsRef = useRef(null);
   const toolsRef = useRef(null);
   const taskInputRef = useRef(null);
 
@@ -89,6 +93,8 @@ export default function MobileProjectPage() {
   const [materialItems, setMaterialItems] = useState([]);
   const [agentActions, setAgentActions] = useState([]);
   const [intelligenceConfigured, setIntelligenceConfigured] = useState(false);
+  const [bids, setBids] = useState([]);
+  const [bidsConfigured, setBidsConfigured] = useState(true);
 
   useEffect(() => {
     const nextTitle = project?.title || "Your project";
@@ -104,6 +110,8 @@ export default function MobileProjectPage() {
       setPayments([]);
       setMaterialItems([]);
       setAgentActions([]);
+      setBids([]);
+      setBidsConfigured(true);
       setBoardError("");
       return;
     }
@@ -115,10 +123,11 @@ export default function MobileProjectPage() {
         const data = await loadProjectBoard({ projectId: project.id, source: project.source });
         if (!data) throw new Error("This project could not be loaded for the signed-in account.");
         if (!cancelled) setBoard(data);
-        const [documentsResult, paymentsResult, intelligenceResult] = await Promise.allSettled([
+        const [documentsResult, paymentsResult, intelligenceResult, bidsResult] = await Promise.allSettled([
           listProjectDocuments(project.id),
           listProjectPayments(project.id),
           loadProjectIntelligence({ projectId: project.id, brief: data.brief, v0Pack: data.v0Pack }),
+          listProjectBids(project.id),
         ]);
         if (!cancelled) {
           setDocuments(documentsResult.status === "fulfilled" ? documentsResult.value : []);
@@ -131,6 +140,13 @@ export default function MobileProjectPage() {
             setMaterialItems([]);
             setAgentActions([]);
             setIntelligenceConfigured(false);
+          }
+          if (bidsResult.status === "fulfilled") {
+            setBids(bidsResult.value.bids || []);
+            setBidsConfigured(Boolean(bidsResult.value.configured));
+          } else {
+            setBids([]);
+            setBidsConfigured(false);
           }
         }
       } catch (err) {
@@ -262,6 +278,14 @@ export default function MobileProjectPage() {
     return saved;
   };
 
+  // Contact details are only revealed by the server on re-read, so refresh.
+  const decideBid = async ({ bidId, decision }) => {
+    await setBidDecision({ bidId, decision });
+    const refreshed = await listProjectBids(project.id);
+    setBids(refreshed.bids || []);
+    setBidsConfigured(refreshed.configured);
+  };
+
   const saveProjectSchedule = async (schedule) => {
     const saved = await updateProjectSchedule(project.id, schedule);
     setBoard((current) => ({ ...current, project: { ...(current?.project || {}), ...saved } }));
@@ -298,12 +322,14 @@ export default function MobileProjectPage() {
         payments,
         materials: materialItems,
         agentActions,
+        bids,
         location: project?.location || project?.city || "",
         timeline: board?.project?.timeline_completion || project?.timeline_completion || "",
         hubQuery,
         signInPath: buildSignInRedirect("/project"),
       }),
     [
+      bids,
       session?.supabaseUserId,
       session?.name,
       isDemoHub,
@@ -340,6 +366,7 @@ export default function MobileProjectPage() {
       {project?.id ? (
         <nav className="hm-m-project-nav" aria-label="Project sections">
           <button type="button" onClick={() => goToSection(overviewRef)}>Overview</button>
+          <button type="button" onClick={() => goToSection(bidsRef)}>Bids{bids.length ? ` (${bids.length})` : ""}</button>
           <button type="button" onClick={() => goToSection(designsRef)}>Designs</button>
           <button type="button" onClick={() => goToSection(stagesRef)}>Stages</button>
           <button type="button" onClick={() => goToSection(tasksRef)}>Tasks</button>
@@ -452,7 +479,30 @@ export default function MobileProjectPage() {
           <div className="hm-m-metric-grid">
             <div><strong>{overallProgress}%</strong><span>Overall progress</span></div>
             <div><strong>{openTasks}</strong><span>Open tasks</span></div>
+            <div><strong>{bids.length}</strong><span>Bids received</span></div>
             <div><strong>{v0Media.length}</strong><span>Saved AI visuals</span></div>
+          </div>
+
+          <div ref={bidsRef} className="hm-m-project-section-anchor" style={{ padding: "0 16px", marginTop: 16 }}>
+            <ProjectBidsPanel
+              bids={bids}
+              configured={bidsConfigured}
+              loading={boardLoading}
+              budgetMax={project?.budget_max || board?.brief?.budgetInr}
+              onDecision={decideBid}
+              onNavigatePath={(path) => navigate(path)}
+              onFindPros={() => navigate(`/project/browse${hubQuery}`)}
+              matchesSlot={
+                <div style={{ marginTop: 18 }}>
+                  <ProjectProMatches
+                    projectId={project?.id}
+                    brief={board?.brief || {}}
+                    onNavigatePath={(path) => navigate(path)}
+                    compact
+                  />
+                </div>
+              }
+            />
           </div>
 
           {v0Media.length > 0 || board?.v0Pack?.estimate ? (

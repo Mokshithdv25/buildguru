@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.buildguru.online/sitemap.xml
+Sitemap: https://www.buildguru.ai/sitemap.xml

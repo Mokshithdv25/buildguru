@@ -70,7 +70,7 @@ Other transcript files in that folder are shorter or older chats.
 | Theme | Outcome |
 |-------|---------|
 | Integrate **Grok** ($5 xAI credits) for build/remodel v0 | `backend/server.py` + `frontend/src/lib/aiApi.js` |
-| **buildguru.online** on Vercel | Domain DNS; env vars on Vercel |
+| **buildguru.ai** on Vercel | Domain DNS; env vars on Vercel |
 | **Google / email sign-in** | Supabase auth, redirect URLs, RLS SQL |
 | Sign-in → **build/remodel** + profile menu | Routing, `HmUserMenu`, guards |
 | Remodel showing **exteriors** / wrong estimate | Prompt + budget-anchored estimate fixes |

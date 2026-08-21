@@ -16,6 +16,10 @@ const NAV_ALIASES = {
   boq: "Materials",
   feed: "Site Feed",
   site: "Site Feed",
+  bids: "Bids",
+  bid: "Bids",
+  quotes: "Bids",
+  proposals: "Bids",
   settings: "Settings",
 };
 
@@ -61,6 +65,19 @@ function formatMaterialList(materials, limit = 8) {
   }).join("\n");
 }
 
+function formatBidList(bids, limit = 6) {
+  const rows = (bids || []).slice(0, limit);
+  if (!rows.length) return "No professional has bid on this project yet.";
+  return rows
+    .map((bid) => {
+      const amount = bid.amountInr ? `₹${Number(bid.amountInr).toLocaleString("en-IN")}` : "amount not stated";
+      const weeks = bid.timelineWeeks ? ` · ${bid.timelineWeeks} weeks` : "";
+      const decision = bid.decision && bid.decision !== "pending" ? ` · ${bid.decision}` : "";
+      return `○ ${bid.pro}: ${amount}${weeks}${decision}`;
+    })
+    .join("\n");
+}
+
 function formatPaymentList(payments, limit = 6) {
   const rows = (payments || []).slice(0, limit);
   if (!rows.length) return "No payment records are saved yet.";
@@ -104,6 +121,14 @@ export function buildLatestBriefing(ctx) {
     const approved = ctx.materials.filter((item) => ["approved", "ordered", "received"].includes(item.status)).length;
     lines.push(`Material plan: **${ctx.materials.length}** items · **${approved}** approved or ordered.`);
   }
+  if (ctx.bidCount) {
+    const lowest = ctx.lowestBidInr ? ` · lowest **₹${Number(ctx.lowestBidInr).toLocaleString("en-IN")}**` : "";
+    lines.push(
+      ctx.acceptedBidPro
+        ? `Bids: **${ctx.bidCount}** received — you accepted **${ctx.acceptedBidPro}**.`
+        : `Bids: **${ctx.bidCount}** received${ctx.newBidCount ? ` · **${ctx.newBidCount}** awaiting your decision` : ""}${lowest}.`,
+    );
+  }
   if (ctx.documents?.length) lines.push(`Documents on file: **${ctx.documents.length}**.`);
   if (ctx.agentActions?.some((action) => action.status === "suggested")) {
     lines.push(`There are **${ctx.agentActions.filter((action) => action.status === "suggested").length}** suggested actions awaiting approval.`);
@@ -118,7 +143,9 @@ export function buildLatestBriefing(ctx) {
     lines.push(
       ctx.wantsMarketplaceQuotes === false
         ? "You posted with your own team — use **Team** to invite pros."
-        : "Your project is posted — try **Find pros** for bids and proposals.",
+        : ctx.bidCount
+          ? "Your project is posted — say **bids** to compare what came in."
+          : "Your project is posted — say **bids** to see suggested pros and invite them to bid.",
     );
   }
   const sources = sourceLine(ctx, ["project brief", "task board", "site feed", "material plan", "payment ledger"]);
@@ -148,8 +175,24 @@ export function parseHubCommand(message, ctx) {
     return { kind: "navigate", path: `/documents${q}` };
   }
   if (/\b(quote|quotes|bid|bids|proposal|proposals|rfq)\b/.test(t)) {
-    const path = ctx.projectId ? `/browse?projectId=${encodeURIComponent(ctx.projectId)}` : "/browse";
-    return { kind: "navigate", path };
+    // Questions about the bids themselves are answered from context; requests to
+    // find more professionals go to the directory.
+    if (/\b(find|search|more|browse|new)\b.*\b(pros?|professionals?|contractors?|architects?)\b/.test(t)) {
+      const path = ctx.projectId ? `/browse?projectId=${encodeURIComponent(ctx.projectId)}` : "/browse";
+      return { kind: "navigate", path };
+    }
+    if (/\b(what|which|how many|compare|summar|list|lowest|cheapest|best)\b/.test(t)) {
+      const summary = ctx.acceptedBidPro
+        ? `You accepted **${ctx.acceptedBidPro}**.`
+        : ctx.bidCount
+          ? `**${ctx.bidCount}** bid${ctx.bidCount === 1 ? "" : "s"} received${ctx.newBidCount ? `, **${ctx.newBidCount}** awaiting your decision` : ""}.`
+          : "No bids yet — invite a suggested professional to get the first one.";
+      return {
+        kind: "reply",
+        text: `**Bids on ${ctx.projectTitle || "your project"}:**\n${summary}\n${formatBidList(ctx.bids)}${sourceLine(ctx, ["contractor bids"])}`,
+      };
+    }
+    return { kind: "nav", nav: "Bids" };
   }
   if (/\b(team|invite)\b/.test(t) || /\b(open|show)\s+(architect|contractor)\b/.test(t)) {
     const q = ctx.hubQuery || "";

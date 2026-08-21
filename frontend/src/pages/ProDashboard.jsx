@@ -79,16 +79,20 @@ export default function ProDashboard() {
   }, [cache?.id]);
 
   const newLeads = leads.filter((lead) => lead.status === "new");
-  const followUps = leads.filter((lead) => ["interested", "proposal_sent"].includes(lead.status));
+  const followUps = leads.filter((lead) => ["interested", "bid_submitted", "proposal_sent"].includes(lead.status));
   const activeWork = leads.filter((lead) => lead.status === "won");
+  const openBids = leads.filter((lead) => lead.status === "bid_submitted" && lead.homeownerDecision === "pending");
+  const acceptedBids = leads.filter((lead) => lead.homeownerDecision === "accepted" && lead.status !== "won");
   const leadValue = leadsLoading ? "—" : leadsConfigured ? String(newLeads.length) : "Setup";
   const briefing = leadsLoading
     ? "I’m checking your homeowner opportunities and portfolio health."
     : !leadsConfigured
       ? "Your command center is ready. The production workspace still needs its homeowner lead connection enabled."
-      : newLeads.length || followUps.length || activeWork.length
-        ? `${newLeads.length} new homeowner ${newLeads.length === 1 ? "lead" : "leads"}, ${followUps.length} ${followUps.length === 1 ? "follow-up" : "follow-ups"}, and ${activeWork.length} active ${activeWork.length === 1 ? "project" : "projects"}.`
-        : "Your pipeline is clear today. New homeowner projects posted for quotes will appear here automatically.";
+      : acceptedBids.length
+        ? `${acceptedBids.length} ${acceptedBids.length === 1 ? "homeowner accepted your bid" : "homeowners accepted your bids"} — open the lead to start the engagement.`
+        : newLeads.length || followUps.length || activeWork.length
+          ? `${newLeads.length} new homeowner ${newLeads.length === 1 ? "lead" : "leads"}, ${openBids.length} ${openBids.length === 1 ? "bid" : "bids"} awaiting a decision, and ${activeWork.length} active ${activeWork.length === 1 ? "project" : "projects"}.`
+          : "Your pipeline is clear today. New homeowner projects posted for quotes will appear here automatically.";
 
   const copyLink = async () => {
     if (!shareUrl) return;
@@ -107,8 +111,9 @@ export default function ProDashboard() {
   };
 
   const priorities = [
+    acceptedBids.length ? { icon: ClipboardCheck, title: `${acceptedBids.length} accepted ${acceptedBids.length === 1 ? "bid" : "bids"} ready to start`, detail: "The homeowner picked you. Their contact details are now unlocked.", path: "/pro/leads?status=bid_submitted" } : null,
     newLeads.length ? { icon: Users, title: `Review ${newLeads.length} new homeowner ${newLeads.length === 1 ? "lead" : "leads"}`, detail: "Check scope, budget, location, and fit.", path: "/pro/leads?status=new" } : null,
-    followUps.length ? { icon: MessageSquareText, title: `Follow up on ${followUps.length} open ${followUps.length === 1 ? "conversation" : "conversations"}`, detail: "Keep interested and proposal-stage projects moving.", path: "/pro/leads?status=interested" } : null,
+    followUps.length ? { icon: MessageSquareText, title: `Follow up on ${followUps.length} open ${followUps.length === 1 ? "conversation" : "conversations"}`, detail: "Keep interested and bid-stage projects moving.", path: "/pro/leads?status=interested" } : null,
     !isPublished ? { icon: Pencil, title: "Finish and publish your portfolio", detail: "Homeowners need a credible profile before choosing you.", path: getProOnboardingResumePath() } : null,
     isPublished && galleryCount < 3 ? { icon: Sparkles, title: "Add more proof of work", detail: "Three or more strong project images make your profile easier to evaluate.", path: "/portfolio" } : null,
   ].filter(Boolean).slice(0, 3);
@@ -130,6 +135,8 @@ export default function ProDashboard() {
     leadCount: leads.length,
     newLeadCount: newLeads.length,
     followUpCount: followUps.length,
+    openBidCount: openBids.length,
+    acceptedBidCount: acceptedBids.length,
     activeProjectCount: activeWork.length,
     leads: leads.slice(0, 20).map((lead) => ({
       title: lead.title,
@@ -140,7 +147,9 @@ export default function ProDashboard() {
       timeline: lead.timeline_completion,
       scope: lead.scope_label,
       styles: lead.styles,
-      targeted: lead.targeted_to_you,
+      targeted: lead.targeted_to_you || lead.invited_to_you,
+      bidAmount: lead.response?.bid_amount_inr || null,
+      homeownerDecision: lead.homeownerDecision,
     })),
     artifactRefs: ["homeowner lead inbox", "professional portfolio"],
   };
@@ -178,7 +187,7 @@ export default function ProDashboard() {
 
         <section className="hm-pro-metrics" aria-label="Professional pipeline summary">
           <Metric icon={Users} label="New leads" value={leadValue} detail="Homeowner projects waiting for review" />
-          <Metric icon={MessageSquareText} label="Follow-ups" value={leadsLoading ? "—" : String(followUps.length)} detail="Interested or proposal-stage projects" />
+          <Metric icon={MessageSquareText} label="Bids out" value={leadsLoading ? "—" : String(openBids.length)} detail="Priced bids awaiting a homeowner decision" />
           <Metric icon={BriefcaseBusiness} label="Active work" value={leadsLoading ? "—" : String(activeWork.length)} detail="Won projects in your working pipeline" />
           <Metric icon={Sparkles} label="Profile strength" value={`${profileStrength}%`} detail={isPublished ? "Portfolio live for homeowners" : "Portfolio not published yet"} />
         </section>
@@ -195,7 +204,7 @@ export default function ProDashboard() {
             <section className="hm-pro-card">
               <div className="hm-pro-card-head"><div><h2>Lead pipeline</h2><p>Recent homeowner projects and their current stage.</p></div><button type="button" className="hm-pro-button-quiet" onClick={() => navigate("/pro/leads")}>View all <ArrowRight size={14} /></button></div>
               <div className="hm-pro-card-body">
-                {!leadsConfigured ? <p className="hm-pro-note">The production lead connection is not enabled yet. Once connected, homeowner projects will flow into this pipeline.</p> : leads.length === 0 ? <p className="hm-pro-note">No homeowner projects are open for quotes yet. This remains separate from the professional marketplace.</p> : <div className="hm-pro-mini-list">{leads.slice(0, 4).map((lead) => <div className="hm-pro-mini-lead" key={lead.project_id}><div><strong>{lead.title}</strong><span>{lead.flow_type === "remodel" ? "Remodel" : "New home"} · {lead.city} · {leadBudget(lead)}</span></div><span className={`hm-pro-badge ${["interested", "proposal_sent", "won"].includes(lead.status) ? "is-positive" : ""}`}>{leadStatusLabel(lead.status)}</span></div>)}</div>}
+                {!leadsConfigured ? <p className="hm-pro-note">The production lead connection is not enabled yet. Once connected, homeowner projects will flow into this pipeline.</p> : leads.length === 0 ? <p className="hm-pro-note">No homeowner projects are open for quotes yet. This remains separate from the professional marketplace.</p> : <div className="hm-pro-mini-list">{leads.slice(0, 4).map((lead) => <div className="hm-pro-mini-lead" key={lead.project_id}><div><strong>{lead.title}</strong><span>{lead.flow_type === "remodel" ? "Remodel" : "New home"} · {lead.city} · {leadBudget(lead)}</span></div><span className={`hm-pro-badge ${lead.homeownerDecision === "accepted" ? "is-targeted" : ["interested", "bid_submitted", "proposal_sent", "won"].includes(lead.status) ? "is-positive" : ""}`}>{lead.homeownerDecision === "accepted" ? "Bid accepted" : leadStatusLabel(lead.status)}</span></div>)}</div>}
               </div>
             </section>
 

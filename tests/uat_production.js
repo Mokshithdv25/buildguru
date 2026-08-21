@@ -1,10 +1,10 @@
-// BuildGuru Production UAT — https://buildguru.online/
+// BuildGuru Production UAT — https://buildguru.ai/
 // Run: npx playwright test tests/uat_production.js --reporter=list
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const BASE = 'https://buildguru.online';
+const BASE = 'https://buildguru.ai';
 const REPORT_DIR = path.join(__dirname, '../test_reports');
 const SS_DIR = path.join(REPORT_DIR, 'screenshots');
 
@@ -100,7 +100,7 @@ async function waitLoad() {
       log('PASS', 'Google OAuth Redirect', afterUrl, 'Correctly redirected to Google OAuth');
       // Wait for user to complete OAuth (up to 30s)
       try {
-        await page.waitForURL(url => url.href.includes('buildguru.online') && !url.href.includes('sign-in'), { timeout: 30000 });
+        await page.waitForURL(url => url.href.includes('buildguru.ai') && !url.href.includes('sign-in'), { timeout: 30000 });
         await ss('02c_after_login');
         log('PASS', 'Google OAuth Complete', page.url(), `Signed in. Landed on: ${page.url()}`);
       } catch(e) {
@@ -367,7 +367,7 @@ async function waitLoad() {
   const reportLines = [
     '# BuildGuru — Live Production UAT Report',
     `**Date:** ${new Date().toISOString().split('T')[0]}`,
-    `**URL:** https://buildguru.online/`,
+    `**URL:** https://buildguru.ai/`,
     `**Method:** Live browser testing via Playwright (Chromium)`,
     '',
     '## Executive Summary',

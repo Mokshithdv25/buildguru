@@ -4,6 +4,7 @@
  */
 export const PROJECT_HUB_NAV = [
   { icon: "⊞", label: "Overview", path: "/project" },
+  { icon: "📩", label: "Bids", path: "#", tab: "Bids" },
   { icon: "📅", label: "Timeline", path: "#", tab: "Timeline" },
   { icon: "✓", label: "Tasks", path: "#", tab: "Tasks" },
   { icon: "₹", label: "Budget", path: "#", tab: "Budget" },

@@ -51,8 +51,8 @@ Never place a Supabase service-role key in any `REACT_APP_*` variable. Do not co
 
 Add all release callbacks to the Supabase Auth redirect allowlist:
 
-- `https://www.buildguru.online/sign-in`
-- `https://buildguru.online/sign-in`
+- `https://www.buildguru.ai/sign-in`
+- `https://buildguru.ai/sign-in`
 - `in.buildguru.app://auth/callback`
 
 The native callback uses PKCE and is handled by the app's custom URL scheme. Production currently keeps `REACT_APP_EMAIL_SIGNUP_ENABLED=false`; email/password sign-in remains available for existing accounts, but Google OAuth is the account-creation path. Do not enable email account creation until custom SMTP delivery, confirmation, resend, and password recovery have passed end-to-end tests on physical iOS and Android devices.
