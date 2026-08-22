@@ -63,5 +63,14 @@ def test_same_identity_can_enter_either_role_only_at_sign_in():
     assert "profile.role !== signInIntent" not in sign_in
     assert "Sign out before entering" in sign_in
     assert "Sign out to use" in sign_in
-    assert "passwordRecovery || currentSession === null" in sign_in
+    assert "passwordRecovery || (roleSelected && currentSession === null)" in sign_in
     assert "currentSession === undefined" in sign_in
+
+
+def test_password_recovery_form_does_not_require_a_selected_role():
+    source = read("frontend/src/pages/SignInPage.jsx")
+
+    assert "{passwordRecovery || (roleSelected && currentSession === null) ? (" in source
+    assert "{roleSelected && (passwordRecovery || currentSession === null) ? (" not in source
+    assert 'passwordRecovery ? "New Password"' in source
+    assert 'passwordRecovery ? "Save New Password"' in source
