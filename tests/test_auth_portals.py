@@ -30,11 +30,21 @@ def test_auth_page_uses_real_supabase_phone_otp_calls():
     assert "development OTP" not in source
 
 
-def test_provider_dependent_signup_methods_are_off_by_default():
+def test_email_signup_is_enabled_and_phone_auth_remains_gated():
     for relative_path in ("frontend/.env.example", "frontend/.env.production"):
         source = read(relative_path)
-        assert "REACT_APP_EMAIL_SIGNUP_ENABLED=false" in source
+        assert "REACT_APP_EMAIL_SIGNUP_ENABLED=true" in source
         assert "REACT_APP_PHONE_AUTH_ENABLED=false" in source
+
+
+def test_email_password_signup_and_returning_signin_preserve_portal_role():
+    source = read("frontend/src/pages/SignInPage.jsx")
+    assert "sb.auth.signUp" in source
+    assert "emailRedirectTo: authEmailRedirectTo()" in source
+    assert "data: { role: accountRole }" in source
+    assert "sb.auth.signInWithPassword" in source
+    assert "await tryFinishEmailAuth(data.session)" in source
+    assert "signInIntent = hasExplicitRole ? requestedRole : accountRole" in source
 
 
 def test_guards_send_users_to_the_correct_role_portal():

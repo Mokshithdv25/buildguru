@@ -55,7 +55,7 @@ Add all release callbacks to the Supabase Auth redirect allowlist:
 - `https://buildguru.ai/sign-in`
 - `in.buildguru.app://auth/callback`
 
-The native callback uses PKCE and is handled by the app's custom URL scheme. Production currently keeps `REACT_APP_EMAIL_SIGNUP_ENABLED=false`; email/password sign-in remains available for existing accounts, but Google OAuth is the account-creation path. Do not enable email account creation until custom SMTP delivery, confirmation, resend, and password recovery have passed end-to-end tests on physical iOS and Android devices.
+The native callback uses PKCE and is handled by the app's custom URL scheme. Production exposes Google and email/password account creation with `REACT_APP_EMAIL_SIGNUP_ENABLED=true`. Keep the Resend domain and Supabase custom SMTP verified, and test confirmation, resend, and password recovery end to end on physical iOS and Android devices before every release.
 
 Google OAuth is currently exposed in the iOS shell so users are not left without an account-creation path. This does **not** make the app ready for App Store submission: implement and verify Sign in with Apple before submitting the iOS build for review.
 
