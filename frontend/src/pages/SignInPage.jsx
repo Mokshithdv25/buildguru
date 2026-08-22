@@ -29,8 +29,8 @@ function portalPath(role, mode) {
 }
 
 /**
- * Sign-in: Google plus email/password for existing accounts. Email account
- * creation stays disabled until production SMTP is configured and verified.
+ * Role-scoped Google and email/password authentication. The selected role is
+ * an entry-session choice: changing roles still requires signing out first.
  * Phone OTP stays hidden until the production SMS provider is configured.
  */
 export default function SignInPage({ portalRole = null, portalMode = null }) {
@@ -436,7 +436,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
             const email = authEmail.trim();
             setPendingConfirmationEmail(email);
             setAuthNotice(
-              `Account created for ${email}. Open the confirmation link we emailed you (check spam), then sign in here.`,
+              `Account created for ${email}. Open the confirmation link we emailed you (check spam), then sign in with this email and password.`,
             );
             setMode("signin");
             return;
@@ -786,7 +786,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                   {pendingConfirmationEmail && step === "entry" ? (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 font-body text-sm text-amber-950 space-y-2">
                       <p className="m-0">
-                        Confirmation is still pending for <strong>{pendingConfirmationEmail}</strong>. Try resend once; if it does not arrive, use Google sign-in or contact support.
+                        Confirmation is still pending for <strong>{pendingConfirmationEmail}</strong>. Try resend once; if it does not arrive, contact support.
                       </p>
                       <button
                         type="button"
