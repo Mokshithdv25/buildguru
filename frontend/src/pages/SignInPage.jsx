@@ -230,6 +230,23 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
     return true;
   };
 
+  const finishPasswordRecoveryAuth = async (session) => {
+    const user = session.user;
+    let profile = null;
+    try {
+      profile = await fetchUserProfile(user.id);
+    } catch (_) {
+      /* A missing optional profile must not block password recovery. */
+    }
+    const requestedRole = searchParams.get("role");
+    const signInIntent = requestedRole === "pro" || requestedRole === "homeowner"
+      ? requestedRole
+      : undefined;
+    const resolvedRole = await establishHmSession(user, profile, { signInIntent });
+    const destination = await resolvePostLoginPath(resolvedRole, null, { userId: user.id });
+    navigate(destination, { replace: true });
+  };
+
   const handleContinueCurrentAccount = async () => {
     const activeRole = currentSession?.role === "pro" ? "pro" : "homeowner";
     const destination = await resolvePostLoginPath(activeRole, redirectFromQuery, {
@@ -351,12 +368,9 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
     setAuthNotice("");
     setLoading(true);
     try {
+      const recoveryParams = new URLSearchParams({ recovery: "1", role: accountRole });
       const { error } = await sb.auth.resetPasswordForEmail(email, {
-        redirectTo: authCallbackUrl(
-          `/sign-in?recovery=1&redirect=${encodeURIComponent(
-            redirectFromQuery || "/account/settings",
-          )}`,
-        ),
+        redirectTo: authCallbackUrl(`/sign-in?${recoveryParams.toString()}`),
       });
       if (error) throw error;
       setAuthNotice("If that email is registered, we sent a reset link. Check your inbox.");
@@ -390,12 +404,13 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
       const {
         data: { session },
       } = await sb.auth.getSession();
-      setPasswordRecovery(false);
       setAuthPassword("");
       setConfirmPassword("");
       if (session) {
-        await tryFinishEmailAuth(session);
+        await finishPasswordRecoveryAuth(session);
+        setPasswordRecovery(false);
       } else {
+        setPasswordRecovery(false);
         setAuthNotice("Password updated. Sign in with your new password.");
       }
     } catch (err) {

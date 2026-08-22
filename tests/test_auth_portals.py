@@ -74,3 +74,13 @@ def test_password_recovery_form_does_not_require_a_selected_role():
     assert "{roleSelected && (passwordRecovery || currentSession === null) ? (" not in source
     assert 'passwordRecovery ? "New Password"' in source
     assert 'passwordRecovery ? "Save New Password"' in source
+
+
+def test_password_recovery_returns_to_the_role_aware_product_landing():
+    source = read("frontend/src/pages/SignInPage.jsx")
+    recovery_flow = source.split("const handleForgotPassword", 1)[1].split("const handleEmailSignIn", 1)[0]
+
+    assert 'new URLSearchParams({ recovery: "1", role: accountRole })' in recovery_flow
+    assert 'await finishPasswordRecoveryAuth(session)' in recovery_flow
+    assert '"/account/settings"' not in recovery_flow
+    assert "resolvePostLoginPath(resolvedRole, null, { userId: user.id })" in source
