@@ -1,11 +1,33 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  BriefcaseBusiness,
+  ChevronRight,
+  CreditCard,
+  FolderKanban,
+  Hammer,
+  HousePlus,
+  Images,
+  LayoutDashboard,
+  Settings,
+  ShoppingBag,
+  UserRound,
+} from "lucide-react";
 import MobileHeader from "../MobileHeader";
 import { useHmSession } from "../../hooks/useHmSession";
 import HmUserMenu from "../../components/HmUserMenu";
-import { HM_PRO_FLOWS } from "../mobileIA";
 import { AUTH_UI_ENABLED } from "../../lib/authMode";
 import { getProOnboardingResumePath } from "../../lib/hmAuth";
+
+function AccountRow({ icon: Icon, title, sub, onClick }) {
+  return (
+    <button type="button" className="hm-m-account-row" onClick={onClick}>
+      <span><Icon size={20} /></span>
+      <span><strong>{title}</strong>{sub ? <small>{sub}</small> : null}</span>
+      <ChevronRight size={18} aria-hidden />
+    </button>
+  );
+}
 
 export default function MobileAccountPage() {
   const navigate = useNavigate();
@@ -17,120 +39,60 @@ export default function MobileAccountPage() {
   return (
     <>
       <MobileHeader title="You" subtitle={session ? name : "Explore BuildGuru"} />
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      <main className="hm-m-account-page">
         {session || !AUTH_UI_ENABLED ? (
-          <div className="hm-m-card" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <section className="hm-m-account-profile">
+            <span className="hm-m-account-avatar"><UserRound size={25} /></span>
             <div>
-              <div style={{ fontWeight: 700 }}>{name}</div>
-              <div style={{ fontSize: 13, color: "#78716C", marginTop: 4 }}>
-                {isPro ? "Professional" : "Homeowner"}
-              </div>
+              <strong>{name}</strong>
+              <small>{isPro ? "Professional workspace" : "Homeowner workspace"}</small>
             </div>
             <HmUserMenu />
-          </div>
+          </section>
         ) : AUTH_UI_ENABLED ? (
-          <>
-            <button type="button" className="hm-m-btn-primary" onClick={() => navigate("/sign-in")}>
-              Sign in
-            </button>
-            <button
-              type="button"
-              className="hm-m-btn-secondary"
-              onClick={() => navigate("/sign-in?mode=signup&role=pro&redirect=%2Fcraft")}
-            >
-              Join as a pro
-            </button>
-          </>
+          <section className="hm-m-account-signin">
+            <span>Your work, waiting for you</span>
+            <h1>Sign in to resume projects and portfolios.</h1>
+            <p>Your project brief, saved ideas and professional work stay connected to your account.</p>
+            <div><button type="button" className="hm-m-btn-primary" onClick={() => navigate("/sign-in")}>Sign in</button><button type="button" className="hm-m-btn-secondary" onClick={() => navigate("/join")}>Create account</button></div>
+          </section>
         ) : null}
 
         {(session || !AUTH_UI_ENABLED) && !isPro ? (
-          <>
-            <p className="hm-m-section-title" style={{ padding: 0, margin: "8px 0 0" }}>
-              Projects
-            </p>
-            <button type="button" className="hm-m-list-row" onClick={() => navigate("/project")}>
-              <span className="hm-m-list-icon">📁</span>
-              <span>
-                <span className="hm-m-list-title">My projects</span>
-                <span className="hm-m-list-sub">Build, remodel & site hub</span>
-              </span>
-            </button>
-            <p className="hm-m-section-title" style={{ padding: 0, margin: "8px 0 0" }}>
-              Start something new
-            </p>
-            <button type="button" className="hm-m-list-row" onClick={() => navigate("/build/new-home")}>
-              <span className="hm-m-list-icon">🏠</span>
-              <span>
-                <span className="hm-m-list-title">Start a new home</span>
-              </span>
-            </button>
-            <button type="button" className="hm-m-list-row" onClick={() => navigate("/build/remodel")}>
-              <span className="hm-m-list-icon">🎨</span>
-              <span>
-                <span className="hm-m-list-title">Start a remodel</span>
-              </span>
-            </button>
-          </>
+          <section className="hm-m-account-group">
+            <h2>Your workspace</h2>
+            <AccountRow icon={FolderKanban} title="My projects" sub="Briefs, designs, team and site work" onClick={() => navigate("/project")} />
+            <AccountRow icon={Images} title="Ideas" sub="Indian-home inspiration and saved directions" onClick={() => navigate("/design")} />
+            <AccountRow icon={ShoppingBag} title="Materials" sub="Project-aware checklists and approvals" onClick={() => navigate("/shop")} />
+            <AccountRow icon={HousePlus} title="Start another project" sub="New home or remodel" onClick={() => navigate("/build")} />
+          </section>
         ) : null}
 
         {session && isPro ? (
-          <>
-            <p className="hm-m-section-title" style={{ padding: 0, margin: "8px 0 0" }}>
-              Work
-            </p>
-            <button type="button" className="hm-m-list-row" onClick={() => navigate("/pro")}>
-              <span className="hm-m-list-icon">📊</span>
-              <span>
-                <span className="hm-m-list-title">My projects</span>
-                <span className="hm-m-list-sub">Leads & jobs dashboard</span>
-              </span>
-            </button>
-            <button type="button" className="hm-m-list-row" onClick={() => navigate(portfolioPath || "/portfolio")}>
-              <span className="hm-m-list-icon">🛠️</span>
-              <span>
-                <span className="hm-m-list-title">Edit portfolio</span>
-              </span>
-            </button>
-          </>
+          <section className="hm-m-account-group">
+            <h2>Your professional workspace</h2>
+            <AccountRow icon={LayoutDashboard} title="Dashboard" sub="Leads, jobs and profile strength" onClick={() => navigate("/pro")} />
+            <AccountRow icon={BriefcaseBusiness} title="Edit portfolio" sub="Photos, specialties and public profile" onClick={() => navigate(portfolioPath || "/portfolio")} />
+            <AccountRow icon={Hammer} title="Leads" sub="Review homeowner opportunities" onClick={() => navigate("/pro/leads")} />
+          </section>
         ) : null}
 
         {session ? (
-          <>
-            <p className="hm-m-section-title" style={{ padding: 0, margin: "8px 0 0" }}>
-              Account
-            </p>
-            <button type="button" className="hm-m-list-row" onClick={() => navigate("/subscriptions")}>
-              <span className="hm-m-list-icon">💳</span>
-              <span>
-                <span className="hm-m-list-title">My subscription</span>
-              </span>
-            </button>
-            <button type="button" className="hm-m-list-row" onClick={() => navigate("/account/settings")}>
-              <span className="hm-m-list-icon">⚙️</span>
-              <span>
-                <span className="hm-m-list-title">Account & settings</span>
-              </span>
-            </button>
-          </>
+          <section className="hm-m-account-group">
+            <h2>Account</h2>
+            <AccountRow icon={CreditCard} title="Subscription" onClick={() => navigate("/subscriptions")} />
+            <AccountRow icon={Settings} title="Account & settings" onClick={() => navigate("/account/settings")} />
+          </section>
         ) : null}
 
         {!isPro && (!session || !AUTH_UI_ENABLED) ? (
-          <>
-            <p className="hm-m-section-title" style={{ padding: 0, margin: "8px 0 0" }}>
-              Professional
-            </p>
-            {HM_PRO_FLOWS.map((flow) => (
-              <button key={flow.id} type="button" className="hm-m-list-row" onClick={() => navigate(flow.path)}>
-                <span className="hm-m-list-icon">🛠️</span>
-                <span>
-                  <span className="hm-m-list-title">{flow.label}</span>
-                  <span className="hm-m-list-sub">{flow.sub}</span>
-                </span>
-              </button>
-            ))}
-          </>
+          <section className="hm-m-account-pro-callout">
+            <span><BriefcaseBusiness size={22} /></span>
+            <div><small>Are you a professional?</small><strong>Build a portfolio that proves your work.</strong></div>
+            <button type="button" onClick={() => navigate(session || !AUTH_UI_ENABLED ? "/craft" : "/pro/join")}><ChevronRight size={19} /></button>
+          </section>
         ) : null}
-      </div>
+      </main>
     </>
   );
 }
