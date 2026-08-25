@@ -1,17 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { MapPin, Search, RotateCcw } from "lucide-react";
+import { ChevronRight, MapPin, Search, RotateCcw } from "lucide-react";
 import MobileHeader from "../MobileHeader";
 import { craftLabel, proCardImage, proDisplayName } from "../../components/PublishedProsDirectory";
 import { listPublishedPortfolios } from "../../lib/api";
+import { publicAsset } from "../../lib/publicAsset";
 
 const CATEGORIES = [
-  { label: "Architect", craft: "architect", query: "Architect" },
-  { label: "Contractor", craft: "contractor", query: "Contractor" },
-  { label: "Carpenter", craft: "carpenter", query: "Carpenter" },
-  { label: "Painter", craft: "painter", query: "Painter" },
-  { label: "Electrician", craft: "electrician", query: "Electrician" },
-  { label: "Plumber", craft: "plumber", query: "Plumber" },
+  { label: "Architects", craft: "architect", query: "Architect", image: "pro_architect.png" },
+  { label: "Contractors", craft: "contractor", query: "Contractor", image: "pro_contractor.png" },
+  { label: "Carpenters", craft: "carpenter", query: "Carpenter", image: "pro_carpenter.png" },
+  { label: "Painters", craft: "painter", query: "Painter", image: "pro_painter.png" },
+  { label: "Electricians", craft: "electrician", query: "Electrician", image: "pro_electrician.png" },
+  { label: "Plumbers", craft: "plumber", query: "Plumber", image: "pro_plumber.png" },
 ];
 
 function filterPros(pros, service, city, craft) {
@@ -89,19 +90,22 @@ export default function MobileProsPage() {
       <MobileHeader title="Find professionals" subtitle="Real work · direct project handoff" />
       <section className="hm-m-pro-search-panel">
         <span className="hm-m-search-eyebrow">BuildGuru professional network</span>
-        <h1>Find someone whose work already feels right.</h1>
-        <p>Compare published portfolios, then start a structured project with the professional attached.</p>
+        <h1>Find the right professional through real work.</h1>
+        <p>Search by service and city, compare portfolios, then share one structured brief.</p>
         <form onSubmit={onSearch}>
           <label><span>Service</span><div><Search size={18} /><input aria-label="Service" placeholder="Architect, contractor, painter…" value={service} onChange={(e) => setService(e.target.value)} /></div></label>
           <label><span>Location</span><div><MapPin size={18} /><input aria-label="City" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} /></div></label>
           <button type="submit">Search professionals</button>
         </form>
       </section>
-      <p className="hm-m-section-title">Browse by trade</p>
-      <div className="hm-m-pill-row" style={{ marginBottom: 12 }}>
+      <div className="hm-m-section-heading hm-m-section-heading--compact">
+        <div><span>Browse</span><h2>Professionals by service</h2></div>
+      </div>
+      <div className="hm-m-pro-category-grid">
         {CATEGORIES.map((cat) => (
-          <button key={cat.craft} type="button" className={`hm-m-pill${craft === cat.craft ? " active" : ""}`} onClick={() => pickCategory(cat)}>
-            {cat.label}
+          <button key={cat.craft} type="button" className={craft === cat.craft ? "active" : ""} onClick={() => pickCategory(cat)}>
+            <img src={publicAsset(cat.image)} alt="" loading="lazy" />
+            <span>{cat.label}</span>
           </button>
         ))}
       </div>
@@ -128,13 +132,14 @@ export default function MobileProsPage() {
         results.map((pro) => (
           <Link key={pro.id || pro.slug} to={pro.slug ? `/profile/${pro.slug}` : "#"} className="hm-m-pro-card">
             <img src={proCardImage(pro)} alt="" />
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>{proDisplayName(pro)}</div>
-              <div style={{ fontSize: 13, color: "#78716C", marginTop: 4 }}>
+            <div className="hm-m-pro-card-content">
+              <strong>{proDisplayName(pro)}</strong>
+              <span>
                 {craftLabel(pro.craft)}
                 {pro.city ? ` · ${pro.city}` : ""}
-              </div>
+              </span>
             </div>
+            <ChevronRight size={18} aria-hidden />
           </Link>
         ))
       )}

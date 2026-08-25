@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   BriefcaseBusiness,
-  CheckCircle2,
   ChevronRight,
   FolderKanban,
   Search,
   ShoppingBag,
+  Sparkles,
   Users,
 } from "lucide-react";
 import MobileCategoryRail from "../components/MobileCategoryRail";
@@ -54,32 +54,6 @@ const HOME_ACTIONS = [
     icon: BriefcaseBusiness,
     image: "pro_hero_banner.png",
   },
-];
-
-const HOMEOWNER_BENEFITS = [
-  {
-    title: "See the direction before you hire",
-    text: "Turn your plot, rooms, style and budget into indicative layouts, visuals and estimate ranges.",
-  },
-  {
-    title: "Find professionals with proof of work",
-    text: "Compare local portfolios and share the same structured brief with the people you shortlist.",
-  },
-  {
-    title: "Keep the build in one project hub",
-    text: "Bring site photos, tasks, documents, team contacts and owner-recorded payments together.",
-  },
-  {
-    title: "Choose materials with context",
-    text: "Review material suggestions against your room, project stage and budget before you decide.",
-  },
-];
-
-const PROFESSIONAL_BENEFITS = [
-  "Create one polished, shareable portfolio",
-  "Get discovered by homeowners in your city",
-  "Receive clearer briefs before the first call",
-  "Keep client details and project work together",
 ];
 
 function resumeImage(card) {
@@ -163,7 +137,7 @@ export default function MobileHomePage() {
           <img src={hmLogoMarkSrc} alt="" />
           <div>
             <div className="hm-m-home-brand">BuildGuru</div>
-            <p className="hm-m-home-tagline">Projects · Design & estimates · Pros · Materials</p>
+            <p className="hm-m-home-tagline">AI projects · Pros · Materials</p>
           </div>
         </div>
         <form className="hm-m-home-search" onSubmit={onSearchSubmit}>
@@ -177,23 +151,6 @@ export default function MobileHomePage() {
           <button type="submit" aria-label="Search"><ArrowRight size={18} /></button>
         </form>
       </header>
-
-      <section
-        className="hm-m-home-hero"
-        style={{
-          backgroundImage: `linear-gradient(90deg,rgba(20,14,11,.90),rgba(20,14,11,.48) 62%,rgba(20,14,11,.12)),url(${publicAsset("landing-hero.png")})`,
-        }}
-      >
-        <span>For homeowners and professionals</span>
-        <h1>Your Indian home project, clear from idea to handover.</h1>
-        <p>Create a brief, explore real Indian homes, find professionals and materials, then keep the work organized in one place.</p>
-        <div>
-          <button type="button" className="primary" onClick={() => navigate("/build")}>
-            Start a project <ArrowRight size={17} />
-          </button>
-          <button type="button" onClick={() => navigate("/browse")}>Find professionals</button>
-        </div>
-      </section>
 
       {continuationCards.length > 0 ? (
         <section className="hm-m-resume-section">
@@ -217,11 +174,31 @@ export default function MobileHomePage() {
         </section>
       ) : null}
 
+      <section
+        className="hm-m-home-hero"
+        style={{
+          backgroundImage: `linear-gradient(90deg,rgba(20,14,11,.92),rgba(20,14,11,.54) 64%,rgba(20,14,11,.16)),url(${publicAsset("landing-hero.png")})`,
+        }}
+      >
+        <span><Sparkles size={13} /> AI project starter</span>
+        <h1>Your Indian home project, clear from idea to handover.</h1>
+        <p>Tell us what you are building. Get an early direction, indicative estimate, and a workspace you control.</p>
+        <ol className="hm-m-home-steps" aria-label="BuildGuru project flow">
+          <li>Brief</li><li>AI concepts</li><li>Estimate</li><li>Project hub</li>
+        </ol>
+        <div>
+          <button type="button" className="primary" onClick={() => navigate("/build")}>
+            Start with AI <ArrowRight size={17} />
+          </button>
+          <button type="button" onClick={() => navigate("/design")}>Explore ideas</button>
+        </div>
+      </section>
+
       <div className="hm-m-section-heading">
         <div>
           <span>Start here</span>
           <h2>What do you need today?</h2>
-          <p>Choose one clear path. You can bring everything together later.</p>
+          <p>Jump straight to the thing you came to do.</p>
         </div>
       </div>
       <div className="hm-m-grid-2 hm-m-home-actions">
@@ -246,7 +223,7 @@ export default function MobileHomePage() {
         <div>
           <span>Get inspired</span>
           <h2>Real Indian homes</h2>
-          <p>Start with a regional direction that suits your climate, city and way of living.</p>
+          <p>Regional directions for climate, city and everyday life.</p>
         </div>
         <button type="button" onClick={() => navigate("/design")}>See all</button>
       </div>
@@ -261,39 +238,6 @@ export default function MobileHomePage() {
           </button>
         ))}
       </div>
-
-      <div className="hm-m-section-heading">
-        <div>
-          <span>Why BuildGuru</span>
-          <h2>Built around your role</h2>
-          <p>A clear path for planning a home—and a clear path for growing a professional practice.</p>
-        </div>
-      </div>
-      <section className="hm-m-audience-section">
-        <article className="hm-m-audience-card homeowner">
-          <span>For homeowners</span>
-          <h3>Go from an idea to an organized build.</h3>
-          <div className="hm-m-benefit-list">
-            {HOMEOWNER_BENEFITS.map((benefit) => (
-              <div key={benefit.title}>
-                <CheckCircle2 size={20} />
-                <p><strong>{benefit.title}</strong><small>{benefit.text}</small></p>
-              </div>
-            ))}
-          </div>
-          <button type="button" onClick={() => navigate("/build")}>Create your project <ArrowRight size={17} /></button>
-        </article>
-
-        <article className="hm-m-audience-card professional">
-          <span>For professionals</span>
-          <h3>Turn your work into a visible practice.</h3>
-          <p>Architects, designers, engineers, contractors and skilled trades get one serious place to present their work and meet better-prepared homeowners.</p>
-          <ul>
-            {PROFESSIONAL_BENEFITS.map((benefit) => <li key={benefit}>{benefit}</li>)}
-          </ul>
-          <button type="button" onClick={() => navigate(getProEntryPath())}>Create your portfolio <ArrowRight size={17} /></button>
-        </article>
-      </section>
 
       <div className="hm-m-section-heading">
         <div>
@@ -320,21 +264,14 @@ export default function MobileHomePage() {
         <MobilePhotoGrid photos={feed} />
       )}
 
-      <section className="hm-m-home-final-cta">
-        <span>One place to begin</span>
-        <h2>Ready to make the next decision clearer?</h2>
+      <section className="hm-m-pro-portfolio-strip">
+        <span className="hm-m-pro-portfolio-icon"><BriefcaseBusiness size={22} /></span>
         <div>
-          <button type="button" className="primary" onClick={() => navigate("/build")}>Start a home project</button>
-          <button type="button" onClick={() => navigate(getProEntryPath())}>Create a pro portfolio</button>
+          <span>For professionals</span>
+          <strong>Turn your best work into a polished portfolio.</strong>
+          <small>Publish once, share anywhere, and receive clearer project briefs.</small>
         </div>
-      </section>
-
-      <section className="hm-m-careers-strip">
-        <div>
-          <span>Careers at BuildGuru</span>
-          <strong>Help make Indian home projects clearer.</strong>
-        </div>
-        <button type="button" onClick={() => navigate("/careers")}>Open roles <ArrowRight size={16} /></button>
+        <button type="button" onClick={() => navigate(getProEntryPath())} aria-label="Create a professional portfolio"><ArrowRight size={18} /></button>
       </section>
 
       <MobileSaveToast toast={toast} onViewIdeas={() => { clearToast(); navigate("/design"); }} />

@@ -1,7 +1,7 @@
 /**
- * Mobile IA: Houzz-style shell + BuildGuru product flows.
+ * Mobile IA: proven mobile discovery patterns + BuildGuru product flows.
  *
- * Framework (inspired by Houzz):
+ * Reference patterns:
  *   bottom tabs · search-first discovery · saved boards · project hub · profile
  *
  * Our details (already on desktop):
