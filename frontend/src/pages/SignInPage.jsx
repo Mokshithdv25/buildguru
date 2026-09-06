@@ -132,6 +132,36 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // If a user cancels the provider dialog or presses Back, the browser may
+  // restore this page from its back-forward cache with the OAuth spinner still
+  // active. Clear that abandoned intent so another provider attempt is usable.
+  useEffect(() => {
+    const resetAbandonedOAuth = () => {
+      const url = new URL(window.location.href);
+      const callbackRoute =
+        url.searchParams.get("oauth") === "1" ||
+        url.searchParams.get("confirmed") === "1" ||
+        url.searchParams.get("recovery") === "1" ||
+        url.hash.includes("access_token=") ||
+        url.hash.includes("type=recovery");
+      if (callbackRoute) return;
+      clearOAuthSignInIntent();
+      setLoading(false);
+    };
+    const handlePageShow = () => resetAbandonedOAuth();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") resetAbandonedOAuth();
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener("popstate", handlePageShow);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+      window.removeEventListener("popstate", handlePageShow);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
   const goBack = () => {
     if (window.history.length > 1) navigate(-1);
     else navigate("/");
