@@ -21,7 +21,14 @@ import {
 } from "../lib/authIntent";
 
 const EMAIL_SIGNUP_ENABLED = process.env.REACT_APP_EMAIL_SIGNUP_ENABLED === "true";
+const EMAIL_LINK_AUTH_ENABLED = process.env.REACT_APP_EMAIL_LINK_AUTH_ENABLED !== "false";
 const PHONE_AUTH_ENABLED = process.env.REACT_APP_PHONE_AUTH_ENABLED === "true";
+const FACEBOOK_AUTH_ENABLED = process.env.REACT_APP_FACEBOOK_AUTH_ENABLED === "true";
+
+const SOCIAL_PROVIDER_LABELS = {
+  google: "Google",
+  facebook: "Facebook",
+};
 
 function portalPath(role, mode) {
   if (role === "pro") return mode === "signup" ? "/pro/join" : "/pro/sign-in";
@@ -29,7 +36,7 @@ function portalPath(role, mode) {
 }
 
 /**
- * Role-scoped Google and email/password authentication. The selected role is
+ * Role-scoped social, email/password, and passwordless email authentication. The selected role is
  * an entry-session choice: changing roles still requires signing out first.
  * Phone OTP stays hidden until the production SMS provider is configured.
  */
@@ -318,7 +325,12 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  const handleGoogleSignIn = async () => {
+  const handleSocialSignIn = async (provider) => {
+    const providerLabel = SOCIAL_PROVIDER_LABELS[provider];
+    if (!providerLabel) {
+      setAuthError("That sign-in provider is not supported.");
+      return;
+    }
     const sb = getSupabase();
     if (!sb) {
       setAuthError("Sign-in is not available on this deployment.");
@@ -333,7 +345,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
       if (redirectFromQuery) params.set("redirect", redirectFromQuery);
       const nextPath = `/sign-in?oauth=1&${params.toString()}`;
       const { data, error } = await sb.auth.signInWithOAuth({
-        provider: "google",
+        provider,
         options: {
           redirectTo: authCallbackUrl(nextPath),
           skipBrowserRedirect: isNativeApp(),
@@ -341,14 +353,51 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
       });
       if (error) throw error;
       if (isNativeApp()) {
-        if (!data?.url) throw new Error("Google sign-in did not return an authorization URL.");
+        if (!data?.url) throw new Error(`${providerLabel} sign-in did not return an authorization URL.`);
         await openNativeAuthUrl(data.url);
       }
-      // Browser is navigating to Google — leave loading on.
+      // Browser is navigating to the provider — leave loading on.
     } catch (err) {
       clearOAuthSignInIntent();
       setLoading(false);
-      setAuthError(err?.message || "Google sign-in failed. Please try again.");
+      setAuthError(err?.message || `${providerLabel} sign-in failed. Please try again.`);
+    }
+  };
+
+  const handleEmailLinkSignIn = async () => {
+    const email = authEmail.trim();
+    if (!email) {
+      setAuthError("Enter your email address first.");
+      setAuthNotice("");
+      return;
+    }
+    const sb = getSupabase();
+    if (!sb) {
+      setAuthError("Sign-in is not available on this deployment.");
+      return;
+    }
+    setAuthError("");
+    setAuthNotice("");
+    setLoading(true);
+    try {
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: requestedSignUp,
+          emailRedirectTo: authEmailRedirectTo(),
+          data: requestedSignUp ? { role: accountRole } : undefined,
+        },
+      });
+      if (error) throw error;
+      setAuthNotice(
+        requestedSignUp
+          ? `We sent a secure account link to ${email}. Open it on this device to finish signing up.`
+          : `If ${email} is registered, we sent a secure sign-in link. Check spam and promotions folders too.`,
+      );
+    } catch (err) {
+      setAuthError(err?.message || "Could not send the secure email link. Try again in a minute.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -979,6 +1028,19 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                           : (passwordRecovery ? "Save New Password" : isSignUp ? "Create Account" : "Sign In with Email")}
                       </Button>
 
+                      {EMAIL_LINK_AUTH_ENABLED && !passwordRecovery ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleEmailLinkSignIn}
+                          disabled={loading || !authEmail}
+                          className="w-full rounded-xl py-6 font-body text-sm font-semibold gap-2 border-2"
+                        >
+                          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                          {requestedSignUp ? "Create account with an email link" : "Email me a secure sign-in link"}
+                        </Button>
+                      ) : null}
+
                     </>
                   )}
 
@@ -994,7 +1056,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={handleGoogleSignIn}
+                        onClick={() => handleSocialSignIn("google")}
                         disabled={loading}
                         className="w-full rounded-xl py-6 font-body text-sm font-semibold gap-2 border-2"
                       >
@@ -1006,6 +1068,20 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                         </svg>
                         {requestedSignUp ? "Create account with Google" : "Sign in with Google"}
                       </Button>
+                      {FACEBOOK_AUTH_ENABLED ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleSocialSignIn("facebook")}
+                          disabled={loading}
+                          className="w-full rounded-xl py-6 font-body text-sm font-semibold gap-2 border-2"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+                            <path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.03 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07Z" />
+                          </svg>
+                          {requestedSignUp ? "Create account with Facebook" : "Sign in with Facebook"}
+                        </Button>
+                      ) : null}
                     </>
                   ) : null}
 
