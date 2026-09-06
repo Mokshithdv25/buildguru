@@ -94,8 +94,15 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
   const otpRefs = useRef([]);
 
   useEffect(() => {
-    if ((portalMode === "signup" || searchParams.get("mode") === "signup") && EMAIL_SIGNUP_ENABLED) setMode("signup");
-    if (portalRole === "pro" || searchParams.get("role") === "pro") setAccountRole("pro");
+    const requestedRole = portalRole === "pro" || portalRole === "homeowner"
+      ? portalRole
+      : searchParams.get("role");
+    if (requestedRole === "pro" || requestedRole === "homeowner") setAccountRole(requestedRole);
+    if ((portalMode === "signup" || searchParams.get("mode") === "signup") && EMAIL_SIGNUP_ENABLED) {
+      setMode("signup");
+    } else if (searchParams.get("recovery") !== "1") {
+      setMode("signin");
+    }
     if (searchParams.get("native_error")) {
       setStep("entry");
       setMode("signin");
