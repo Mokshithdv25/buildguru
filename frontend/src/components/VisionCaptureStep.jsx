@@ -1,15 +1,29 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Link2, Mic, Square, X } from "lucide-react";
 import { optimizeImageFileToDataUrl } from "../lib/imageDataUrl";
+import HmMediaDropzone from "./HmMediaDropzone";
+import "./VisionCaptureStep.css";
+
+const MAX_INSPIRATION_IMAGES = 8;
+
+function linkHost(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
 
 /**
- * Free-text + optional voice capture — styled to match BuildGuru craft flows (warm cream / terracotta).
+ * Free-text brief + optional dictation + inspiration (photos and links).
+ * Presentation lives in VisionCaptureStep.css; the parent owns all state.
  */
 export default function VisionCaptureStep({
   value,
   onChange,
   headline,
   subcopy,
-  placeholder = "Describe your dream space in any language…",
+  placeholder = "Describe the space you want — how it should feel, who uses it, what matters most.",
   minChars = 30,
   /** When true, skip the large serif page title (parent supplies the step headline). */
   embedded = false,
@@ -20,15 +34,14 @@ export default function VisionCaptureStep({
   onInspirationItemsChange = undefined,
   inspirationLabel = "Inspiration",
 }) {
-  const showLabel =
-    showVisionSectionLabel !== undefined ? showVisionSectionLabel : !embedded;
+  const showLabel = showVisionSectionLabel !== undefined ? showVisionSectionLabel : !embedded;
   const taRef = useRef(null);
-  const fileRef = useRef(null);
+  const recRef = useRef(null);
   const [listening, setListening] = useState(false);
   const [speechErr, setSpeechErr] = useState("");
   const [inspirationErr, setInspirationErr] = useState("");
+  const [encoding, setEncoding] = useState(false);
   const [socialUrl, setSocialUrl] = useState("");
-  const recRef = useRef(null);
 
   const appendTranscript = useCallback(
     (chunk) => {
@@ -36,7 +49,7 @@ export default function VisionCaptureStep({
       if (!t) return;
       onChange(value ? `${value.trim()} ${t}` : t);
     },
-    [onChange, value]
+    [onChange, value],
   );
 
   useEffect(() => {
@@ -53,7 +66,7 @@ export default function VisionCaptureStep({
     setSpeechErr("");
     const SR = typeof window !== "undefined" ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
     if (!SR) {
-      setSpeechErr("Voice isn’t supported in this browser — type instead, or try Chrome.");
+      setSpeechErr("Dictation isn't supported in this browser. Type your brief, or try Chrome.");
       return;
     }
     if (listening && recRef.current) {
@@ -78,7 +91,7 @@ export default function VisionCaptureStep({
       setListening(false);
     };
     rec.onerror = () => {
-      setSpeechErr("Couldn’t capture voice — try again or type.");
+      setSpeechErr("Couldn't capture audio. Try again, or type instead.");
       setListening(false);
     };
     rec.onend = () => setListening(false);
@@ -87,27 +100,27 @@ export default function VisionCaptureStep({
       rec.start();
       setListening(true);
     } catch {
-      setSpeechErr("Microphone didn’t start — check permissions.");
+      setSpeechErr("Microphone didn't start. Check browser permissions.");
       setListening(false);
     }
   };
 
-  const shortHint =
-    value.trim().length > 0 && value.trim().length < minChars ? `Add a bit more (${minChars}+ characters helps the AI).` : null;
+  const trimmedLength = value.trim().length;
+  const progress = Math.min(100, Math.round((trimmedLength / Math.max(1, minChars)) * 100));
+  const reachedMin = trimmedLength >= minChars;
+  const shortHint = trimmedLength > 0 && !reachedMin ? `A few more details help — aim for ${minChars}+ characters.` : null;
+
+  const canEditInspiration = typeof onInspirationItemsChange === "function";
   const imageItems = inspirationItems.filter((x) => x?.type === "image");
   const linkItems = inspirationItems.filter((x) => x?.type === "link");
 
-  const canEditInspiration = typeof onInspirationItemsChange === "function";
-
-  const handleUploadImages = async (ev) => {
+  const handleAddFiles = async (files) => {
     if (!canEditInspiration) return;
-    const files = Array.from(ev.target.files || []).filter((f) => /^image\//.test(f.type));
-    ev.target.value = "";
-    if (files.length === 0) return;
     setInspirationErr("");
+    setEncoding(true);
     try {
       const encoded = await Promise.all(
-        files.slice(0, 8).map(async (file) => ({
+        files.map(async (file) => ({
           type: "image",
           value: await optimizeImageFileToDataUrl(file),
           label: file.name || "upload",
@@ -115,8 +128,22 @@ export default function VisionCaptureStep({
       );
       onInspirationItemsChange([...(inspirationItems || []), ...encoded]);
     } catch {
-      setInspirationErr("Couldn’t optimize one of the images. Try a smaller JPG, PNG, or WebP file.");
+      setInspirationErr("One of the images couldn't be processed. Try a smaller JPG, PNG, or WebP.");
+    } finally {
+      setEncoding(false);
     }
+  };
+
+  const removeImageAt = (imageIndex) => {
+    if (!canEditInspiration) return;
+    let seen = -1;
+    onInspirationItemsChange(
+      inspirationItems.filter((item) => {
+        if (item?.type !== "image") return true;
+        seen += 1;
+        return seen !== imageIndex;
+      }),
+    );
   };
 
   const addSocialLink = () => {
@@ -140,17 +167,13 @@ export default function VisionCaptureStep({
   };
 
   return (
-    <div>
+    <div className="hm-vision">
       {!embedded && headline ? (
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, marginBottom: 24, flexWrap: "wrap" }}>
-          <div style={{ flex: "1 1 320px", minWidth: 0 }}>
-            <h1 className="font-serif-display text-3xl md:text-[2.25rem] font-medium text-[#1C1917] tracking-tight leading-tight m-0 mb-3">
-              {headline}
-            </h1>
-            {subcopy ? (
-              <p style={{ fontSize: 14, color: "#6A5E53", margin: 0, lineHeight: 1.65, maxWidth: 560 }}>{subcopy}</p>
-            ) : null}
-          </div>
+        <div className="hm-vision__headline">
+          <h1 className="font-serif-display text-3xl md:text-[2.25rem] font-medium text-[#1C1917] tracking-tight leading-tight m-0 mb-3">
+            {headline}
+          </h1>
+          {subcopy ? <p>{subcopy}</p> : null}
         </div>
       ) : null}
 
@@ -161,242 +184,118 @@ export default function VisionCaptureStep({
         </div>
       ) : null}
 
-      <div
-        style={{
-          borderRadius: 16,
-          padding: "16px 18px",
-          background: "#FDFBF8",
-          border: "1px solid #EFE3D2",
-          boxShadow: "0 8px 28px -12px rgba(200, 95, 43, 0.12)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "stretch", gap: 14, flexWrap: "wrap" }}>
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
-              flexShrink: 0,
-              background: "linear-gradient(145deg, #FFF9F4 0%, #F5EDE4 100%)",
-              border: "1px solid #E8DDD3",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 20,
-              lineHeight: 1,
-              color: "#C85F2B",
-            }}
-            aria-hidden
-          >
-            ✨
+      {/* Brief editor */}
+      <section className={`hm-vision__editor${listening ? " is-listening" : ""}`} aria-label="Project brief">
+        <header className="hm-vision__editor-head">
+          <div>
+            <h3>Your brief</h3>
+            <p>Written in any language. This paragraph guides the AI concepts and your professional.</p>
           </div>
-          <div style={{ flex: "1 1 240px", minWidth: 0, display: "flex", flexDirection: "column", gap: 10 }}>
-            <textarea
-              ref={taRef}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder={placeholder}
-              rows={embedded ? 4 : 5}
-              style={{
-                width: "100%",
-                boxSizing: "border-box",
-                background: "#fff",
-                border: "1px solid #D6D3D1",
-                borderRadius: 12,
-                padding: "14px 16px",
-                fontSize: 15,
-                lineHeight: 1.55,
-                color: "#1C1917",
-                outline: "none",
-                resize: "vertical",
-                minHeight: embedded ? 100 : 120,
-                fontFamily: "'DM Sans', Inter, system-ui, sans-serif",
-              }}
-            />
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <button
-                  type="button"
-                  onClick={toggleVoice}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "8px 14px",
-                    borderRadius: 999,
-                    border: listening ? "2px solid #C85F2B" : "1px solid #D6D3D1",
-                    background: listening ? "#FFFBF7" : "#fff",
-                    color: listening ? "#C85F2B" : "#57534E",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                  aria-pressed={listening}
-                >
-                  {listening ? "● Listening…" : "🎤 Voice"}
-                </button>
-                <span style={{ fontSize: 11, color: "#A8A29E" }}>Optional · EN-IN</span>
-              </div>
-              <span style={{ fontSize: 11, color: "#A8A29E" }}>
-                {value.trim().length}/{minChars}+ suggested
-              </span>
-            </div>
-          </div>
-        </div>
-        {speechErr ? (
-          <div style={{ marginTop: 12, fontSize: 12, color: "#B45309", lineHeight: 1.45 }}>{speechErr}</div>
-        ) : null}
-        {shortHint ? (
-          <div style={{ marginTop: 12, fontSize: 12, color: "#92400E", lineHeight: 1.45 }}>{shortHint}</div>
-        ) : null}
-      </div>
-
-      <div
-        style={{
-          marginTop: 14,
-          borderRadius: 14,
-          padding: "14px 16px",
-          background: "#FFFBF7",
-          border: "1px solid #EEDCCB",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-          <span style={{ fontSize: 16 }} aria-hidden>
-            🧠
+          <span className={`hm-vision__count${reachedMin ? " is-complete" : ""}`} aria-live="polite">
+            {trimmedLength} / {minChars}+
           </span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#1C1917" }}>{inspirationLabel}</span>
+        </header>
+
+        <textarea
+          ref={taRef}
+          className="hm-vision__textarea"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={embedded ? 5 : 6}
+          aria-label="Project brief"
+        />
+
+        <div className="hm-vision__progress" aria-hidden>
+          <span style={{ width: `${progress}%` }} />
         </div>
-        <div style={{ fontSize: 12, color: "#7A6E62", lineHeight: 1.5, marginBottom: 10 }}>
-          Upload photos/screenshots or paste Instagram, Pinterest, YouTube, or other social links.
-        </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
-          <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleUploadImages} />
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click?.()}
-            disabled={!canEditInspiration}
-            style={{
-              border: "1px solid #D6D3D1",
-              background: "#fff",
-              borderRadius: 999,
-              padding: "8px 12px",
-              fontSize: 12,
-              fontWeight: 700,
-              color: "#44403C",
-              cursor: canEditInspiration ? "pointer" : "default",
-            }}
-          >
-            + Upload images
+
+        <footer className="hm-vision__editor-foot">
+          <button type="button" className={`hm-vision__dictate${listening ? " is-on" : ""}`} onClick={toggleVoice} aria-pressed={listening}>
+            {listening ? <Square size={13} strokeWidth={2.4} /> : <Mic size={14} strokeWidth={2} />}
+            {listening ? "Stop dictation" : "Dictate"}
           </button>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flex: "1 1 320px", minWidth: 220 }}>
-            <input
-              value={socialUrl}
-              onChange={(e) => setSocialUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addSocialLink();
-                }
-              }}
-              placeholder="Paste social post link"
-              style={{
-                width: "100%",
-                border: "1px solid #D6D3D1",
-                borderRadius: 8,
-                padding: "8px 10px",
-                fontSize: 12,
-                background: "#fff",
-              }}
-            />
-            <button
-              type="button"
-              onClick={addSocialLink}
-              disabled={!canEditInspiration}
-              style={{
-                border: "1px solid #D6D3D1",
-                background: "#fff",
-                borderRadius: 8,
-                padding: "8px 10px",
-                fontSize: 12,
-                fontWeight: 700,
-                color: "#44403C",
-                cursor: canEditInspiration ? "pointer" : "default",
-              }}
-            >
-              Add
-            </button>
+          <span className="hm-vision__foot-note">{listening ? "Listening in English (India)…" : shortHint || "Voice input is optional."}</span>
+        </footer>
+        {speechErr ? <p className="hm-vision__error">{speechErr}</p> : null}
+      </section>
+
+      {/* Inspiration */}
+      <section className="hm-vision__inspiration" aria-label={inspirationLabel}>
+        <header className="hm-vision__section-head">
+          <div>
+            <h3>{inspirationLabel}</h3>
+            <p>Photos, screenshots, or links from Instagram, Pinterest, YouTube, and similar.</p>
           </div>
+          {imageItems.length + linkItems.length > 0 ? (
+            <span className="hm-vision__section-count">
+              {imageItems.length + linkItems.length} saved
+            </span>
+          ) : null}
+        </header>
+
+        <HmMediaDropzone
+          compact
+          items={imageItems.map((item) => ({ src: item.value, label: "" }))}
+          onAddFiles={canEditInspiration ? handleAddFiles : undefined}
+          onRemove={canEditInspiration ? removeImageAt : undefined}
+          max={MAX_INSPIRATION_IMAGES}
+          busy={encoding}
+          disabled={!canEditInspiration}
+          title="Add inspiration photos"
+          hint="JPG, PNG, or WebP · drag files here or browse"
+          removeLabel="Remove inspiration photo"
+        />
+
+        <div className="hm-vision__link-row">
+          <span className="hm-vision__link-icon" aria-hidden>
+            <Link2 size={15} strokeWidth={1.9} />
+          </span>
+          <input
+            value={socialUrl}
+            onChange={(e) => setSocialUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addSocialLink();
+              }
+            }}
+            placeholder="Paste a post or board link"
+            aria-label="Inspiration link"
+            disabled={!canEditInspiration}
+          />
+          <button type="button" onClick={addSocialLink} disabled={!canEditInspiration || !socialUrl.trim()}>
+            Add link
+          </button>
         </div>
-        {imageItems.length > 0 ? (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-            {inspirationItems.map((item, idx) =>
-              item?.type === "image" ? (
-                <div key={`${item.value}-${idx}`} style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid #E5E7EB" }}>
-                  <img src={item.value} alt={item.label || "inspiration"} style={{ width: 84, height: 64, objectFit: "cover", display: "block" }} />
-                  <button
-                    type="button"
-                    onClick={() => removeInspiration(idx)}
-                    style={{
-                      position: "absolute",
-                      top: 4,
-                      right: 4,
-                      width: 18,
-                      height: 18,
-                      borderRadius: "50%",
-                      border: "none",
-                      background: "rgba(255,255,255,0.9)",
-                      fontSize: 12,
-                      lineHeight: 1,
-                      cursor: "pointer",
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : null
-            )}
-          </div>
-        ) : null}
+
         {linkItems.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <ul className="hm-vision__links">
             {inspirationItems.map((item, idx) =>
               item?.type === "link" ? (
-                <div
-                  key={`${item.value}-${idx}`}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 10,
-                    border: "1px solid #E7E5E4",
-                    background: "#fff",
-                    borderRadius: 8,
-                    padding: "6px 8px",
-                  }}
-                >
-                  <a
-                    href={item.value}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ fontSize: 12, color: "#2A6496", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                  >
-                    {item.value}
+                <li key={`${item.value}-${idx}`}>
+                  <a href={item.value} target="_blank" rel="noreferrer" title={item.value}>
+                    <strong>{linkHost(item.value)}</strong>
+                    <span>{item.value}</span>
                   </a>
-                  <button type="button" onClick={() => removeInspiration(idx)} style={{ border: "none", background: "none", fontSize: 14, cursor: "pointer" }}>
-                    ×
-                  </button>
-                </div>
-              ) : null
+                  {canEditInspiration ? (
+                    <button type="button" onClick={() => removeInspiration(idx)} aria-label={`Remove link ${linkHost(item.value)}`}>
+                      <X size={13} strokeWidth={2.3} />
+                    </button>
+                  ) : null}
+                </li>
+              ) : null,
             )}
-          </div>
+          </ul>
         ) : null}
-        {inspirationErr ? <div style={{ marginTop: 8, fontSize: 12, color: "#B45309" }}>{inspirationErr}</div> : null}
-      </div>
+
+        {inspirationErr ? <p className="hm-vision__error">{inspirationErr}</p> : null}
+      </section>
 
       {!embedded ? (
-        <p style={{ fontSize: 12, color: "#78716C", marginTop: 16, lineHeight: 1.55, maxWidth: 640 }}>
-          Later steps cover plot, rooms, and budget — this paragraph keeps AI and your architect aligned on{" "}
-          <strong style={{ color: "#57534E" }}>why</strong> you&apos;re building, not only checklist answers.
+        <p className="hm-vision__afterword">
+          Later steps cover plot, rooms, and budget. This paragraph keeps the AI and your architect aligned on <strong>why</strong> you&apos;re
+          building, not only on checklist answers.
         </p>
       ) : null}
     </div>

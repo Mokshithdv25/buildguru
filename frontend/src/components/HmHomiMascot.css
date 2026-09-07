@@ -1,0 +1,99 @@
+/* Homi mascot — CSS character. Used only on the professional dashboard. */
+.hm-homi-mascot {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.hm-homi-mascot__glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 95, 43, 0.25), transparent 70%);
+}
+
+.hm-homi-mascot__body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #fff7ed 0%, #fed7aa 100%);
+  border: 2px solid #fdba74;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.hm-homi-mascot__visor {
+  display: flex;
+  gap: 6px;
+  margin-top: 18%;
+}
+
+.hm-homi-mascot__eye {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1c1917;
+  box-shadow: 0 0 6px rgba(200, 95, 43, 0.8);
+}
+
+.hm-homi-mascot__smile {
+  width: 14px;
+  height: 7px;
+  border: 2px solid #9a3412;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  margin-top: 4px;
+}
+
+.hm-homi-mascot__hardhat {
+  position: absolute;
+  top: -6%;
+  left: 8%;
+  right: 8%;
+  height: 28%;
+  background: #c85f2b;
+  border-radius: 8px 8px 4px 4px;
+  z-index: 2;
+}
+
+.hm-homi-mascot__hardhat::after {
+  content: "";
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  bottom: -4px;
+  height: 6px;
+  background: #9a3412;
+  border-radius: 4px;
+}
+
+.hm-homi-mascot__antenna {
+  position: absolute;
+  top: -18%;
+  left: 50%;
+  width: 3px;
+  height: 14%;
+  background: #78716c;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  z-index: 0;
+}
+
+.hm-homi-mascot__antenna::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.hm-homi-mascot--hero .hm-homi-mascot__body {
+  background: linear-gradient(160deg, #fff 0%, #ffedd5 100%);
+}

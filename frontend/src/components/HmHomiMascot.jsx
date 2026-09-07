@@ -1,6 +1,7 @@
 import React from "react";
+import "./HmHomiMascot.css";
 
-/** Friendly Homi mascot — CSS character (no external assets). */
+/** Friendly Homi mascot — CSS character (no external assets). Pro dashboard only. */
 export default function HmHomiMascot({ size = 48, variant = "default" }) {
   const s = size;
   return (

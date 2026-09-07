@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MessageSquareText, X } from "lucide-react";
 import { askHubAssistant } from "../lib/hubAssistantApi";
 import { buildLatestBriefing } from "../lib/hubAssistantCommands";
 import "./HmProjectAssistant.css";
@@ -32,7 +33,7 @@ export default function HmProjectAssistant({
     {
       id: "welcome",
       role: "homi",
-      text: "Hi! I'm **Homi** — ask any question about this project's **brief, estimate, tasks, documents, payments, site updates, or material plan**. I only use artifacts attached to the active project.",
+      text: "Ask anything about this project's **brief, estimate, tasks, documents, payments, site updates, or material plan**. Answers use only the artifacts attached to the active project.",
     },
   ]);
   const scrollRef = useRef(null);
@@ -122,14 +123,11 @@ export default function HmProjectAssistant({
   return (
     <>
       {open ? (
-        <div className="hm-assistant-panel" role="dialog" aria-label="Homi project assistant">
+        <div className="hm-assistant-panel" role="dialog" aria-label="Project assistant">
           <div className="hm-assistant-head">
-            <div className="hm-assistant-avatar" aria-hidden>
-              🏡
-            </div>
             <div>
-              <h3>Homi</h3>
-              <p>Project-artifact Q&amp;A and actions</p>
+              <h3>Project assistant</h3>
+              <p>Answers and actions grounded in this project's saved artifacts</p>
             </div>
             <button
               type="button"
@@ -205,10 +203,10 @@ export default function HmProjectAssistant({
         className={`hm-assistant-fab${open ? " open" : ""}`}
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        aria-label={open ? "Close Homi assistant" : "Open Homi assistant"}
-        title="Homi — project assistant"
+        aria-label={open ? "Close project assistant" : "Open project assistant"}
+        title="Project assistant"
       >
-        {open ? "×" : "✨"}
+        {open ? <X size={22} strokeWidth={2.2} aria-hidden /> : <MessageSquareText size={22} strokeWidth={2} aria-hidden />}
       </button>
     </>
   );

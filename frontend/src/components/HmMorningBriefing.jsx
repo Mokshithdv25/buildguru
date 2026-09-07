@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import HmHomiMascot from "./HmHomiMascot";
+import { ArrowUpRight, Volume2 } from "lucide-react";
 import {
   buildHubAgenda,
   buildHubBadges,
@@ -17,9 +17,13 @@ function renderInlineBold(text) {
   return parts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part));
 }
 
+/**
+ * Daily briefing header for the project hub. Structured status first, then a short
+ * narrative agenda and grounded follow-up actions. No mascots or decorative art.
+ */
 export default function HmMorningBriefing({ context, pendingTasks = [], onNavigatePath }) {
   const ctx = useMemo(() => context || {}, [context]);
-  const firstName = ctx.userFirstName || "there";
+  const firstName = ctx.userFirstName || "";
   const badges = useMemo(() => buildHubBadges(ctx, { pendingTasks: pendingTasks.length }), [ctx, pendingTasks.length]);
   const agenda = useMemo(
     () => buildHubAgenda(ctx, { pendingTasks, selectedPhase: ctx.activePhase }),
@@ -47,53 +51,45 @@ export default function HmMorningBriefing({ context, pendingTasks = [], onNaviga
   };
 
   return (
-    <div className="hm-morning-brief">
-      <div className="hm-morning-brief__hero">
-        <div className="hm-morning-brief__hero-row">
-          <div className="hm-morning-brief__mascots">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <HmHomiMascot key={i} size={i === 2 ? 56 : 44} variant="hero" />
-            ))}
-          </div>
-          <p className="hm-morning-brief__tagline">
-            Briefings and answers grounded in your saved brief, estimate, tasks, documents, site updates, and budget.
-          </p>
+    <section className="hm-brief" aria-label="Daily briefing">
+      <div className="hm-brief__top">
+        <div className="hm-brief__intro">
+          <div className="hm-brief__eyebrow">Daily briefing · {formatBriefingDate()}</div>
+          <h1 className="hm-brief__greeting">
+            {getTimeGreeting()}
+            {firstName ? `, ${firstName}` : ""}
+          </h1>
+          <p className="hm-brief__sub">What changed, what is blocked, and which decisions need you today.</p>
         </div>
+        <button type="button" className="hm-brief__play" onClick={playBriefing}>
+          <Volume2 size={15} strokeWidth={2} />
+          Play briefing
+        </button>
       </div>
 
-      <div className="hm-morning-brief__card">
-        <div className="hm-morning-brief__eyebrow">✨ Morning briefing · {formatBriefingDate()}</div>
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ flex: "1 1 240px", minWidth: 0 }}>
-            <h1 className="hm-morning-brief__greeting">
-              {getTimeGreeting()}, {firstName} 👋
-            </h1>
-            <p className="hm-morning-brief__sub">A concise summary of what changed, what is blocked, and which decisions need you today.</p>
-          </div>
-          <button type="button" className="hm-morning-brief__play" onClick={playBriefing}>
-            🔊 Play briefing
-          </button>
-        </div>
-
-        <div className="hm-morning-brief__badges">
+      {badges.length ? (
+        <dl className="hm-brief__stats">
           {badges.map((b) => (
-            <span key={`${b.label}-${b.value}`} className={`hm-morning-brief__badge hm-morning-brief__badge--${b.tone}`}>
-              {b.value} {b.label}
-            </span>
+            <div key={`${b.label}-${b.value}`} className={`hm-brief__stat hm-brief__stat--${b.tone}`}>
+              <dt>{b.label}</dt>
+              <dd>{b.value}</dd>
+            </div>
           ))}
-        </div>
+        </dl>
+      ) : null}
 
-        <p className="hm-morning-brief__agenda">{renderInlineBold(agenda)}</p>
+      <p className="hm-brief__agenda">{renderInlineBold(agenda)}</p>
 
-        <div className="hm-morning-brief__actions">
+      {suggested.length ? (
+        <div className="hm-brief__actions" role="group" aria-label="Suggested follow-ups">
           {suggested.map((a) => (
-            <button key={a.label} type="button" className="hm-morning-brief__action" onClick={() => onAction(a)}>
-              <span aria-hidden>✨</span>
-              {a.label}
+            <button key={a.label} type="button" className="hm-brief__action" onClick={() => onAction(a)}>
+              <span>{a.label}</span>
+              <ArrowUpRight size={14} strokeWidth={2} />
             </button>
           ))}
         </div>
-      </div>
-    </div>
+      ) : null}
+    </section>
   );
 }
