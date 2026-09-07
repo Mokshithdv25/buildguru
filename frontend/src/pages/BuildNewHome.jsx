@@ -38,6 +38,7 @@ import { HM_FIXED_NAV_OFFSET_TAGLINE_CLASS, HM_TAGLINE_NEW_HOME } from "../lib/h
 import { publicAsset } from "../lib/publicAsset";
 import { canVisitWizardStep, nextMaxStepReached, wizardExitPath } from "../lib/wizardSteps";
 import VisionCaptureStep from "../components/VisionCaptureStep";
+import LocationAutocomplete from "../components/LocationAutocomplete";
 import WizardMobileStepBar from "../components/WizardMobileStepBar";
 
 const STEPS = [
@@ -1042,14 +1043,11 @@ export default function BuildNewHome() {
               <span>Plot and location</span>
             </div>
             <div style={{ marginBottom: 18 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, display: "block", marginBottom: 6, color: "#44403C" }}>
-                Project location <span style={{ fontWeight: 500, color: "#A8A29E" }}>(required)</span>
-              </label>
-              <div style={{ position: "relative" }}>
-                <svg style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#78716C" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input value={form.location} onChange={e => set("location", e.target.value)} placeholder="City, State" style={{ width: "100%", border: "1px solid #D6D3D1", borderRadius: 8, padding: "9px 36px 9px 34px", fontSize: 14, boxSizing: "border-box", background: "#fff", outline: "none" }} />
-                <button type="button" onClick={() => set("location", "")} style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#A8A29E", fontSize: 16, lineHeight: 1 }} aria-label="Clear">×</button>
-              </div>
+              <LocationAutocomplete
+                value={form.location}
+                onChange={(value) => set("location", value)}
+                required
+              />
             </div>
             <div style={{ marginBottom: 18 }}>
               <label style={{ fontSize: 12, fontWeight: 600, display: "block", marginBottom: 6, color: "#44403C" }}>
