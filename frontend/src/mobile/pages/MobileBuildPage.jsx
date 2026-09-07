@@ -1,7 +1,61 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowRight, Check, Home, Images, MapPinned, Palette, Ruler, Sparkles, Wrench } from "lucide-react";
 import MobileHeader from "../MobileHeader";
 import { publicAsset } from "../../lib/publicAsset";
+
+const NEW_HOME_STEPS = [
+  { Icon: MapPinned, label: "Define plot" },
+  { Icon: Ruler, label: "Plan rooms" },
+  { Icon: Palette, label: "Choose style" },
+  { Icon: Sparkles, label: "AI design + estimate" },
+];
+
+const REMODEL_STEPS = [
+  { Icon: Images, label: "Add photos" },
+  { Icon: Home, label: "Choose space" },
+  { Icon: Wrench, label: "Set upgrades" },
+  { Icon: Sparkles, label: "AI design + costs" },
+];
+
+function FlowCard({ image, badge, title, description, features, steps, onClick, accent = "copper" }) {
+  return (
+    <button
+      type="button"
+      className={`hm-m-build-card hm-m-build-card--${accent}`}
+      onClick={onClick}
+    >
+      <img className="hm-m-flow-image" src={image} alt="" decoding="async" />
+      <div className="hm-m-build-card__body">
+        <span className="hm-m-flow-badge">{badge}</span>
+        <div className="hm-m-build-card__heading">
+          <h2>{title}</h2>
+          <ArrowRight size={18} strokeWidth={2} aria-hidden />
+        </div>
+        <p>{description}</p>
+        <div className="hm-m-flow-features">
+          {features.map((feature) => (
+            <span key={feature}>
+              <Check size={13} strokeWidth={2.4} aria-hidden />
+              {feature}
+            </span>
+          ))}
+        </div>
+        <div className="hm-m-build-steps" aria-label={`${title} steps`}>
+          {steps.map(({ Icon, label }, index) => (
+            <React.Fragment key={label}>
+              <span className="hm-m-build-step">
+                <Icon size={15} strokeWidth={1.8} aria-hidden />
+                <small>{label}</small>
+              </span>
+              {index < steps.length - 1 ? <i aria-hidden>·</i> : null}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+    </button>
+  );
+}
 
 export default function MobileBuildPage() {
   const navigate = useNavigate();
@@ -16,23 +70,31 @@ export default function MobileBuildPage() {
   return (
     <>
       <MobileHeader title="What are you building?" subtitle="We'll tailor AI design & estimates" backTo="/" />
-      <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 16 }}>
-        <button type="button" className="hm-m-card" style={{ textAlign: "left", cursor: "pointer", border: "2px solid transparent" }} onClick={() => navigate("/build/new-home" + q)}>
-          <img className="hm-m-flow-image" src={publicAsset("mobile_flow_build.jpg")} alt="Modern Indian home exterior" decoding="async" />
-          <span className="hm-m-flow-badge">1 free exterior concept</span>
-          <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700 }}>Build a new home</h2>
-          <p style={{ margin: "0 0 16px", fontSize: 14, color: "#78716C", lineHeight: 1.5 }}>Describe your plot and lifestyle — get floor plans, renders, and a ballpark cost.</p>
-          <div className="hm-m-flow-features"><span>✓ Saved brief</span><span>✓ AI exterior</span><span>✓ Estimate & project hub</span></div>
-          <span style={{ color: "#C85F2B", fontWeight: 700, fontSize: 15 }}>Get started →</span>
-        </button>
-        <button type="button" className="hm-m-card" style={{ textAlign: "left", cursor: "pointer" }} onClick={() => navigate("/build/remodel" + q)}>
-          <img className="hm-m-flow-image" src={publicAsset("mobile_flow_remodel.jpg")} alt="Warm modern living room" loading="lazy" decoding="async" />
-          <span className="hm-m-flow-badge">Photo-to-concept journey</span>
-          <h2 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700 }}>Renovate / remodel</h2>
-          <p style={{ margin: "0 0 16px", fontSize: 14, color: "#78716C", lineHeight: 1.5 }}>Upload room photos, describe your vision, get AI designs and costs.</p>
-          <div className="hm-m-flow-features"><span>✓ Existing-space photos</span><span>✓ AI remodel concept</span><span>✓ Costs, tasks & pros</span></div>
-          <span style={{ color: "#C85F2B", fontWeight: 700, fontSize: 15 }}>Get started →</span>
-        </button>
+      <div className="hm-m-build-chooser">
+        <div className="hm-m-build-chooser__intro">
+          <span>Start with your home brief</span>
+          <h1>Choose the path that fits your project.</h1>
+          <p>Both paths end with a clear brief, AI concepts, an estimate, and a project hub you can keep using.</p>
+        </div>
+        <FlowCard
+          image={publicAsset("mobile_flow_build.jpg")}
+          badge="New construction"
+          title="Build a new home"
+          description="Describe your plot and lifestyle — get floor plans, renders, and a ballpark cost."
+          features={["Saved brief", "AI exterior concepts", "Estimate + project hub"]}
+          steps={NEW_HOME_STEPS}
+          onClick={() => navigate("/build/new-home" + q)}
+        />
+        <FlowCard
+          image={publicAsset("mobile_flow_remodel.jpg")}
+          badge="Existing space"
+          title="Renovate / remodel"
+          description="Upload room photos, describe your vision, and get AI designs and costs."
+          features={["Room photo upload", "AI remodel concepts", "Costs, tasks + pros"]}
+          steps={REMODEL_STEPS}
+          onClick={() => navigate("/build/remodel" + q)}
+          accent="sand"
+        />
       </div>
     </>
   );

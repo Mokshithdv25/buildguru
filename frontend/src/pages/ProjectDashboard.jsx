@@ -1,5 +1,23 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  CalendarDays,
+  Camera,
+  Compass,
+  CreditCard,
+  FileText,
+  FolderOpen,
+  HardHat,
+  Inbox,
+  IndianRupee,
+  Layers,
+  LayoutGrid,
+  ListChecks,
+  MessageSquareText,
+  Settings,
+  Users,
+  X,
+} from "lucide-react";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import {
   HM_FIXED_NAV_OFFSET_TAGLINE_CLASS,
@@ -54,10 +72,10 @@ const OR = "#C85F2B";
 
 /** Soft panels — reference UI: warm off-white, hairline border, minimal shadow (not heavy white boxes). */
 const panel = {
-  background: "linear-gradient(180deg, #FDFCFB 0%, #FAF9F7 100%)",
-  borderRadius: 12,
-  border: "1px solid #E8E6E3",
-  boxShadow: "0 1px 2px rgba(28, 25, 23, 0.045)",
+  background: "#FFFFFF",
+  borderRadius: 14,
+  border: "1px solid #E6E1DA",
+  boxShadow: "0 1px 2px rgba(28, 25, 23, 0.04)",
 };
 
 const phases = [
@@ -264,19 +282,19 @@ const MILESTONE_SEED = {
 };
 
 const NAV = [
-  { icon: "⊞", label: "Overview", path: null },
-  { icon: "📩", label: "Bids", path: null },
-  { icon: "📅", label: "Timeline", path: null },
-  { icon: "✓", label: "Tasks", path: null },
-  { icon: "₹", label: "Budget", path: null },
-  { icon: "🧱", label: "Materials", path: null },
-  { icon: "💳", label: "Payments", path: "/project/payments" },
-  { icon: "📸", label: "Site Feed", path: null },
-  { icon: "📄", label: "Documents", path: "/documents" },
-  { icon: "🧭", label: "Design journey", path: "/project/journey" },
-  { icon: "👷", label: "Find Pros", path: "/project/browse" },
-  { icon: "👥", label: "Team", path: "/team" },
-  { icon: "⚙️", label: "Settings", path: null },
+  { Icon: LayoutGrid, label: "Overview", path: null },
+  { Icon: Inbox, label: "Bids", path: null },
+  { Icon: CalendarDays, label: "Timeline", path: null },
+  { Icon: ListChecks, label: "Tasks", path: null },
+  { Icon: IndianRupee, label: "Budget", path: null },
+  { Icon: Layers, label: "Materials", path: null },
+  { Icon: CreditCard, label: "Payments", path: "/project/payments" },
+  { Icon: Camera, label: "Site Feed", path: null },
+  { Icon: FileText, label: "Documents", path: "/documents" },
+  { Icon: Compass, label: "Design journey", path: "/project/journey" },
+  { Icon: HardHat, label: "Find Pros", path: "/project/browse" },
+  { Icon: Users, label: "Team", path: "/team" },
+  { Icon: Settings, label: "Settings", path: null },
 ];
 
 /** Demo project funding — own equity vs bank loan; swap for ledger API later. */
@@ -1260,7 +1278,7 @@ export default function ProjectDashboard() {
                 }}
                 style={hmProjectSidebarNavItemStyle(active)}
               >
-                <span style={{ fontSize: 15 }}>{n.icon}</span>
+                <n.Icon size={16} strokeWidth={active ? 2.1 : 1.8} style={{ flexShrink: 0, color: active ? OR : "#8A7F75" }} aria-hidden />
                 {n.label}
                 {n.label === "Bids" && newBidCount > 0 ? (
                   <span
@@ -1283,28 +1301,30 @@ export default function ProjectDashboard() {
           })}
         </nav>
         <div style={hmProjectSidebarFooterStyle}>
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>Need Help?</div>
-          <div style={{ fontSize: 11, color: "#7A6E62", marginBottom: 10 }}>Chat with your project expert</div>
+          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 3, color: "#1C1917" }}>Project assistant</div>
+          <div style={{ fontSize: 11, color: "#7A6E62", marginBottom: 10, lineHeight: 1.45 }}>Answers grounded in this project's brief, tasks, and documents.</div>
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}
             style={{
               width: "100%",
-              background: OR,
+              background: "#1C1917",
               color: "#fff",
               border: "none",
               borderRadius: 8,
               padding: "9px 0",
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: 12,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 6,
+              gap: 7,
+              fontFamily: "inherit",
             }}
           >
-            ✨ Ask Homi
+            <MessageSquareText size={14} strokeWidth={2} aria-hidden />
+            Open assistant
           </button>
         </div>
       </aside>
@@ -1355,17 +1375,22 @@ export default function ProjectDashboard() {
               onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}
               style={{
                 background: "#fff",
-                border: `1px solid ${OR}`,
+                border: "1px solid #D6D3D1",
                 borderRadius: 999,
                 padding: "6px 14px",
                 fontSize: 12,
-                fontWeight: 700,
-                color: OR,
+                fontWeight: 600,
+                color: "#1C1917",
                 cursor: "pointer",
                 flexShrink: 0,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontFamily: "inherit",
               }}
             >
-              ✨ Ask Homi
+              <MessageSquareText size={13} strokeWidth={2} aria-hidden />
+              Project assistant
             </button>
           </div>
         )}
@@ -1456,10 +1481,10 @@ export default function ProjectDashboard() {
         <div className="px-5 md:px-10" style={{ flex: 1, paddingTop: 20, paddingBottom: 32, overflowY: "auto" }}>
           {needsSignIn ? (
             <div style={{ ...panel, padding: 32, maxWidth: 520, margin: "48px auto", textAlign: "center" }}>
-              <div style={{ fontSize: 42, marginBottom: 8 }} aria-hidden>
-                🏡✨
+              <div style={{ width: 48, height: 48, borderRadius: 14, margin: "0 auto 14px", display: "flex", alignItems: "center", justifyContent: "center", background: "#FDF4EF", border: "1px solid #F3DCCB", color: OR }} aria-hidden>
+                <FolderOpen size={22} strokeWidth={1.8} />
               </div>
-              <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 10 }}>Sign in to open your project hub</div>
+              <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 10, letterSpacing: "-0.01em" }}>Sign in to open your project hub</div>
               <p style={{ fontSize: 14, color: "#57534E", lineHeight: 1.6, margin: "0 0 12px" }}>
                 Saved builds, AI v0 designs, and estimates stay in your account. We only show projects linked to your sign-in.
               </p>
@@ -1518,16 +1543,16 @@ export default function ProjectDashboard() {
                   cursor: "pointer",
                 }}
               >
-                Or chat with Homi first →
+                Or ask the project assistant first →
               </button>
             </div>
           ) : null}
           {!needsSignIn && needsProjectPick ? (
             <div style={{ ...panel, padding: 32, maxWidth: 560, margin: "32px auto", textAlign: "center" }}>
-              <div style={{ fontSize: 44, marginBottom: 10 }} aria-hidden>
-                🏡
+              <div style={{ width: 48, height: 48, borderRadius: 14, margin: "0 auto 14px", display: "flex", alignItems: "center", justifyContent: "center", background: "#FDF4EF", border: "1px solid #F3DCCB", color: OR }} aria-hidden>
+                <LayoutGrid size={22} strokeWidth={1.8} />
               </div>
-              <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Select a project</div>
+              <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, letterSpacing: "-0.01em" }}>Select a project</div>
               <p style={{ fontSize: 14, color: "#57534E", lineHeight: 1.6, margin: "0 0 20px" }}>
                 {userProjects.length > 0
                   ? "Choose a saved project in the sidebar, or start a new home or remodel flow."
@@ -1604,7 +1629,7 @@ export default function ProjectDashboard() {
                   cursor: "pointer",
                 }}
               >
-                Or ask Homi how to get started →
+                Or ask the project assistant how to get started →
               </button>
             </div>
           ) : null}
@@ -1612,12 +1637,48 @@ export default function ProjectDashboard() {
           <>
           <div className="px-5 md:px-10">
             {isLiveProject ? (
-              <div style={{ ...panel, padding: "14px 16px", marginBottom: 14, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <label htmlFor="project-title" style={{ fontSize: 12, fontWeight: 800, color: "#57534E" }}>Project name</label>
-                <input id="project-title" value={projectTitleDraft} onChange={(event) => setProjectTitleDraft(event.target.value.slice(0, 120))} onKeyDown={(event) => event.key === "Enter" && renameActiveProject()} style={{ flex: "1 1 260px", border: "1px solid #D4CEC6", borderRadius: 8, padding: "9px 11px", fontSize: 15, fontWeight: 700 }} />
-                <button type="button" onClick={renameActiveProject} disabled={renamingProject || !projectTitleDraft.trim() || projectTitleDraft.trim() === activeProjectMeta?.title} style={{ border: 0, borderRadius: 8, background: OR, color: "#fff", padding: "9px 14px", fontWeight: 700, cursor: "pointer", opacity: renamingProject || !projectTitleDraft.trim() || projectTitleDraft.trim() === activeProjectMeta?.title ? 0.5 : 1 }}>
-                  {renamingProject ? "Saving…" : "Rename"}
-                </button>
+              <div style={{ marginBottom: 18, paddingTop: 4 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#8A7F75", marginBottom: 6 }}>
+                  {flowSourceLabel(activeProjectMeta?.flow_type, activeProjectMeta?.source)}
+                  {activeProjectMeta?.location ? ` · ${activeProjectMeta.location}` : ""}
+                  {activeProjectMeta?.budget_max ? ` · ${formatInrShort(activeProjectMeta.budget_max)} budget` : ""}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                  <input
+                    id="project-title"
+                    aria-label="Project name"
+                    value={projectTitleDraft}
+                    onChange={(event) => setProjectTitleDraft(event.target.value.slice(0, 120))}
+                    onKeyDown={(event) => event.key === "Enter" && renameActiveProject()}
+                    placeholder="Untitled project"
+                    style={{
+                      flex: "1 1 320px",
+                      minWidth: 0,
+                      border: "1px solid transparent",
+                      borderBottom: "1px solid #E5E2DD",
+                      borderRadius: 0,
+                      background: "transparent",
+                      padding: "2px 0 6px",
+                      fontSize: 26,
+                      fontWeight: 600,
+                      letterSpacing: "-0.015em",
+                      lineHeight: 1.2,
+                      color: "#1C1917",
+                      fontFamily: "inherit",
+                      outline: "none",
+                    }}
+                  />
+                  {projectTitleDraft.trim() && projectTitleDraft.trim() !== activeProjectMeta?.title ? (
+                    <button
+                      type="button"
+                      onClick={renameActiveProject}
+                      disabled={renamingProject}
+                      style={{ border: 0, borderRadius: 8, background: "#1C1917", color: "#fff", padding: "9px 14px", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "inherit", opacity: renamingProject ? 0.6 : 1 }}
+                    >
+                      {renamingProject ? "Saving…" : "Save name"}
+                    </button>
+                  ) : null}
+                </div>
               </div>
             ) : null}
             <HmMorningBriefing
@@ -1705,8 +1766,8 @@ export default function ProjectDashboard() {
                       marginRight: i < 4 ? 10 : 0,
                       paddingRight: i < 4 ? 10 : 0,
                       borderRight: i < 4 ? "1px solid #EDEAE6" : "none",
-                      background: sel ? "linear-gradient(180deg, #F0FDF4 0%, #ECFDF5 100%)" : "transparent",
-                      border: sel ? "2px solid #86EFAC" : "2px solid transparent",
+                      background: sel ? "#FBFAF8" : "transparent",
+                      border: sel ? "1px solid #D9D2C8" : "1px solid transparent",
                       borderRadius: 12,
                       cursor: "pointer",
                       fontFamily: "inherit",
@@ -1719,11 +1780,6 @@ export default function ProjectDashboard() {
                       <div style={{ width: 7, height: 7, borderRadius: "50%", background: p.statusColor }} />
                       <span style={{ fontSize: 10, color: p.statusColor, fontWeight: 600 }}>{p.status}</span>
                     </div>
-                    <div style={{ display: "flex", gap: 6, fontSize: 12, color: "#B8B0A8", marginTop: 2 }} aria-hidden>
-                      <span>📄</span>
-                      <span>📁</span>
-                      <span>✏️</span>
-                    </div>
                   </button>
                 );
               })}
@@ -1733,20 +1789,22 @@ export default function ProjectDashboard() {
                 type="button"
                 onClick={() => setActiveNav("Timeline")}
                 style={{
-                  background: "none",
-                  border: `1.5px solid ${OR}`,
+                  background: "#fff",
+                  border: "1px solid #D6D3D1",
                   borderRadius: 8,
                   padding: "7px 14px",
-                  color: OR,
-                  fontWeight: 700,
+                  color: "#1C1917",
+                  fontWeight: 600,
                   fontSize: 12,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
+                  gap: 7,
+                  fontFamily: "inherit",
                 }}
               >
-                📅 View Timeline
+                <CalendarDays size={14} strokeWidth={2} aria-hidden />
+                View timeline
               </button>
               {isLiveProject ? (
                 <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#57534E", fontWeight: 700 }}>
@@ -1816,7 +1874,7 @@ export default function ProjectDashboard() {
                           <div style={{ fontSize: 13, color: "#9A8F87", marginTop: 4 }}>{t.assignee}</div>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#7A6E62", flexShrink: 0 }}>
-                          <span>📅</span>
+                          <CalendarDays size={14} strokeWidth={1.9} aria-hidden style={{ color: "#A8A29E" }} />
                           <span>{t.date}</span>
                         </div>
                         <select value={t.status || (t.done ? "done" : "todo")} onChange={(event) => changeTaskStatus(t, event.target.value)} aria-label={`Status for ${t.name}`} style={{ border: "1px solid #D4CEC6", borderRadius: 8, background: "#fff", padding: "7px 8px", fontSize: 12 }}>
@@ -1880,7 +1938,7 @@ export default function ProjectDashboard() {
                       {phaseMilestones.length === 0 ? <div style={{ fontSize: 14, color: "#9A8F87" }}>No milestones yet.</div> : null}
                       {phaseMilestones.map((m) => (
                         <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: "1px solid #F0EBE3" }}>
-                          <span style={{ flexShrink: 0, fontSize: 22, lineHeight: 1 }}>{m.icon}</span>
+                          <span style={{ flexShrink: 0, width: 8, height: 8, borderRadius: "50%", background: OR, boxShadow: "0 0 0 3px #FBE5D4" }} aria-hidden />
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.35 }}>{m.name}</div>
                             <div style={{ fontSize: 13, color: OR, fontWeight: 700, marginTop: 4 }}>{m.date}</div>
@@ -1890,8 +1948,8 @@ export default function ProjectDashboard() {
                               <button type="button" onClick={() => editMilestone(m.id)} style={{ border: "none", background: "none", color: "#7A6E62", cursor: "pointer", fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
                                 Edit
                               </button>
-                              <button type="button" onClick={() => removeMilestone(m.id)} style={{ border: "none", background: "none", color: "#B91C1C", cursor: "pointer", fontSize: 14, flexShrink: 0 }} aria-label="Remove">
-                                ✕
+                              <button type="button" onClick={() => removeMilestone(m.id)} style={{ border: "none", background: "none", color: "#B91C1C", cursor: "pointer", flexShrink: 0, display: "inline-flex", padding: 4 }} aria-label="Remove">
+                                <X size={14} strokeWidth={2.2} aria-hidden />
                               </button>
                             </>
                           ) : null}
@@ -1936,9 +1994,6 @@ export default function ProjectDashboard() {
                     placeholder="Message this stage…"
                     style={{ flex: 1, border: "none", outline: "none", fontSize: 15, background: "transparent" }}
                   />
-                  <button type="button" style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20 }}>
-                    😊
-                  </button>
                   <button
                     type="button"
                     onClick={sendMsg}
@@ -2076,7 +2131,6 @@ export default function ProjectDashboard() {
                               }}
                               aria-hidden
                             />
-                            <span style={{ fontSize: 22, flexShrink: 0 }}>{m.icon}</span>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontWeight: 700, fontSize: 15 }}>{m.name}</div>
                               <div style={{ fontSize: 13, color: OR, fontWeight: 700, marginTop: 4 }}>{m.date}</div>
@@ -2086,8 +2140,8 @@ export default function ProjectDashboard() {
                                 <button type="button" onClick={() => editMilestoneFromPhase(ph, m.id)} style={{ border: "none", background: "none", color: "#7A6E62", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
                                   Edit
                                 </button>
-                                <button type="button" onClick={() => removeMilestoneFromPhase(ph, m.id)} style={{ border: "none", background: "none", color: "#B91C1C", cursor: "pointer", fontSize: 14 }} aria-label="Remove">
-                                  ✕
+                                <button type="button" onClick={() => removeMilestoneFromPhase(ph, m.id)} style={{ border: "none", background: "none", color: "#B91C1C", cursor: "pointer", display: "inline-flex", padding: 4 }} aria-label="Remove">
+                                  <X size={14} strokeWidth={2.2} aria-hidden />
                                 </button>
                               </>
                             ) : null}
@@ -2095,7 +2149,27 @@ export default function ProjectDashboard() {
                         ))}
                         {tasks.filter((task) => task.phase === ph).map((task) => (
                           <div key={`timeline-${task.id}`} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0 10px 6px", borderBottom: "1px solid #F0EBE3" }}>
-                            <span aria-hidden>{task.done ? "✅" : task.status === "in_progress" ? "🟠" : "☐"}</span>
+                            <span
+                              aria-hidden
+                              style={{
+                                flexShrink: 0,
+                                width: 16,
+                                height: 16,
+                                borderRadius: "50%",
+                                boxSizing: "border-box",
+                                border: task.done ? "none" : `2px solid ${task.status === "in_progress" ? "#D97706" : "#D4CEC6"}`,
+                                background: task.done ? "#22A36B" : "transparent",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {task.done ? (
+                                <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                                  <path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                                </svg>
+                              ) : null}
+                            </span>
                             <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600, fontSize: 14 }}>{task.name}</div><div style={{ fontSize: 12, color: "#78716C", marginTop: 3 }}>{task.date || "No due date"}</div></div>
                             {isLiveProject ? <label style={{ display: "grid", gap: 3, color: "#78716C", fontSize: 9, fontWeight: 700 }}>DUE DATE<input type="date" value={task.dueDate || ""} onChange={(event) => saveTaskDueDate(task, event.target.value)} style={{ border: "1px solid #D4CEC6", borderRadius: 7, padding: "6px 7px", fontSize: 11 }} /></label> : null}
                             <span style={{ fontSize: 11, fontWeight: 700, color: task.done ? "#15803D" : task.status === "in_progress" ? "#B45309" : "#78716C" }}>{task.done ? "Completed" : task.status === "in_progress" ? "In progress" : "To-do"}</span>
@@ -2198,7 +2272,7 @@ export default function ProjectDashboard() {
                         </div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#7A6E62", flexShrink: 0 }}>
-                        <span>📅</span>
+                        <CalendarDays size={14} strokeWidth={1.9} aria-hidden style={{ color: "#A8A29E" }} />
                         <span>{t.date}</span>
                       </div>
                       <select value={t.status || (t.done ? "done" : "todo")} onChange={(event) => changeTaskStatus(t, event.target.value)} aria-label={`Status for ${t.name}`} style={{ border: "1px solid #D4CEC6", borderRadius: 8, background: "#fff", padding: "7px 8px", fontSize: 12 }}>

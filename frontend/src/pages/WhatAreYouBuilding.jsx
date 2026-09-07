@@ -1,23 +1,24 @@
 import React from "react";
+import { Home, Images, MapPinned, Palette, Ruler, Sparkles, Wrench } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import { HM_FIXED_NAV_OFFSET_TAGLINE_CLASS, HM_TAGLINE_BUILD_CHOOSER } from "../lib/hmBrand";
 
 const NEW_HOME_STEPS = [
-  { icon: "📍", label: "Define Plot" },
-  { icon: "🏗️", label: "Configure Floors" },
-  { icon: "🎨", label: "Select Aesthetic" },
-  { icon: "₹", label: "Get V0 Design & Estimate" },
+  { Icon: MapPinned, label: "Define plot" },
+  { Icon: Ruler, label: "Plan rooms" },
+  { Icon: Palette, label: "Choose style" },
+  { Icon: Sparkles, label: "AI design + estimate" },
 ];
 
 const RENOVATE_STEPS = [
-  { icon: "🏠", label: "Choose Target Areas" },
-  { icon: "🔍", label: "Assess Structure" },
-  { icon: "⬆️", label: "Define Upgrades" },
-  { icon: "₹", label: "Get V0 Design & Estimate" },
+  { Icon: Images, label: "Add photos" },
+  { Icon: Home, label: "Choose space" },
+  { Icon: Wrench, label: "Set upgrades" },
+  { Icon: Sparkles, label: "AI design + costs" },
 ];
 
-function StepIcon({ icon, label }) {
+function StepIcon({ Icon, label }) {
   return (
     <div
       className="flex flex-col items-center gap-2 flex-1 min-w-[56px]"
@@ -34,7 +35,7 @@ function StepIcon({ icon, label }) {
           boxShadow: "0 1px 2px rgba(28,25,23,0.04)",
         }}
       >
-        {icon}
+        <Icon size={18} strokeWidth={1.8} aria-hidden />
       </div>
       <div
         className="text-center font-medium leading-snug"
@@ -105,14 +106,14 @@ export default function WhatAreYouBuilding() {
           Back
         </Link>
 
-        {/* Heading */}
+      {/* Heading */}
         <div className="text-center mb-10 md:mb-12">
           <h1 className="font-serif-display text-3xl md:text-[2.35rem] font-semibold text-[#1C1917] tracking-tight leading-tight m-0 mb-3">
             What are you building?
           </h1>
           <p className="text-[15px] md:text-base text-[#57534E] leading-relaxed max-w-md mx-auto m-0">
-            Tell us your goal — we&apos;ll tailor the entire experience to get you the
-            most accurate AI designs, estimates, and plans.
+            Choose the path that fits your project. Both paths end with a clear brief,
+            AI concepts, an estimate, and a project hub you can keep using.
           </p>
         </div>
 
@@ -135,7 +136,7 @@ export default function WhatAreYouBuilding() {
               Build a New Home
             </h2>
 
-            {/* Illustration */}
+              {/* Illustration */}
             <div style={{
               display: "flex", justifyContent: "center", marginBottom: 20,
               height: 110
@@ -176,22 +177,21 @@ export default function WhatAreYouBuilding() {
 
             {/* Description */}
             <p className="text-[13px] md:text-sm text-[#57534E] leading-relaxed m-0 mb-4">
-              You have a plot and want to design your dream home from the ground up.
+              Describe your plot and lifestyle — get floor plans, renders, and a ballpark cost.
             </p>
 
             {/* Features */}
             <div className="mb-5 pb-5 border-b border-[#EDE8E0]">
-              <FeatureRow text="Floor & elevation plans" />
-              <FeatureRow text="3D & video renders" />
-              <FeatureRow text="Estimates" />
-              <FeatureRow text="Vastu planning" />
+              <FeatureRow text="Saved brief" />
+              <FeatureRow text="AI exterior concepts" />
+              <FeatureRow text="Estimate + project hub" />
             </div>
 
             {/* Steps */}
             <div className="flex items-start justify-between gap-1 mb-7">
               {NEW_HOME_STEPS.map((s, i) => (
                 <React.Fragment key={s.label}>
-                  <StepIcon icon={s.icon} label={s.label} />
+                  <StepIcon Icon={s.Icon} label={s.label} />
                   {i < NEW_HOME_STEPS.length - 1 && <StepDivider />}
                 </React.Fragment>
               ))}
@@ -252,22 +252,21 @@ export default function WhatAreYouBuilding() {
 
             {/* Description */}
             <p className="text-[13px] md:text-sm text-[#57534E] leading-relaxed m-0 mb-4">
-              Upload photos of your existing rooms, describe your vision, and get AI-powered designs and estimates.
+              Upload room photos, describe your vision, and get AI designs and costs.
             </p>
 
             {/* Features */}
             <div className="mb-5 pb-5 border-b border-[#EDE8E0]">
-              <FeatureRow text="Upload existing room photos" />
-              <FeatureRow text="Describe your vision" />
-              <FeatureRow text="Get AI designs & renders" />
-              <FeatureRow text="Smart cost estimates" />
+              <FeatureRow text="Room photo upload" />
+              <FeatureRow text="AI remodel concepts" />
+              <FeatureRow text="Costs, tasks + pros" />
             </div>
 
             {/* Steps */}
             <div className="flex items-start justify-between gap-1 mb-7">
               {RENOVATE_STEPS.map((s, i) => (
                 <React.Fragment key={s.label}>
-                  <StepIcon icon={s.icon} label={s.label} />
+                  <StepIcon Icon={s.Icon} label={s.label} />
                   {i < RENOVATE_STEPS.length - 1 && <StepDivider />}
                 </React.Fragment>
               ))}

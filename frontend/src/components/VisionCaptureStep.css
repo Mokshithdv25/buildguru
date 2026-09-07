@@ -1,0 +1,340 @@
+/* Brief editor + inspiration — homeowner wizard */
+.hm-vision {
+  --hm-v-ink: #1c1917;
+  --hm-v-muted: #78716c;
+  --hm-v-faint: #a8a29e;
+  --hm-v-line: #e6dfd6;
+  --hm-v-accent: #c85f2b;
+  --hm-v-accent-deep: #9a3412;
+  color: var(--hm-v-ink);
+  font-family: "DM Sans", Inter, system-ui, sans-serif;
+}
+
+.hm-vision__headline {
+  margin-bottom: 24px;
+}
+
+.hm-vision__headline p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #6a5e53;
+  max-width: 560px;
+}
+
+/* ---------- Editor ---------- */
+.hm-vision__editor {
+  background: #fff;
+  border: 1px solid var(--hm-v-line);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(28, 25, 23, 0.04);
+  overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.hm-vision__editor:focus-within {
+  border-color: #cfa98f;
+  box-shadow:
+    0 0 0 3px rgba(200, 95, 43, 0.1),
+    0 1px 2px rgba(28, 25, 23, 0.04);
+}
+
+.hm-vision__editor.is-listening {
+  border-color: var(--hm-v-accent);
+}
+
+.hm-vision__editor-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px 0;
+}
+
+.hm-vision__editor-head h3,
+.hm-vision__section-head h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.hm-vision__editor-head p,
+.hm-vision__section-head p {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--hm-v-muted);
+  max-width: 520px;
+}
+
+.hm-vision__count {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--hm-v-faint);
+  padding-top: 2px;
+}
+
+.hm-vision__count.is-complete {
+  color: #15803d;
+}
+
+.hm-vision__textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 12px 0 0;
+  padding: 4px 20px 14px;
+  border: none;
+  outline: none;
+  resize: vertical;
+  min-height: 132px;
+  background: transparent;
+  font: inherit;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--hm-v-ink);
+}
+
+.hm-vision__textarea::placeholder {
+  color: #b5aca3;
+}
+
+.hm-vision__progress {
+  height: 2px;
+  background: #f1ece5;
+}
+
+.hm-vision__progress span {
+  display: block;
+  height: 100%;
+  background: var(--hm-v-accent);
+  transition: width 0.25s ease;
+}
+
+.hm-vision__editor-foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 14px 12px;
+  background: #fbfaf8;
+}
+
+.hm-vision__dictate {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid #d6d3d1;
+  background: #fff;
+  color: #44403c;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease,
+    background 0.12s ease;
+}
+
+.hm-vision__dictate:hover {
+  border-color: #b8ad9e;
+  color: var(--hm-v-ink);
+}
+
+.hm-vision__dictate.is-on {
+  border-color: var(--hm-v-accent);
+  background: #fdf4ef;
+  color: var(--hm-v-accent-deep);
+}
+
+.hm-vision__foot-note {
+  font-size: 12px;
+  color: var(--hm-v-muted);
+}
+
+.hm-vision__error {
+  margin: 10px 0 0;
+  padding: 0 20px 14px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #b45309;
+}
+
+.hm-vision__inspiration .hm-vision__error {
+  padding: 0;
+}
+
+/* ---------- Inspiration ---------- */
+.hm-vision__inspiration {
+  margin-top: 22px;
+}
+
+.hm-vision__section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.hm-vision__section-count {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--hm-v-faint);
+  padding-top: 2px;
+}
+
+.hm-vision__link-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 6px 6px 6px 12px;
+  border: 1px solid var(--hm-v-line);
+  border-radius: 12px;
+  background: #fff;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.hm-vision__link-row:focus-within {
+  border-color: #cfa98f;
+  box-shadow: 0 0 0 3px rgba(200, 95, 43, 0.1);
+}
+
+.hm-vision__link-icon {
+  display: inline-flex;
+  color: var(--hm-v-faint);
+}
+
+.hm-vision__link-row input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--hm-v-ink);
+  padding: 8px 0;
+}
+
+.hm-vision__link-row input::placeholder {
+  color: #b5aca3;
+}
+
+.hm-vision__link-row button {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: #1c1917;
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+
+.hm-vision__link-row button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.hm-vision__links {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.hm-vision__links li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 8px 9px 12px;
+  border: 1px solid #ede8e1;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.hm-vision__links a {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.hm-vision__links a strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hm-v-ink);
+}
+
+.hm-vision__links a span {
+  font-size: 11.5px;
+  color: var(--hm-v-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hm-vision__links a:hover strong {
+  color: var(--hm-v-accent-deep);
+}
+
+.hm-vision__links li button {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--hm-v-muted);
+  cursor: pointer;
+}
+
+.hm-vision__links li button:hover {
+  background: #f5f1eb;
+  color: #b42318;
+}
+
+.hm-vision__afterword {
+  margin: 16px 0 0;
+  max-width: 640px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--hm-v-muted);
+}
+
+.hm-vision__afterword strong {
+  color: #57534e;
+}
+
+@media (max-width: 640px) {
+  .hm-vision__editor-head,
+  .hm-vision__textarea {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .hm-vision__link-row button {
+    padding: 8px 11px;
+  }
+}

@@ -36,6 +36,7 @@ import LandingNavbar from "../components/landing/LandingNavbar";
 import { HM_FIXED_NAV_OFFSET_TAGLINE_CLASS, HM_TAGLINE_REMODEL } from "../lib/hmBrand";
 import { canVisitWizardStep, nextMaxStepReached, wizardExitPath } from "../lib/wizardSteps";
 import VisionCaptureStep from "../components/VisionCaptureStep";
+import HmMediaDropzone from "../components/HmMediaDropzone";
 import WizardMobileStepBar from "../components/WizardMobileStepBar";
 import { optimizeImageFileToDataUrl } from "../lib/imageDataUrl";
 
@@ -258,8 +259,8 @@ export default function RemodelHome() {
   const location = useLocation();
   const referredProSlug = new URLSearchParams(location.search).get("pro") || "";
   const flowMainRef = useRef(null);
-  const photoUploadRef = useRef(null);
-  const styleUploadRef = useRef(null);
+  const [photosEncoding, setPhotosEncoding] = useState(false);
+  const [styleImagesEncoding, setStyleImagesEncoding] = useState(false);
   const [step, setStep] = useState(1);
   const [maxStepReached, setMaxStepReached] = useState(1);
 
@@ -316,24 +317,26 @@ export default function RemodelHome() {
     return Promise.all(files.slice(0, 8).map((file) => optimizeImageFileToDataUrl(file)));
   };
 
-  const handleRoomPhotosUpload = async (ev) => {
+  /** Files arrive from HmMediaDropzone (drag-drop or picker). */
+  const handleRoomPhotosUpload = async (files) => {
+    setPhotosEncoding(true);
     try {
-      const encoded = await readImagesAsDataUrls(ev.target.files);
+      const encoded = await readImagesAsDataUrls(files);
       if (encoded.length) {
-        const mapped = encoded.map((url, i) => ({ url, label: `Upload ${photos.length + i + 1}` }));
-        setPhotos((prev) => [...prev, ...mapped]);
+        setPhotos((prev) => [...prev, ...encoded.map((url, i) => ({ url, label: `Photo ${prev.length + i + 1}` }))]);
       }
     } finally {
-      ev.target.value = "";
+      setPhotosEncoding(false);
     }
   };
 
-  const handleStyleImagesUpload = async (ev) => {
+  const handleStyleImagesUpload = async (files) => {
+    setStyleImagesEncoding(true);
     try {
-      const encoded = await readImagesAsDataUrls(ev.target.files);
+      const encoded = await readImagesAsDataUrls(files);
       if (encoded.length) setInspirationImgs((prev) => [...prev, ...encoded]);
     } finally {
-      ev.target.value = "";
+      setStyleImagesEncoding(false);
     }
   };
 
@@ -583,35 +586,31 @@ export default function RemodelHome() {
               </p>
             </div>
 
-            <div style={{ ...flowSection, background: "#FDFBF8", borderRadius: 16, padding: "22px 22px 8px", border: "1px solid #EFE3D2", marginBottom: 24 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <span style={{ fontSize: 18 }}>📷</span>
-                <span style={{ fontWeight: 700, fontSize: 16 }}>Existing space — photos</span>
-                <span style={{ fontSize: 12, color: "#78716C" }}>required</span>
-              </div>
-              <div style={{ fontSize: 13, color: "#5C5147", marginBottom: 16, lineHeight: 1.55 }}>Clear angles help AI and your professional read the room.</div>
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
-                {photos.map((p,i)=>(
-                  <div key={i} style={{ position:"relative", borderRadius:12, overflow:"hidden", boxShadow:"0 2px 10px rgba(28,25,23,0.06)" }}>
-                    <img src={p.url} alt={p.label} style={{ width:132, height:102, objectFit:"cover", display:"block" }}/>
-                    <button type="button" onClick={()=>setPhotos(prev=>prev.filter((_,j)=>j!==i))} style={{ position:"absolute", top:6, right:6, width:24, height:24, borderRadius:"50%", background:"rgba(255,255,255,0.92)", border:"none", cursor:"pointer", fontWeight:700 }}>×</button>
-                    <div style={{ background:"rgba(255,255,255,0.95)", padding:"5px 10px", fontSize:11, fontWeight:600, color:"#5C5147" }}>{p.label}</div>
+            <div style={{ ...flowSection, paddingBottom: 28 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 15, color: "#1C1917", letterSpacing: "-0.005em" }}>Photos of the space today</div>
+                  <div style={{ fontSize: 13, color: "#78716C", marginTop: 3, lineHeight: 1.5, maxWidth: 560 }}>
+                    Shoot in daylight from each corner and include doors, windows, and the ceiling. Clear angles help the AI and your professional read the room.
                   </div>
-                ))}
-                <input ref={photoUploadRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleRoomPhotosUpload} />
-                <button type="button" onClick={() => photoUploadRef.current?.click?.()} style={{ width:132, height:132, borderRadius:12, border:"1.5px dashed #C8B89E", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#7A6E62", gap:4, background:"#fff" }}>
-                  <span style={{ fontSize:26 }}>+</span><span style={{ fontSize:11, fontWeight:600, textAlign:"center" }}>Add photos</span>
-                </button>
+                </div>
+                <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "#9A3412", padding: "4px 9px", borderRadius: 999, background: "#FDF4EF", border: "1px solid #F3DCCB" }}>Required</span>
               </div>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:12, fontSize:12, color:"#7A6E62", paddingTop: 4 }}>
-                <span>🌞 Natural light</span><span>📐 Corners</span><span>🪟 Openings</span>
-              </div>
+              <HmMediaDropzone
+                items={photos.map((p) => ({ src: p.url, label: p.label }))}
+                onAddFiles={handleRoomPhotosUpload}
+                onRemove={(index) => setPhotos((prev) => prev.filter((_, j) => j !== index))}
+                busy={photosEncoding}
+                max={8}
+                title="Add photos of the room"
+                hint="JPG, PNG, or WebP · drag files here or browse · up to 8"
+                removeLabel="Remove room photo"
+              />
             </div>
 
             <div style={flowSection}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <span style={{ fontSize: 18 }}>🏠</span>
-                <span style={{ fontWeight: 700, fontSize: 16 }}>Property &amp; room</span>
+                <span style={{ fontWeight: 600, fontSize: 15, color: "#1C1917", letterSpacing: "-0.005em" }}>Property &amp; room</span>
               </div>
               <div style={{ fontSize: 13, color: "#5C5147", marginBottom: 18, lineHeight: 1.55 }}>Nine common spaces — pick what matches this photoset (no maid room).</div>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
@@ -634,8 +633,7 @@ export default function RemodelHome() {
 
             <div style={flowSection}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <span style={{ fontSize: 18 }}>📐</span>
-                <span style={{ fontWeight: 700, fontSize: 16 }}>Approximate size</span>
+                <span style={{ fontWeight: 600, fontSize: 15, color: "#1C1917", letterSpacing: "-0.005em" }}>Approximate size</span>
                 <span style={{ fontSize: 12, color: "#A8A29E" }}>(feet)</span>
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:14, flexWrap:"wrap", marginBottom:10 }}>
@@ -1036,22 +1034,19 @@ export default function RemodelHome() {
 
             {/* Inspiration images */}
             <div style={{ ...cardStyle, border: "1px solid #E8E4DE", boxShadow: "none" }}>
-              <div style={{ fontWeight:700, fontSize:15, marginBottom:4 }}>4. Add inspiration images <span style={{ fontWeight:400, color:"#7A6E62" }}>(optional)</span></div>
-              <div style={{ fontSize:13, color:"#7A6E62", marginBottom:14 }}>Upload images that you like. This helps us understand your taste better.</div>
-              <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
-                <input ref={styleUploadRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleStyleImagesUpload} />
-                <button type="button" onClick={() => styleUploadRef.current?.click?.()} style={{ width:120, height:90, borderRadius:10, border:"1.5px dashed #C8B89E", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#7A6E62", gap:4, background:"#fff" }}>
-                  <span style={{ fontSize:24 }}>+</span>
-                  <div style={{ fontSize:11, fontWeight:600, textAlign:"center" }}>Upload Images</div>
-                  <div style={{ fontSize:9, color:"#9A8F87", textAlign:"center" }}>JPG, PNG up to 10MB each</div>
-                </button>
-                {inspirationImgs.map((img,i) => (
-                  <div key={i} style={{ position:"relative", borderRadius:10, overflow:"hidden" }}>
-                    <img src={img} alt="" style={{ width:120, height:90, objectFit:"cover", display:"block" }}/>
-                    <button onClick={()=>setInspirationImgs(prev=>prev.filter((_,j)=>j!==i))} style={{ position:"absolute", top:4, right:4, width:20, height:20, borderRadius:"50%", background:"rgba(255,255,255,0.9)", border:"none", cursor:"pointer", fontSize:12, lineHeight:1 }}>×</button>
-                  </div>
-                ))}
-              </div>
+              <div style={{ fontWeight:600, fontSize:15, marginBottom:3, letterSpacing: "-0.005em" }}>4. Inspiration images <span style={{ fontWeight:400, color:"#7A6E62" }}>(optional)</span></div>
+              <div style={{ fontSize:13, color:"#78716C", marginBottom:14, lineHeight: 1.5 }}>Rooms, finishes, or details you like. These sharpen the AI concepts and your professional's read on your taste.</div>
+              <HmMediaDropzone
+                compact
+                items={inspirationImgs.map((src) => ({ src, label: "" }))}
+                onAddFiles={handleStyleImagesUpload}
+                onRemove={(index) => setInspirationImgs((prev) => prev.filter((_, j) => j !== index))}
+                busy={styleImagesEncoding}
+                max={8}
+                title="Add inspiration images"
+                hint="JPG, PNG, or WebP · drag files here or browse"
+                removeLabel="Remove inspiration image"
+              />
             </div>
           </>}
 

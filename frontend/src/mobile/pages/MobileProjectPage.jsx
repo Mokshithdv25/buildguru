@@ -1,6 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Pencil, Plus, X } from "lucide-react";
+import {
+  Camera,
+  CreditCard,
+  FileText,
+  HardHat,
+  Layers,
+  Pencil,
+  Plus,
+  Users,
+  X,
+} from "lucide-react";
 import MobileHeader from "../MobileHeader";
 import { useMobileHub } from "../hooks/useMobileHub";
 import { flowTypeLabel, projectStatusLabel } from "../mobileIA";
@@ -35,12 +45,12 @@ import {
 import { listProjectBids, setBidDecision } from "../../lib/projectBidsApi";
 
 const PROJECT_TOOLS = [
-  { label: "Documents", path: "/documents", icon: "📄" },
-  { label: "Timeline & stages", path: "/project/journey", icon: "🧭" },
-  { label: "Find pros", path: "/project/browse", icon: "👷" },
-  { label: "Team", path: "/team", icon: "👥" },
-  { label: "Payments", path: "/project/payments", icon: "💳" },
-  { label: "Materials & shopping", path: "/shop", icon: "🧱" },
+  { label: "Documents", path: "/documents", Icon: FileText },
+  { label: "Timeline & stages", path: "/project/journey", Icon: Camera },
+  { label: "Find pros", path: "/project/browse", Icon: HardHat },
+  { label: "Team", path: "/team", Icon: Users },
+  { label: "Payments", path: "/project/payments", Icon: CreditCard },
+  { label: "Materials & shopping", path: "/shop", Icon: Layers },
 ];
 
 export default function MobileProjectPage() {
@@ -423,7 +433,7 @@ export default function MobileProjectPage() {
             style={{ marginTop: 10 }}
             onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}
           >
-            Ask Homi
+            Open project assistant
           </button>
         </div>
       ) : (
@@ -594,7 +604,7 @@ export default function MobileProjectPage() {
           <div className="hm-m-grid-2" style={{ padding: "0 16px 24px" }}>
             {PROJECT_TOOLS.map((link) => (
               <button key={link.path} type="button" className="hm-m-quick" onClick={() => navigate(`${link.path}${hubQuery}`)}>
-                <span className="hm-m-quick-icon">{link.icon}</span>
+                <span className="hm-m-quick-icon"><link.Icon size={21} strokeWidth={1.8} aria-hidden /></span>
                 <span className="hm-m-quick-label">{link.label}</span>
               </button>
             ))}
@@ -606,13 +616,13 @@ export default function MobileProjectPage() {
             style={{ width: "calc(100% - 32px)", margin: "0 16px 16px" }}
             onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}
           >
-            ✨ Ask Homi (AI co-pilot)
+            Open project assistant
           </button>
           <div className="hm-m-dock-spacer" />
           <div className="hm-m-project-dock" aria-label="Project quick actions">
             <button type="button" onClick={() => goToSection(tasksRef, { focus: true })}><span>＋</span>Add task</button>
             <button type="button" onClick={() => navigate(`/documents${hubQuery}`)}><span>↥</span>Upload</button>
-            <button type="button" className="primary" onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}><span>✦</span>Ask Homi</button>
+            <button type="button" className="primary" onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}><span>✦</span>Assistant</button>
           </div>
         </>
       )}

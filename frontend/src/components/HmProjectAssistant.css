@@ -8,19 +8,19 @@
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  background: linear-gradient(145deg, #e88b4a 0%, #c85f2b 55%, #a34d1f 100%);
+  background: #1c1917;
   color: #fff;
-  box-shadow: 0 10px 28px rgba(200, 95, 43, 0.45);
+  box-shadow: 0 8px 22px rgba(28, 25, 23, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .hm-assistant-fab:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 32px rgba(200, 95, 43, 0.5);
+  transform: translateY(-1px);
+  background: #c85f2b;
+  box-shadow: 0 10px 26px rgba(200, 95, 43, 0.35);
 }
 
 .hm-assistant-fab.open {
@@ -36,10 +36,10 @@
   max-height: min(520px, calc(100dvh - 120px));
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
-  border: 1px solid #e8e4de;
-  background: linear-gradient(180deg, #fffdfb 0%, #faf8f5 100%);
-  box-shadow: 0 20px 50px rgba(28, 25, 23, 0.18);
+  border-radius: 16px;
+  border: 1px solid #e6e1da;
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(28, 25, 23, 0.16);
   overflow: hidden;
   animation: hm-assistant-in 0.22s ease;
 }
@@ -60,35 +60,37 @@
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #fff7ed, #fbe5d4);
-  border-bottom: 1px solid #f0dcc8;
+  background: #fbfaf8;
+  border-bottom: 1px solid #ebe5dc;
 }
 
+/* Used by the professional workspace assistant only. */
 .hm-assistant-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   background: #fff;
-  border: 2px solid #f4d2b2;
+  border: 1px solid #ebe5dc;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 18px;
   flex-shrink: 0;
 }
 
 .hm-assistant-head h3 {
   margin: 0;
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
   color: #1c1917;
 }
 
 .hm-assistant-head p {
-  margin: 2px 0 0;
-  font-size: 11px;
+  margin: 3px 0 0;
+  font-size: 11.5px;
   color: #78716c;
-  font-weight: 600;
+  line-height: 1.4;
 }
 
 .hm-assistant-chips {
