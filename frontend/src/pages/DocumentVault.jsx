@@ -17,8 +17,6 @@ const DOCUMENT_CATEGORIES = [
   ["warranty", "Warranties and manuals"],
   ["other", "Other project files"],
 ];
-const categoryLabel = (value) => DOCUMENT_CATEGORIES.find(([key]) => key === value)?.[1] || "Other project files";
-
 function sizeLabel(bytes) {
   if (!bytes) return "";
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
