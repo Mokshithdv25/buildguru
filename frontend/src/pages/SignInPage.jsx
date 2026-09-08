@@ -1,7 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, ArrowRight, ArrowLeft, Check, Loader2, Mail, Home, Briefcase } from "lucide-react";
+import {
+  Phone,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  ChevronRight,
+  Loader2,
+  Mail,
+  Home,
+  Briefcase,
+  Sparkles,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +46,123 @@ const SOCIAL_PROVIDER_LABELS = {
 function portalPath(role, mode) {
   if (role === "pro") return mode === "signup" ? "/pro/join" : "/pro/sign-in";
   return mode === "signup" ? "/join" : "/sign-in?role=homeowner";
+}
+
+const PUBLIC_URL = (typeof process !== "undefined" && process.env && process.env.PUBLIC_URL) || "";
+
+/** Left-hand brand visual — same photography the marketing home uses, so sign-in feels like the same product. */
+const BRAND_PANELS = {
+  default: {
+    image: `${PUBLIC_URL}/landing-hero.png`,
+    alt: "Bright modern living room designed on BuildGuru",
+    kicker: "India's complete home platform",
+    headline: "From first idea to moving in, all in one place.",
+    points: [
+      { icon: Sparkles, text: "AI designs, estimates, and project plans" },
+      { icon: Users, text: "Homeowners and verified professionals together" },
+      { icon: ShieldCheck, text: "One account, one workspace, no chaos" },
+    ],
+  },
+  homeowner: {
+    image: `${PUBLIC_URL}/landing-hero.png`,
+    alt: "Bright modern living room designed on BuildGuru",
+    kicker: "For homeowners",
+    headline: "Design, build, and manage your home in one place.",
+    points: [
+      { icon: Sparkles, text: "AI floor plans and 3D concepts in minutes" },
+      { icon: Users, text: "Verified architects, contractors, and trades" },
+      { icon: ShieldCheck, text: "Live cost estimates and project tracking" },
+    ],
+  },
+  pro: {
+    image: `${PUBLIC_URL}/pro_hero_banner.png`,
+    alt: "Construction site table with blueprints and tools",
+    kicker: "For professionals",
+    headline: "Your portfolio, your leads, one workspace.",
+    points: [
+      { icon: Sparkles, text: "Publish your work to homeowners near you" },
+      { icon: Users, text: "Qualified project leads, not cold enquiries" },
+      { icon: ShieldCheck, text: "Bids, timelines, and payments in one place" },
+    ],
+  },
+};
+
+function AuthBrandPanel({ role }) {
+  const panel = BRAND_PANELS[role] || BRAND_PANELS.default;
+  return (
+    <aside className="relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-end" aria-hidden="true">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.img
+          key={panel.image}
+          src={panel.image}
+          alt={panel.alt}
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </AnimatePresence>
+      <div className="absolute inset-0 bg-gradient-to-t from-[#120d09]/90 via-[#1b140f]/45 to-[#241a13]/10" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#120d09]/35 to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_85%,rgba(193,132,78,0.28),transparent_45%)]" />
+
+      <div className="relative z-10 p-10 xl:p-14">
+        <motion.div
+          key={role}
+          initial={false}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="max-w-md"
+        >
+          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#e3c7a3]/30 bg-white/10 px-3 py-1.5 font-body text-[11px] font-semibold uppercase tracking-[0.18em] text-[#e3c7a3] backdrop-blur-sm">
+            {panel.kicker}
+          </p>
+          <h2 className="mb-6 font-display text-[2.1rem] font-semibold leading-[1.15] tracking-tight text-[#fcfbfa] xl:text-[2.5rem]">
+            {panel.headline}
+          </h2>
+          <ul className="m-0 flex list-none flex-col gap-3 p-0">
+            {panel.points.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-3 font-body text-[15px] text-[#f2eee9]/90">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e3c7a3]/30 bg-white/10 text-[#e3c7a3] backdrop-blur-sm">
+                  <Icon className="h-4 w-4" />
+                </span>
+                {text}
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+      </div>
+    </aside>
+  );
+}
+
+function RoleCard({ icon: Icon, title, description, image, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="hm-mobile-auth-role group relative flex w-full items-center gap-4 overflow-hidden rounded-2xl border border-border/70 bg-white p-3 pr-4 text-left shadow-[0_1px_0_rgba(255,255,255,0.8)_inset,0_10px_30px_-18px_rgba(52,34,18,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:border-copper/50 hover:shadow-[0_18px_40px_-20px_rgba(52,34,18,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-copper/50"
+    >
+      <span className="relative h-[68px] w-[68px] shrink-0 overflow-hidden rounded-xl">
+        <img
+          src={image}
+          alt=""
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+        />
+        <span className="absolute inset-0 bg-gradient-to-t from-[#120d09]/55 to-transparent" />
+        <span className="absolute bottom-1.5 left-1.5 flex h-7 w-7 items-center justify-center rounded-lg bg-white/90 text-copper shadow-sm">
+          <Icon className="h-4 w-4" />
+        </span>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block font-body text-[15px] font-bold text-foreground">{title}</span>
+        <span className="mt-0.5 block font-body text-[13px] leading-snug text-muted-foreground">{description}</span>
+      </span>
+      <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground/60 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-copper" />
+    </button>
+  );
 }
 
 /**
@@ -737,9 +867,11 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
         <div className="flex-1" aria-hidden />
       </div>
 
-      {/* Centered Form */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
+      {/* Split layout: brand visual (desktop only) + form */}
+      <div className="grid flex-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:grid-cols-2">
+        <AuthBrandPanel role={roleSelected || passwordRecovery ? accountRole : "default"} />
+        <div className="flex items-center justify-center px-5 py-8 sm:p-10">
+        <div className="w-full max-w-[26rem]">
           <AnimatePresence mode="wait">
             {/* ─── ENTRY STEP ─── */}
             {step === "entry" && (
@@ -749,79 +881,74 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-7"
+                className="space-y-6"
               >
-                <div className="text-center">
-                  <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+                <div className={roleSelected || passwordRecovery ? "text-left" : "text-center"}>
+                  {!passwordRecovery && roleSelected ? (
+                    <div className="mb-4 flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-copper/20 bg-copper/[0.07] px-2.5 py-1 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-copper">
+                        {accountRole === "pro" ? <Briefcase className="h-3 w-3" /> : <Home className="h-3 w-3" />}
+                        {accountRole === "pro" ? "Professional" : "Homeowner"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => navigate(portalPath(accountRole === "pro" ? "homeowner" : "pro", requestedSignUp ? "signup" : "signin"))}
+                        className="font-body text-xs font-medium text-muted-foreground underline-offset-2 hover:text-copper hover:underline"
+                      >
+                        Switch
+                      </button>
+                    </div>
+                  ) : null}
+                  <h2 className="font-display text-[1.9rem] md:text-[2.25rem] font-semibold tracking-tight leading-[1.15] text-foreground mb-2">
                     {passwordRecovery
                       ? "Set a new password"
                       : !roleSelected
-                      ? "Sign in to BuildGuru"
+                      ? "Welcome to BuildGuru"
                       : requestedSignUp
-                      ? accountRole === "pro" ? "Create a professional account" : "Create a homeowner account"
-                      : accountRole === "pro" ? "Professional sign in" : "Homeowner sign in"}
+                      ? "Create your account"
+                      : "Welcome back"}
                   </h2>
-                  <p className="text-muted-foreground font-body text-base">
+                  <p className="text-muted-foreground font-body text-[15px] leading-relaxed">
                     {passwordRecovery
                       ? "Choose a secure password and confirm it below."
                       : !roleSelected
-                      ? "Choose how you are entering today. Your role stays active until you sign out."
+                      ? "How are you signing in today?"
                       : requestedSignUp
                       ? accountRole === "pro"
-                        ? "Publish your work, manage your profile, and respond to qualified projects."
-                        : "Save designs, estimates, professionals, and project progress in one account."
+                        ? "Start publishing your work and receiving project leads."
+                        : "Save your designs, estimates, and project in one place."
                       : accountRole === "pro"
-                        ? "Access your portfolio, leads, and professional workspace."
-                        : "Access your saved designs, estimates, and project workspace."}
+                        ? "Sign in to your professional workspace."
+                        : "Sign in to pick up where you left off."}
                   </p>
                 </div>
 
                 {!passwordRecovery && !roleSelected ? (
-                  <div className="grid gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleRoleSelection("homeowner")}
-                      className="flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left transition-colors hover:border-copper/50 hover:bg-copper/5"
-                    >
-                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-copper/10 text-copper">
-                        <Home className="h-5 w-5" />
-                      </span>
-                      <span>
-                        <span className="block font-body text-sm font-bold text-foreground">Continue as a homeowner</span>
-                        <span className="mt-1 block font-body text-xs text-muted-foreground">Plan, design, estimate, hire, and manage a project.</span>
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleRoleSelection("pro")}
-                      className="flex items-center gap-4 rounded-2xl border-2 border-border bg-card p-4 text-left transition-colors hover:border-copper/50 hover:bg-copper/5"
-                    >
-                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-copper/10 text-copper">
-                        <Briefcase className="h-5 w-5" />
-                      </span>
-                      <span>
-                        <span className="block font-body text-sm font-bold text-foreground">Continue as a professional</span>
-                        <span className="mt-1 block font-body text-xs text-muted-foreground">Access your portfolio, leads, and professional workspace.</span>
-                      </span>
-                    </button>
-                  </div>
+                  <>
+                    <div className="grid gap-3">
+                      <RoleCard
+                        icon={Home}
+                        image={BRAND_PANELS.homeowner.image}
+                        title="I'm a homeowner"
+                        description="Plan, design, estimate, and hire for my project."
+                        onClick={() => handleRoleSelection("homeowner")}
+                      />
+                      <RoleCard
+                        icon={Briefcase}
+                        image={BRAND_PANELS.pro.image}
+                        title="I'm a professional"
+                        description="Architect, contractor, designer, or trade."
+                        onClick={() => handleRoleSelection("pro")}
+                      />
+                    </div>
+                    <p className="m-0 text-center font-body text-xs text-muted-foreground">
+                      Your role stays active until you sign out.
+                    </p>
+                  </>
                 ) : null}
 
-                {!passwordRecovery && roleSelected && (
-                  <div className="rounded-xl border-2 border-border p-3.5 bg-card">
-                    <p className="m-0 text-sm font-body font-semibold text-foreground">
-                      {accountRole === "pro" ? "Professional account" : "Homeowner account"}
-                    </p>
-                    <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground font-body">
-                      {accountRole === "pro"
-                        ? "For architects, contractors, designers, engineers, trades, and suppliers."
-                        : "For people planning, building, renovating, or managing their property."}
-                    </p>
-                  </div>
-                )}
-
                 {!passwordRecovery && roleSelected && currentSession?.supabaseUserId ? (
-                  <div className="rounded-xl border border-copper/25 bg-copper/5 p-3.5">
+                  <div className="rounded-2xl border border-copper/25 bg-white p-4 shadow-[0_24px_60px_-36px_rgba(52,34,18,0.35)]">
                     <p className="m-0 text-sm font-body font-semibold text-foreground">
                       Signed in as {currentSession.profile?.email || currentSession.profile?.name || "your account"}
                     </p>
@@ -846,7 +973,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                 ) : null}
 
                 {!passwordRecovery && roleSelected && currentSession === undefined ? (
-                  <div className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2 rounded-2xl border border-border/70 bg-white p-5 font-body text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Checking your session…
                   </div>
@@ -900,8 +1027,50 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                     </div>
                   ) : null}
 
+                  <div className="space-y-4 rounded-2xl border border-border/70 bg-white p-5 shadow-[0_1px_0_rgba(255,255,255,0.8)_inset,0_24px_60px_-36px_rgba(52,34,18,0.35)] sm:p-6">
+                  {supabaseConfigured && !passwordRecovery ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleSocialSignIn("google")}
+                        disabled={loading}
+                        className="h-12 w-full gap-2.5 rounded-xl border border-border bg-white font-body text-sm font-semibold text-foreground shadow-sm hover:border-copper/40 hover:bg-copper/[0.04] hover:text-foreground"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
+                          <path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.44.34-2.1V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.16-3.16A10.96 10.96 0 0 0 12 1 11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z" />
+                        </svg>
+                        Continue with Google
+                      </Button>
+                      {FACEBOOK_AUTH_ENABLED ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleSocialSignIn("facebook")}
+                          disabled={loading}
+                          className="h-12 w-full gap-2.5 rounded-xl border border-border bg-white font-body text-sm font-semibold text-foreground shadow-sm hover:border-copper/40 hover:bg-copper/[0.04] hover:text-foreground"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+                            <path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.03 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07Z" />
+                          </svg>
+                          Continue with Facebook
+                        </Button>
+                      ) : null}
+                      {!googleOnlySignUp ? (
+                        <div className="flex items-center gap-3 pt-1">
+                          <div className="h-px flex-1 bg-border" />
+                          <span className="font-body text-xs text-muted-foreground">or continue with email</span>
+                          <div className="h-px flex-1 bg-border" />
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+
                   {showPhoneOtp && !passwordRecovery ? (
-                    <div className="flex rounded-xl border-2 border-border overflow-hidden">
+                    <div className="flex rounded-xl border border-border overflow-hidden">
                       <button
                         type="button"
                         onClick={() => setAuthMethod("phone")}
@@ -933,11 +1102,11 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                   {showPhoneOtp && !passwordRecovery && authMethod === "phone" && (
                     <>
                       <div className="space-y-3">
-                        <Label className="font-body text-sm font-semibold block">
-                          Phone Number
+                        <Label className="font-body text-[13px] font-medium text-foreground/80 block">
+                          Phone number
                         </Label>
                         <div className="flex gap-2">
-                          <div className="flex items-center px-3.5 rounded-xl border-2 border-border bg-muted/30 font-body text-sm text-foreground shrink-0">
+                          <div className="flex items-center px-3.5 rounded-xl border border-border bg-muted/40 font-body text-sm text-foreground shrink-0">
                             🇮🇳 +91
                           </div>
                           <Input
@@ -951,7 +1120,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                             onKeyDown={(e) => {
                               if (e.key === "Enter" && phone.length === 10) handleSendOTP();
                             }}
-                            className="font-body text-base tracking-wide rounded-xl border-2 h-12"
+                            className="h-12 rounded-xl border border-border bg-white font-body text-base tracking-wide shadow-none focus-visible:border-copper/60 focus-visible:ring-2 focus-visible:ring-copper/20"
                           />
                         </div>
                       </div>
@@ -959,7 +1128,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                       <Button
                         onClick={handleSendOTP}
                         disabled={phone.length < 10 || loading}
-                        className="w-full gradient-copper text-primary-foreground font-body rounded-xl py-6 text-sm font-semibold"
+                        className="h-12 w-full rounded-xl gradient-copper font-body text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_-12px_rgba(168,106,49,0.7)] transition-opacity hover:opacity-90"
                       >
                         {loading ? (
                           <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -977,8 +1146,8 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                       <div className="space-y-4">
                         {!passwordRecovery && (
                           <div>
-                            <Label className="font-body text-sm font-semibold mb-1.5 block">
-                              Email Address
+                            <Label className="font-body text-[13px] font-medium text-foreground/80 mb-1.5 block">
+                              Email
                             </Label>
                             <Input
                               type="email"
@@ -986,13 +1155,13 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                               placeholder="you@example.com"
                               value={authEmail}
                               onChange={(e) => setAuthEmail(e.target.value)}
-                              className="font-body rounded-xl border-2 h-12"
+                              className="h-12 rounded-xl border border-border bg-white font-body shadow-none focus-visible:border-copper/60 focus-visible:ring-2 focus-visible:ring-copper/20"
                             />
                           </div>
                         )}
                         <div>
-                          <Label className="font-body text-sm font-semibold mb-1.5 block">
-                            {passwordRecovery ? "New Password" : isSignUp ? "Create Password" : "Password"}
+                          <Label className="font-body text-[13px] font-medium text-foreground/80 mb-1.5 block">
+                            {passwordRecovery ? "New password" : isSignUp ? "Create password" : "Password"}
                           </Label>
                           <Input
                             type="password"
@@ -1003,7 +1172,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                             onKeyDown={(e) => {
                               if (e.key === "Enter" && !isSignUp && authEmail && authPassword) handleEmailSignIn();
                             }}
-                            className="font-body rounded-xl border-2 h-12"
+                            className="h-12 rounded-xl border border-border bg-white font-body shadow-none focus-visible:border-copper/60 focus-visible:ring-2 focus-visible:ring-copper/20"
                           />
                           {!isSignUp && !passwordRecovery && (
                             <div className="flex justify-end mt-1">
@@ -1011,7 +1180,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                                 type="button"
                                 onClick={handleForgotPassword}
                                 disabled={loading}
-                                className="hm-mobile-auth-link text-copper font-body text-xs font-medium hover:underline disabled:opacity-50"
+                                className="hm-mobile-auth-link font-body text-xs font-medium text-muted-foreground hover:text-copper hover:underline disabled:opacity-50"
                               >
                                 Forgot password?
                               </button>
@@ -1020,8 +1189,8 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                         </div>
                         {(isSignUp || passwordRecovery) && (
                           <div>
-                            <Label className="font-body text-sm font-semibold mb-1.5 block">
-                              Confirm Password
+                            <Label className="font-body text-[13px] font-medium text-foreground/80 mb-1.5 block">
+                              Confirm password
                             </Label>
                             <Input
                               type="password"
@@ -1032,7 +1201,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                               onKeyDown={(e) => {
                                 if (e.key === "Enter" && authEmail && authPassword && confirmPassword === authPassword) handleEmailSignIn();
                               }}
-                              className={`font-body rounded-xl border-2 h-12 ${
+                              className={`h-12 rounded-xl border border-border bg-white font-body shadow-none focus-visible:border-copper/60 focus-visible:ring-2 focus-visible:ring-copper/20 ${
                                 confirmPassword && confirmPassword !== authPassword
                                   ? "border-destructive focus-visible:ring-destructive/30"
                                   : ""
@@ -1053,107 +1222,55 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                           (!passwordRecovery && !authEmail) ||
                           ((isSignUp || passwordRecovery) && authPassword !== confirmPassword)
                         }
-                        className="w-full gradient-copper text-primary-foreground font-body rounded-xl py-6 text-sm font-semibold"
+                        className="h-12 w-full rounded-xl gradient-copper font-body text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_-12px_rgba(168,106,49,0.7)] transition-opacity hover:opacity-90"
                       >
-                        {loading ? (
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                          <Mail className="w-4 h-4 mr-2" />
-                        )}
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                         {loading
-                          ? (passwordRecovery ? "Updating password..." : isSignUp ? "Creating account..." : "Signing in...")
-                          : (passwordRecovery ? "Save New Password" : isSignUp ? "Create Account" : "Sign In with Email")}
+                          ? (passwordRecovery ? "Updating password…" : isSignUp ? "Creating account…" : "Signing in…")
+                          : (passwordRecovery ? "Save new password" : isSignUp ? "Create account" : "Sign in")}
+                        {!loading ? <ArrowRight className="w-4 h-4" /> : null}
                       </Button>
 
                       {EMAIL_LINK_AUTH_ENABLED && !passwordRecovery ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleEmailLinkSignIn}
-                          disabled={loading || !authEmail}
-                          className="w-full rounded-xl py-6 font-body text-sm font-semibold gap-2 border-2"
-                        >
-                          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                          {requestedSignUp ? "Create account with an email link" : "Email me a secure sign-in link"}
-                        </Button>
+                        <p className="m-0 text-center font-body text-xs text-muted-foreground">
+                          Prefer not to use a password?{" "}
+                          <button
+                            type="button"
+                            onClick={handleEmailLinkSignIn}
+                            disabled={loading || !authEmail}
+                            className="hm-mobile-auth-link inline-flex items-center gap-1 font-semibold text-copper hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                            title={!authEmail ? "Enter your email above first" : undefined}
+                          >
+                            <Mail className="h-3.5 w-3.5" />
+                            {requestedSignUp ? "Email me a sign-up link" : "Email me a sign-in link"}
+                          </button>
+                        </p>
                       ) : null}
 
                     </>
                   )}
-
-                  {supabaseConfigured && !passwordRecovery ? (
-                    <>
-                      {!googleOnlySignUp ? (
-                        <div className="flex items-center gap-3">
-                          <div className="h-px flex-1 bg-border" />
-                          <span className="font-body text-xs text-muted-foreground">or</span>
-                          <div className="h-px flex-1 bg-border" />
-                        </div>
-                      ) : null}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleSocialSignIn("google")}
-                        disabled={loading}
-                        className="w-full rounded-xl py-6 font-body text-sm font-semibold gap-2 border-2"
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
-                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
-                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
-                          <path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.44.34-2.1V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
-                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.16-3.16A10.96 10.96 0 0 0 12 1 11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z" />
-                        </svg>
-                        {requestedSignUp ? "Create account with Google" : "Sign in with Google"}
-                      </Button>
-                      {FACEBOOK_AUTH_ENABLED ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => handleSocialSignIn("facebook")}
-                          disabled={loading}
-                          className="w-full rounded-xl py-6 font-body text-sm font-semibold gap-2 border-2"
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
-                            <path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.03 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07Z" />
-                          </svg>
-                          {requestedSignUp ? "Create account with Facebook" : "Sign in with Facebook"}
-                        </Button>
-                      ) : null}
-                    </>
-                  ) : null}
+                  </div>
 
                   {!passwordRecovery && <p className="text-muted-foreground font-body text-[11px] text-center leading-relaxed">
-                    By continuing, you agree to BuildGuru&apos;{" "}
+                    By continuing, you agree to BuildGuru&apos;s{" "}
                     <button type="button" onClick={() => navigate("/terms")} className="hm-mobile-auth-legal text-copper hover:underline">Terms of Service</button>
                     {" "}and{" "}
                     <button type="button" onClick={() => navigate("/privacy")} className="hm-mobile-auth-legal text-copper hover:underline">Privacy Policy</button>
                   </p>}
 
                   {/* Mode Toggle */}
-                  {!passwordRecovery && <div className="pt-2 border-t border-border space-y-2">
-                    <p className="text-center font-body text-sm text-muted-foreground">
-                      {requestedSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigate(portalPath(accountRole, requestedSignUp ? "signin" : "signup"));
-                        }}
-                        className="text-copper font-semibold hover:underline"
-                      >
-                        {requestedSignUp ? "Sign In" : "Sign Up"}
-                      </button>
-                    </p>
-                    <p className="text-center font-body text-xs text-muted-foreground">
-                      {accountRole === "pro" ? "Looking for your homeowner account?" : "Are you an architect, contractor, or other professional?"}{" "}
-                      <button
-                        type="button"
-                        onClick={() => navigate(portalPath(accountRole === "pro" ? "homeowner" : "pro", requestedSignUp ? "signup" : "signin"))}
-                        className="text-copper font-semibold hover:underline"
-                      >
-                        {accountRole === "pro" ? "Homeowner access" : requestedSignUp ? "Join as a professional" : "Professional sign in"}
-                      </button>
-                    </p>
-                  </div>}
+                  {!passwordRecovery && <p className="m-0 text-center font-body text-sm text-muted-foreground">
+                    {requestedSignUp ? "Already have an account?" : "New to BuildGuru?"}{" "}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigate(portalPath(accountRole, requestedSignUp ? "signin" : "signup"));
+                      }}
+                      className="hm-mobile-auth-link font-semibold text-copper hover:underline"
+                    >
+                      {requestedSignUp ? "Sign in" : "Create an account"}
+                    </button>
+                  </p>}
                   </>
                 ) : null}
                 </motion.div>
@@ -1263,7 +1380,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                         placeholder="e.g., Rahul Sharma"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="font-body rounded-xl border-2 h-12"
+                        className="h-12 rounded-xl border border-border bg-white font-body shadow-none focus-visible:border-copper/60 focus-visible:ring-2 focus-visible:ring-copper/20"
                         autoFocus
                       />
                     </div>
@@ -1280,7 +1397,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                         placeholder="rahul@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="font-body rounded-xl border-2 h-12"
+                        className="h-12 rounded-xl border border-border bg-white font-body shadow-none focus-visible:border-copper/60 focus-visible:ring-2 focus-visible:ring-copper/20"
                       />
                     </div>
 
@@ -1298,7 +1415,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && name.trim()) handleComplete();
                         }}
-                        className="font-body rounded-xl border-2 h-12"
+                        className="h-12 rounded-xl border border-border bg-white font-body shadow-none focus-visible:border-copper/60 focus-visible:ring-2 focus-visible:ring-copper/20"
                       />
                     </div>
                   </div>
@@ -1357,6 +1474,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                 </motion.div>
               )}
           </AnimatePresence>
+        </div>
         </div>
       </div>
     </div>
