@@ -77,6 +77,7 @@ const SITE_FEED_CATEGORIES = [
   ["site_issue", "Issue or inspection"],
   ["site_other", "Other site update"],
 ];
+const siteFeedCategoryLabel = (value) => SITE_FEED_CATEGORIES.find(([key]) => key === value)?.[1] || "Progress photo";
 
 /** Soft panels — reference UI: warm off-white, hairline border, minimal shadow (not heavy white boxes). */
 const panel = {
@@ -452,6 +453,7 @@ export default function ProjectDashboard() {
   const [projectTitleDraft, setProjectTitleDraft] = useState("");
   const [renamingProject, setRenamingProject] = useState(false);
   const [siteUploading, setSiteUploading] = useState(false);
+  const [selectedSiteFeedEntry, setSelectedSiteFeedEntry] = useState(null);
   const sitePhotoPickerRef = useRef(null);
   const [boardError, setBoardError] = useState("");
   const [budgetDetailOpen, setBudgetDetailOpen] = useState(false);
@@ -2427,27 +2429,24 @@ export default function ProjectDashboard() {
               <p style={{ fontSize: 14, color: "#7A6E62", margin: "0 0 22px", lineHeight: 1.55 }}>
                 Latest site photos and notes from each stage, newest updates first within this project.
               </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14 }}>
                 {siteFeedEntries.length === 0 ? (
-                  <div style={{ ...panel, padding: "20px 22px", color: "#7A6E62", fontSize: 14 }}>
+                  <div style={{ ...panel, padding: "20px 22px", color: "#7A6E62", fontSize: 14, gridColumn: "1 / -1" }}>
                     No saved site photos or concept images yet.
                   </div>
                 ) : null}
                 {[...siteFeedEntries].reverse().map((entry, index) => (
-                  <div key={`${entry.phase}-${entry.caption}-${index}`} style={{ ...panel, padding: 0, overflow: "hidden", display: "grid", gridTemplateColumns: "minmax(200px, 1fr) minmax(0, 1.2fr)", gap: 0 }} className="project-site-feed-card">
-                    <div style={{ position: "relative", minHeight: 200, background: "#E8E6E3" }}>
-                      <img src={entry.image} alt="" style={{ width: "100%", height: "100%", minHeight: 200, objectFit: "cover", display: "block" }} />
-                      <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(28,25,23,0.75)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 20 }}>{entry.phase}</div>
-                    </div>
-                    <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                      <div style={{ fontSize: 12, color: "#9A8F87", marginBottom: 8 }}>{entry.time}</div>
-                      <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.45 }}>{entry.caption}</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 14 }}>
-                        {entry.documentId ? <select value={entry.category || "site_photo"} onChange={(event) => changeSiteFeedCategory(entry, event.target.value)} aria-label={`Category for ${entry.caption}`} style={{ padding: "7px 9px", border: "1px solid #D7CEC5", borderRadius: 8, background: "#fff", maxWidth: 210 }}><option value="site_photo">Progress photo</option>{SITE_FEED_CATEGORIES.slice(1).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select> : null}
-                        <button type="button" onClick={() => { setSelectedPhase(entry.phase); setActiveNav("Overview"); }} style={{ background: "none", border: "none", color: OR, fontWeight: 700, fontSize: 13, cursor: "pointer", padding: 0 }}>
-                          Open stage on Overview →
-                        </button>
-                        {entry.documentId ? <button type="button" onClick={() => removeSitePhoto(entry)} style={{ background: "none", border: "none", color: "#B42318", fontWeight: 700, fontSize: 13, cursor: "pointer", padding: 0 }}>Delete photo</button> : null}
+                  <div key={`${entry.phase}-${entry.caption}-${index}`} style={{ ...panel, padding: 8, overflow: "hidden" }} className="project-site-feed-card">
+                    <button type="button" onClick={() => setSelectedSiteFeedEntry(entry)} aria-label={`Preview ${entry.caption}`} style={{ position: "relative", display: "block", width: "100%", aspectRatio: "1 / 1", padding: 0, border: 0, borderRadius: 10, overflow: "hidden", background: "#E8E6E3", cursor: "zoom-in" }}>
+                      <img src={entry.image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      <div style={{ position: "absolute", inset: "auto 0 0", padding: "28px 10px 9px", background: "linear-gradient(transparent, rgba(28,25,23,.78))", color: "#fff", textAlign: "left" }}><div style={{ fontSize: 11, fontWeight: 800 }}>{entry.phase}</div><div style={{ fontSize: 11, opacity: .86, marginTop: 2 }}>{entry.time}</div></div>
+                    </button>
+                    <div style={{ padding: "8px 4px 3px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, color: "#78716C", fontSize: 11 }}><span>{entry.time}</span><span>{entry.documentId ? siteFeedCategoryLabel(entry.category) : "Concept"}</span></div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 7 }}>
+                        {entry.documentId ? <select value={entry.category || "site_photo"} onChange={(event) => changeSiteFeedCategory(entry, event.target.value)} aria-label={`Category for ${entry.caption}`} style={{ minWidth: 0, flex: 1, padding: "5px 6px", border: "1px solid #D7CEC5", borderRadius: 7, background: "#fff", fontSize: 11 }}><option value="site_photo">Progress photo</option>{SITE_FEED_CATEGORIES.slice(1).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select> : null}
+                        <button type="button" onClick={() => { setSelectedPhase(entry.phase); setActiveNav("Overview"); }} style={{ marginLeft: "auto", background: "none", border: "none", color: OR, fontWeight: 700, fontSize: 11, cursor: "pointer", padding: 0 }}>Stage →</button>
+                        {entry.documentId ? <button type="button" onClick={() => removeSitePhoto(entry)} style={{ background: "none", border: "none", color: "#B42318", fontWeight: 700, fontSize: 11, cursor: "pointer", padding: 0 }}>Delete</button> : null}
                       </div>
                     </div>
                   </div>
@@ -2507,6 +2506,14 @@ export default function ProjectDashboard() {
                 <button type="button" onClick={() => setBudgetDetailOpen(false)} style={{ marginTop: 12, width: "100%", padding: "10px", borderRadius: 8, border: "none", background: OR, color: "#fff", fontWeight: 700, cursor: "pointer" }}>
                   Close
                 </button>
+              </div>
+            </div>
+          ) : null}
+          {selectedSiteFeedEntry ? (
+            <div role="dialog" aria-modal="true" aria-label="Site feed preview" onClick={() => setSelectedSiteFeedEntry(null)} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(28,25,23,.78)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+              <div onClick={(event) => event.stopPropagation()} style={{ width: "min(980px, 94vw)", maxHeight: "92vh", background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,.32)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 16px", borderBottom: "1px solid #E8E4DE" }}><div><strong>{selectedSiteFeedEntry.phase}</strong><div style={{ color: "#78716C", fontSize: 12, marginTop: 2 }}>{selectedSiteFeedEntry.time}{selectedSiteFeedEntry.documentId ? ` · ${siteFeedCategoryLabel(selectedSiteFeedEntry.category)}` : " · Concept"}</div></div><button type="button" onClick={() => setSelectedSiteFeedEntry(null)} style={{ border: 0, background: "#F5F1EC", borderRadius: 8, padding: "7px 11px", fontWeight: 700, cursor: "pointer" }}>Close</button></div>
+                <div style={{ background: "#1C1917", display: "flex", justifyContent: "center", alignItems: "center", maxHeight: "calc(92vh - 72px)" }}><img src={selectedSiteFeedEntry.image} alt={selectedSiteFeedEntry.caption || "Site update"} style={{ display: "block", maxWidth: "100%", maxHeight: "calc(92vh - 72px)", objectFit: "contain" }} /></div>
               </div>
             </div>
           ) : null}
