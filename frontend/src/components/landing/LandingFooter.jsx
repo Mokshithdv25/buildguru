@@ -40,6 +40,9 @@ export default function LandingFooter() {
             <Link to="/careers" className="text-muted-foreground hover:text-copper font-semibold">
               Careers
             </Link>
+            <Link to="/guides" className="text-muted-foreground hover:text-copper font-semibold">
+              Home project guides
+            </Link>
             <Link to="/terms" className="text-muted-foreground hover:text-copper font-semibold">
               Terms of Service
             </Link>
