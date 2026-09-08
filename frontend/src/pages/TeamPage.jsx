@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import LandingNavbar from "../components/landing/LandingNavbar";
-import { HM_FIXED_NAV_OFFSET_CLASS } from "../lib/hmBrand";
+import ProjectHubShell from "../components/ProjectHubShell";
 import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
 import { addProjectTeamMember, listProjectTeam, removeProjectTeamMember, updateProjectTeamMember } from "../lib/projectWorkspaceApi";
 
@@ -49,8 +48,7 @@ export default function TeamPage() {
   };
 
   return (
-    <div className={HM_FIXED_NAV_OFFSET_CLASS} style={{ minHeight: "100vh", background: "#FBF7F2" }}>
-      <LandingNavbar />
+    <ProjectHubShell>
       <main style={{ maxWidth: 980, margin: "0 auto", padding: "36px 24px" }}>
         <button type="button" onClick={() => navigate(projectId ? `/project?projectId=${encodeURIComponent(projectId)}` : "/project")} style={{ border: 0, background: "none", color: OR, fontWeight: 700, cursor: "pointer", padding: 0 }}>← Project hub</button>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "end", flexWrap: "wrap", margin: "18px 0" }}>
@@ -73,6 +71,6 @@ export default function TeamPage() {
           </div>
         )}
       </main>
-    </div>
+    </ProjectHubShell>
   );
 }
