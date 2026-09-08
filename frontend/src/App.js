@@ -9,6 +9,7 @@ import { AUTH_UI_ENABLED } from "./lib/authMode";
 import { clearHmSessionState, establishHmSession } from "./lib/hmAuth";
 import { warmAiBackend } from "./lib/aiApi";
 import { getOAuthRootRecoveryPath, readOAuthSignInIntent } from "./lib/authIntent";
+import { LOCAL_OPS_UI_ENABLED } from "./lib/opsMode";
 import { useMobileNative } from "./hooks/useMobileNative";
 import SignInErrorBoundary from "./components/SignInErrorBoundary";
 import ProOnboardingGuard from "./components/ProOnboardingGuard";
@@ -43,6 +44,8 @@ const LegalPage = lazy(() => import("./pages/LegalPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const CareersPage = lazy(() => import("./pages/CareersPage"));
 const CareerProfilePage = lazy(() => import("./pages/CareerProfilePage"));
+const ProfessionalIntakeAdminPage = lazy(() => import("./pages/ProfessionalIntakeAdminPage"));
+const GuidesPage = lazy(() => import("./pages/GuidesPage"));
 
 function RouteLoading() {
   return <div className="hm-route-loading" role="status" aria-live="polite"><span />Loading BuildGuru…</div>;
@@ -89,6 +92,12 @@ function DesktopRoutes() {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/careers" element={<CareersPage />} />
       <Route path="/career-profile/:slug" element={<CareerProfilePage />} />
+      <Route path="/guides" element={<GuidesPage />} />
+      <Route path="/guides/:slug" element={<GuidesPage />} />
+      <Route
+        path="/ops/onboard-professional"
+        element={LOCAL_OPS_UI_ENABLED ? <ProfessionalIntakeAdminPage /> : <Navigate to="/" replace />}
+      />
       <Route
         path="/craft"
         element={
