@@ -1222,7 +1222,7 @@ export default function ProjectDashboard() {
           YOUR PROJECTS
         </div>
         {(AUTH_UI_ENABLED ? hmSession?.supabaseUserId : true) ? (
-          <div style={{ padding: "0 12px 10px", maxHeight: 140, overflowY: "auto" }}>
+          <div style={{ padding: "0 12px 10px" }}>
             {projectsLoading ? (
               <div style={{ fontSize: 11, color: "#9A8F87", padding: "4px 8px" }}>Loading saved projects…</div>
             ) : userProjects.length === 0 ? (
@@ -1230,36 +1230,17 @@ export default function ProjectDashboard() {
                 No saved projects yet. Finish a build or remodel flow with v0 — it will appear here.
               </div>
             ) : (
-              userProjects.map((p) => {
-                const active = p.id === activeProjectId;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => openProject(p)}
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      textAlign: "left",
-                      marginBottom: 6,
-                      padding: "8px 10px",
-                      borderRadius: 8,
-                      border: active ? `1.5px solid ${OR}` : "1px solid #E8E6E3",
-                      background: active ? "#FDF4EF" : "#fff",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#1C1917", lineHeight: 1.3 }}>
-                      {p.title || "Untitled project"}
-                    </div>
-                    <div style={{ fontSize: 10, color: "#9A8F87", marginTop: 3 }}>
-                      {flowSourceLabel(p.flow_type, p.source)}
-                      {p.budget_max ? ` · ${formatInrShort(p.budget_max)}` : ""}
-                    </div>
-                  </button>
-                );
-              })
+              <select
+                aria-label="Select project"
+                value={activeProjectId || userProjects[0]?.id || ""}
+                onChange={(event) => {
+                  const selected = userProjects.find((p) => p.id === event.target.value);
+                  if (selected) openProject(selected);
+                }}
+                style={{ width: "100%", boxSizing: "border-box", padding: "10px 9px", borderRadius: 8, border: `1.5px solid ${OR}`, background: "#FDF4EF", color: "#1C1917", fontFamily: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+              >
+                {userProjects.map((p) => <option key={p.id} value={p.id}>{p.title || "Untitled project"} · {flowSourceLabel(p.flow_type, p.source)}</option>)}
+              </select>
             )}
           </div>
         ) : (
