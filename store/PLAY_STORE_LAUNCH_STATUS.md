@@ -17,9 +17,10 @@ Updated: 2026-09-07
 
 ## Blocking items before Play upload
 
-1. Back up the generated upload keystore and credentials securely outside the repository before publishing. The keystore is currently protected by `frontend/android/.release/.gitignore`.
-2. In Play Console complete App access, Ads, Content rating, Target audience, Data safety, Financial features, countries, and staged rollout settings.
-3. Use dedicated homeowner and professional review accounts and replace any screenshot that contains a real professional without explicit permission.
+1. Create the Google Play Console developer account. The signed-in account currently lands on Google's “Creating a developer account” screen; no publisher account or BuildGuru app entry exists yet. The account owner must choose the correct legal account type, complete verification, and accept Google's registration step.
+2. Back up the generated upload keystore and credentials securely outside the repository before publishing. The keystore is currently protected by `frontend/android/.release/.gitignore`.
+3. In Play Console complete App access, Ads, Content rating, Target audience, Data safety, Financial features, countries, and staged rollout settings.
+4. Use dedicated homeowner and professional review accounts and replace any screenshot that contains a real professional without explicit permission.
 
 ## Product and policy gates
 
