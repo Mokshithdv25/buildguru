@@ -75,7 +75,7 @@ async function download(env,url) {
   const doc=rows[0]; if (!doc) throw new Failure(404,'File not found.');
   await rpc(env,'consume_project_storage_operation',{p_kind:'read'});
   const object=await env.FILES.get(doc.storage_path); if(!object) throw new Failure(404,'File not found.');
-  const inline=['image/jpeg','image/png','image/webp'].includes(doc.mime_type);
+  const inline=['application/pdf','image/jpeg','image/png','image/webp'].includes(doc.mime_type);
   return new Response(object.body,{headers:{'Content-Type':doc.mime_type || 'application/octet-stream','Content-Length':String(object.size),'Content-Disposition':`${inline?'inline':'attachment'}; filename*=UTF-8''${encodeURIComponent(doc.file_name)}`,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'}});
 }
 async function route(request,env) {

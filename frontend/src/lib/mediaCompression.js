@@ -2,10 +2,10 @@ const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const PDF_TYPE = "application/pdf";
 
 async function compressPdf(file, {
-  targetBytes = 700_000,
-  maxPages = 40,
-  jpegQuality = 0.56,
-  maxPixels = 900_000,
+  targetBytes = 1_200_000,
+  maxPages = 80,
+  jpegQuality = 0.44,
+  maxPixels = 500_000,
 } = {}) {
   if (file.size <= targetBytes) return file;
   try {
@@ -21,7 +21,7 @@ async function compressPdf(file, {
       const page = await pdf.getPage(pageNumber);
       const baseViewport = page.getViewport({ scale: 1 });
       const scale = Math.min(1.5, Math.sqrt(maxPixels / Math.max(1, baseViewport.width * baseViewport.height)));
-      const viewport = page.getViewport({ scale: Math.max(0.8, scale) });
+      const viewport = page.getViewport({ scale: Math.max(0.62, scale) });
       const canvas = document.createElement("canvas");
       canvas.width = Math.max(1, Math.ceil(viewport.width));
       canvas.height = Math.max(1, Math.ceil(viewport.height));
@@ -32,7 +32,7 @@ async function compressPdf(file, {
       outPage.drawImage(image, { x: 0, y: 0, width: baseViewport.width, height: baseViewport.height });
     }
     const bytes = await output.save({ useObjectStreams: true, addDefaultPage: false });
-    if (!bytes?.length || bytes.length >= file.size * 0.92 || bytes.length > targetBytes && bytes.length >= file.size) return file;
+    if (!bytes?.length || bytes.length >= file.size) return file;
     return new File([bytes], file.name || "document.pdf", { type: PDF_TYPE, lastModified: file.lastModified });
   } catch {
     return file;

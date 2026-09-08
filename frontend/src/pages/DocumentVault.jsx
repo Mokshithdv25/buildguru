@@ -35,6 +35,12 @@ export default function DocumentVault() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [category, setCategory] = useState("design_drawing");
+  const [previewDocument, setPreviewDocument] = useState(null);
+
+  const isPreviewable = (document) => {
+    const type = String(document?.mime_type || "").toLowerCase();
+    return type === "application/pdf" || type.startsWith("image/");
+  };
 
   const refresh = async () => {
     if (!projectId) return;
@@ -93,13 +99,31 @@ export default function DocumentVault() {
               <div key={document.id} style={{ display: "flex", alignItems: "center", gap: 12, borderTop: "1px solid #F0E8DF", padding: "13px 0" }}>
                 <span aria-hidden>📄</span>
                 <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis" }}>{document.file_name}</div><div style={{ color: "#78716C", fontSize: 12, marginTop: 3 }}>{categoryLabel(document.kind)} · {sizeLabel(document.size_bytes)}{document.created_at ? ` · ${new Date(document.created_at).toLocaleDateString("en-IN")}` : ""}</div></div>
-                {document.signed_url ? <a href={document.signed_url} target="_blank" rel="noreferrer" style={{ color: OR, fontWeight: 700, fontSize: 13 }}>Open</a> : null}
+                {document.signed_url && isPreviewable(document) ? <button type="button" onClick={() => setPreviewDocument(document)} style={{ border: 0, background: "none", color: OR, fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Preview</button> : null}
+                {document.signed_url ? <a href={document.signed_url} target="_blank" rel="noreferrer" style={{ color: "#78716C", fontWeight: 700, fontSize: 13 }}>Open</a> : null}
                 <button type="button" onClick={() => remove(document)} style={{ border: 0, background: "none", color: "#B42318", cursor: "pointer" }}>Delete</button>
               </div>
             ))}
           </section>
         )}
       </main>
+      {previewDocument?.signed_url ? (
+        <div role="presentation" onClick={() => setPreviewDocument(null)} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(28,25,23,.72)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div role="dialog" aria-modal="true" aria-label={`Preview ${previewDocument.file_name}`} onClick={(event) => event.stopPropagation()} style={{ width: "min(1100px, 96vw)", height: "min(86vh, 820px)", background: "#fff", borderRadius: 16, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(0,0,0,.3)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "13px 16px", borderBottom: "1px solid #E8E4DE" }}>
+              <strong style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{previewDocument.file_name}</strong>
+              <button type="button" onClick={() => setPreviewDocument(null)} style={{ border: 0, background: "#F5F1EC", color: "#57534E", borderRadius: 8, padding: "7px 12px", fontWeight: 700, cursor: "pointer" }}>Close</button>
+            </div>
+            <div style={{ flex: 1, minHeight: 0, background: "#F5F5F4", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {String(previewDocument.mime_type || "").toLowerCase() === "application/pdf" ? (
+                <iframe title={`Preview ${previewDocument.file_name}`} src={previewDocument.signed_url} style={{ width: "100%", height: "100%", border: 0 }} />
+              ) : (
+                <img src={previewDocument.signed_url} alt={previewDocument.file_name} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </ProjectHubShell>
   );
 }
