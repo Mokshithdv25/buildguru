@@ -2421,7 +2421,7 @@ export default function ProjectDashboard() {
             <div style={{ maxWidth: 900 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                 <h2 style={{ fontSize: 20, fontWeight: 800, margin: "0 0 8px" }}>Site feed</h2>
-                {isLiveProject ? <><input ref={sitePhotoPickerRef} type="file" hidden accept="image/jpeg,image/png,image/webp" onChange={uploadSitePhoto} /><button type="button" disabled={siteUploading} onClick={() => sitePhotoPickerRef.current?.click()} style={{ border: 0, borderRadius: 9, background: OR, color: "#fff", padding: "9px 14px", fontWeight: 700, cursor: "pointer" }}>{siteUploading ? "Uploading…" : `Upload to ${selectedPhase}`}</button></> : null}
+                {isLiveProject ? <><input ref={sitePhotoPickerRef} type="file" hidden accept="image/jpeg,image/png,image/webp" onChange={uploadSitePhoto} /><button type="button" disabled={siteUploading} onClick={() => sitePhotoPickerRef.current?.click()} style={{ border: 0, borderRadius: 9, background: OR, color: "#fff", padding: "9px 14px", fontWeight: 700, cursor: "pointer" }}>{siteUploading ? "Uploading…" : "Upload site update"}</button></> : null}
               </div>
               <p style={{ fontSize: 14, color: "#7A6E62", margin: "0 0 22px", lineHeight: 1.55 }}>
                 Latest site photos and notes from each stage, newest updates first within this project.
