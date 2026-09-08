@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /account
+Disallow: /project
+Disallow: /pro/
+Disallow: /ops/
+Disallow: /sign-in
+Disallow: /join
+Disallow: /auth/
 
 Sitemap: https://www.buildguru.ai/sitemap.xml
