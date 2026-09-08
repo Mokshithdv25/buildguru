@@ -1,3 +1,4 @@
+import ProjectStorageMeter from "../components/ProjectStorageMeter";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ProjectHubShell from "../components/ProjectHubShell";
@@ -47,12 +48,16 @@ export default function DocumentVault() {
   useEffect(() => { refresh(); }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const upload = async (event) => {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files || []);
     event.target.value = "";
-    if (!file || !projectId) return;
+    if (!files.length || !projectId) return;
     setUploading(true);
     setError("");
-    try { const saved = await uploadProjectDocument({ projectId, stageId: searchParams.get("stageId") || null, file, category }); setDocuments((rows) => [saved, ...rows]); }
+    try {
+      const saved = [];
+      for (const file of files) saved.push(await uploadProjectDocument({ projectId, stageId: searchParams.get("stageId") || null, file, category }));
+      setDocuments((rows) => [...saved.reverse(), ...rows]);
+    }
     catch (err) { setError(err?.message || "Could not upload the document."); }
     finally { setUploading(false); }
   };
@@ -74,14 +79,15 @@ export default function DocumentVault() {
           <div><h1 style={{ margin: 0, fontSize: 28 }}>Project documents</h1><p style={{ color: "#78716C", margin: "6px 0 0" }}>Private files saved to the selected homeowner project.</p></div>
           {projects.length > 1 ? <select value={projectId} onChange={(event) => selectProject(event.target.value)} style={{ padding: "10px 12px", border: "1px solid #D7CEC5", borderRadius: 9 }}>{projects.map((row) => <option key={row.id} value={row.id}>{row.title || "Project"}</option>)}</select> : null}
         </div>
+        <ProjectStorageMeter />
         {projectError || error ? <p role="alert" style={{ color: "#B42318" }}>{projectError || error}</p> : null}
         {projectsLoading ? <p>Loading projects…</p> : !project ? <div style={{ background: "#fff", border: "1px solid #E8E4DE", borderRadius: 14, padding: 24 }}>Create a project before uploading documents.</div> : (
           <section style={{ background: "#fff", border: "1px solid #E8E4DE", borderRadius: 14, padding: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 18 }}>
               <div><strong>{project.title || "Project"}</strong><div style={{ color: "#78716C", fontSize: 13, marginTop: 3 }}>{documents.length} saved {documents.length === 1 ? "file" : "files"}</div></div>
               <select value={category} onChange={(event) => setCategory(event.target.value)} aria-label="Document category" style={{ padding: "10px 12px", border: "1px solid #D7CEC5", borderRadius: 9, background: "#fff", maxWidth: 260 }}>{DOCUMENT_CATEGORIES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
-              <input ref={picker} type="file" hidden onChange={upload} accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.docx,.xlsx" />
-              <button type="button" disabled={uploading} onClick={() => picker.current?.click()} style={{ border: 0, borderRadius: 9, background: OR, color: "#fff", padding: "10px 14px", fontWeight: 700, cursor: "pointer" }}>{uploading ? "Uploading…" : "Upload document"}</button>
+              <input ref={picker} type="file" hidden multiple onChange={upload} accept=".pdf,.jpg,.jpeg,.png,.webp,.txt,.csv,.docx,.xlsx" />
+              <button type="button" disabled={uploading} onClick={() => picker.current?.click()} style={{ border: 0, borderRadius: 9, background: OR, color: "#fff", padding: "10px 14px", fontWeight: 700, cursor: "pointer" }}>{uploading ? "Uploading…" : "Upload documents"}</button>
             </div>
             {loading ? <p>Loading documents…</p> : documents.length === 0 ? <p style={{ color: "#78716C" }}>No documents have been uploaded to this project.</p> : documents.map((document) => (
               <div key={document.id} style={{ display: "flex", alignItems: "center", gap: 12, borderTop: "1px solid #F0E8DF", padding: "13px 0" }}>

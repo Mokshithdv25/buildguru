@@ -1,3 +1,5 @@
+import { PROJECT_STORAGE_ENABLED, storageRequest, notifyStorageChanged } from "./projectStorageApi";
+import { compressFile } from "./mediaCompression";
 import { getSupabase } from "./supabaseClient";
 
 const supabase = getSupabase();
@@ -59,6 +61,7 @@ export async function removeProjectTeamMember(projectId, id) {
 
 export async function listProjectDocuments(projectId) {
   requireProject(projectId);
+  if (PROJECT_STORAGE_ENABLED) return storageRequest(`/documents?projectId=${encodeURIComponent(projectId)}`);
   await requireUser();
   const { data, error } = await supabase.from("project_documents").select("*").eq("project_id", projectId).order("created_at", { ascending: false });
   if (error) throw error;
@@ -72,22 +75,32 @@ export async function listProjectDocuments(projectId) {
 export async function uploadProjectDocument({ projectId, stageId = null, file, category = "other" }) {
   requireProject(projectId);
   const userId = await requireUser();
-  if (!file) throw new Error("Choose a document to upload.");
-  if (file.size > 15 * 1024 * 1024) throw new Error("Documents must be 15 MB or smaller.");
-  const safeName = String(file.name || "document").replace(/[^a-zA-Z0-9._-]+/g, "-");
+  const uploadFile = await compressFile(file, { preserveDetail: false });
+  if (PROJECT_STORAGE_ENABLED) {
+    if (!uploadFile?.size) throw new Error("Choose a non-empty file.");
+    if (uploadFile.size > 15000000) throw new Error("Each file must be 15 MB or smaller.");
+    const params = new URLSearchParams({ projectId, name: uploadFile.name, category });
+    if (stageId) params.set("stageId", stageId);
+    try {
+      return await storageRequest(`/documents?${params}`, { method: "POST", body: uploadFile, headers: { "Content-Type": uploadFile.type || "application/octet-stream" } });
+    } finally { notifyStorageChanged(); }
+  }
+  if (!uploadFile) throw new Error("Choose a document to upload.");
+  if (uploadFile.size > 15 * 1024 * 1024) throw new Error("Documents must be 15 MB or smaller.");
+  const safeName = String(uploadFile.name || "document").replace(/[^a-zA-Z0-9._-]+/g, "-");
   const storagePath = `${userId}/${projectId}/${Date.now()}-${safeName}`;
-  const { error: uploadError } = await supabase.storage.from(DOCUMENT_BUCKET).upload(storagePath, file, { contentType: file.type || "application/octet-stream", upsert: false });
+  const { error: uploadError } = await supabase.storage.from(DOCUMENT_BUCKET).upload(storagePath, uploadFile, { contentType: uploadFile.type || "application/octet-stream", upsert: false });
   if (uploadError) throw uploadError;
   const { data, error } = await supabase.from("project_documents").insert({
     project_id: projectId,
     stage_id: stageId,
     uploaded_by_user_id: userId,
     kind: String(category || "other").slice(0, 60),
-    file_name: file.name,
+    file_name: uploadFile.name,
     file_url: storagePath,
     storage_path: storagePath,
-    mime_type: file.type || null,
-    size_bytes: file.size,
+    mime_type: uploadFile.type || null,
+    size_bytes: uploadFile.size,
   }).select("*").maybeSingle();
   if (error) {
     await supabase.storage.from(DOCUMENT_BUCKET).remove([storagePath]);
@@ -115,6 +128,10 @@ export async function updateProjectTitle(projectId, title) {
 
 export async function removeProjectDocument(projectId, document) {
   requireProject(projectId);
+  if (PROJECT_STORAGE_ENABLED) {
+    try { return await storageRequest(`/documents/${encodeURIComponent(document.id)}?projectId=${encodeURIComponent(projectId)}`, { method: "DELETE" }); }
+    finally { notifyStorageChanged(); }
+  }
   await requireUser();
   if (document?.storage_path) {
     const { error: storageError } = await supabase.storage.from(DOCUMENT_BUCKET).remove([document.storage_path]);

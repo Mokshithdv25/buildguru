@@ -1,4 +1,5 @@
 import { getSupabase } from "./supabaseClient";
+import { compressDataUrl } from "./mediaCompression";
 
 export const STORAGE_BUCKETS = {
   v0: "project-v0",
@@ -223,10 +224,11 @@ export async function uploadPortfolioMediaToStorage({ userId, portfolioId, media
   const base = `${userId}/${portfolioId}`;
   const uploadOne = async (dataUrl, name) => {
     if (!dataUrl?.startsWith("data:")) return dataUrl || "";
+    const compressed = await compressDataUrl(dataUrl, { maxDimension: 1800, targetBytes: 350_000 });
     const url = await uploadDataUrl({
       bucket: STORAGE_BUCKETS.portfolio,
       path: `${base}/${name}`,
-      dataUrl,
+      dataUrl: compressed,
     });
     if (!url) throw new Error(`Could not upload portfolio media: ${name}`);
     return url;

@@ -1,0 +1,14 @@
+{
+  "name": "buildguru-project-storage",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-09-06",
+  "account_id": "4602c5b83e17c2c5fc79c8bb1721c16d",
+  "workers_dev": true,
+  "r2_buckets": [{ "binding": "FILES", "bucket_name": "buildguru-project-documents" }],
+  "vars": {
+    "STORAGE_ENABLED": "true",
+    "SUPABASE_URL": "https://aesavvlhpjickmnmyzzh.supabase.co",
+    "ALLOWED_ORIGINS": "https://www.buildguru.ai,https://buildguru.ai,http://127.0.0.1:3010,http://localhost:3010,capacitor://localhost,http://localhost,https://localhost"
+  },
+  "triggers": { "crons": ["17 * * * *"] }
+}
