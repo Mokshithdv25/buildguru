@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ChevronDown, ChevronUp, Inbox, Loader2, MapPin } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import { HM_FIXED_NAV_OFFSET_CLASS } from "../lib/hmBrand";
 import { useMobileNative } from "../hooks/useMobileNative";
@@ -216,12 +216,17 @@ export default function ProLeadsPage() {
           <div>
             <p className="hm-pro-eyebrow">Professional workspace</p>
             <h1 className="hm-pro-title">Homeowner project leads</h1>
-            <p className="hm-pro-subtitle">Projects posted by homeowners for quotes—not professional profiles from the marketplace. Review the scope, place a priced bid, and track the homeowner's decision.</p>
+            <p className="hm-pro-subtitle">Whole-project bids — homeowners who asked one contractor or architect to price the entire brief. Trade RFQs (electrical, plumbing, carpentry, materials) are under Work packages.</p>
           </div>
           <button type="button" className="hm-pro-button-secondary" onClick={() => navigate("/pro/dashboard")}>
             <ArrowLeft size={16} /> Dashboard
           </button>
         </header>
+
+        <nav className="hm-pro-segment" aria-label="Lead type">
+          <Link to="/pro/rfqs">Work packages</Link>
+          <Link to="/pro/leads" className="is-active">Whole-project leads</Link>
+        </nav>
 
         <div className="hm-pro-filters" role="tablist" aria-label="Filter project leads">
           {FILTERS.map(([value, label]) => {

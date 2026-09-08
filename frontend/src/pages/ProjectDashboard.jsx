@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   CalendarDays,
@@ -13,7 +13,6 @@ import {
   Layers,
   LayoutGrid,
   ListChecks,
-  MessageSquareText,
   Settings,
   Users,
   X,
@@ -25,7 +24,6 @@ import {
   HM_HUB_DEMO_PROJECT,
   hmProjectHubPageBackground,
   hmProjectSidebarAsideStyle,
-  hmProjectSidebarFooterStyle,
   hmProjectSidebarNavItemStyle,
   hmProjectSidebarNavScrollStyle,
 } from "../lib/hmBrand";
@@ -47,16 +45,18 @@ import {
   updateProjectStageSchedule,
   updateProjectTaskDueDate,
   projectDisplayName,
+  updateProjectHireMode,
 } from "../lib/projectFlowApi";
 import { listProjectDocuments, listProjectPayments, removeProjectDocument, updateProjectBudget, updateProjectDocumentCategory, updateProjectTitle, uploadProjectDocument } from "../lib/projectWorkspaceApi";
 import { buildSignInRedirect } from "../lib/requireHomeownerAuth";
 import { buildHubAssistantContext } from "../lib/hubAssistantContext";
 import HmFormDialog from "../components/HmFormDialog";
-import HmProjectAssistant from "../components/HmProjectAssistant";
 import HmCommandCenter from "../components/HmCommandCenter";
 import HmMorningBriefing from "../components/HmMorningBriefing";
 import HmProjectIntelligence from "../components/HmProjectIntelligence";
 import ProjectBidsPanel from "../components/ProjectBidsPanel";
+import WorkPackagesHub from "../components/workPackages/WorkPackagesHub";
+import { isOwnTeamHire, normalizeHireMode, postsWholeProjectLeads } from "../lib/hireMode";
 import ProjectMaterialsPanel from "../components/ProjectMaterialsPanel";
 import ProjectProMatches from "../components/ProjectProMatches";
 import ProjectTimelineEditor from "../components/ProjectTimelineEditor";
@@ -290,9 +290,19 @@ const MILESTONE_SEED = {
   ],
 };
 
+function navId(item) {
+  return item.id || item.label;
+}
+
+function resolveHubTab(tab) {
+  if (!tab) return "Overview";
+  if (tab === "Hire") return "Bids";
+  return tab;
+}
+
 const NAV = [
   { Icon: LayoutGrid, label: "Overview", path: null },
-  { Icon: Inbox, label: "Bids", path: null },
+  { Icon: Inbox, id: "Bids", label: "Hire", path: null },
   { Icon: CalendarDays, label: "Timeline", path: null },
   { Icon: ListChecks, label: "Tasks", path: null },
   { Icon: IndianRupee, label: "Budget", path: null },
@@ -434,7 +444,7 @@ export default function ProjectDashboard() {
     !dismissPostedBanner &&
     (searchParams.get("source") === "build-new" || searchParams.get("source") === "remodel") &&
     isProjectPostedPhase(postedPhase);
-  const [activeNav, setActiveNav] = useState(() => searchParams.get("tab") || "Overview");
+  const [activeNav, setActiveNav] = useState(() => resolveHubTab(searchParams.get("tab") || "Overview"));
   const [selectedPhase, setSelectedPhase] = useState("Structure");
   const [phaseRows, setPhaseRows] = useState([]);
   const [briefData, setBriefData] = useState(null);
@@ -481,7 +491,9 @@ export default function ProjectDashboard() {
 
   useEffect(() => {
     const requestedTab = searchParams.get("tab");
-    if (requestedTab && NAV.some((item) => item.label === requestedTab && !item.path)) setActiveNav(requestedTab);
+    if (!requestedTab) return;
+    const item = NAV.find((n) => !n.path && (n.id === requestedTab || n.label === requestedTab));
+    if (item) setActiveNav(navId(item));
   }, [searchParams]);
 
   const hubQuery = useMemo(() => {
@@ -703,10 +715,22 @@ export default function ProjectDashboard() {
 
   const filteredTasks = useMemo(() => tasks.filter((t) => t.phase === selectedPhase), [tasks, selectedPhase]);
   const filteredMsgs = useMemo(() => msgs.filter((m) => m.phase === selectedPhase), [msgs, selectedPhase]);
+  const [workPackageNewBids, setWorkPackageNewBids] = useState(0);
   const newBidCount = useMemo(
-    () => bids.filter((bid) => (bid.homeowner_decision || "pending") === "pending").length,
-    [bids],
+    () => bids.filter((bid) => (bid.homeowner_decision || "pending") === "pending").length + workPackageNewBids,
+    [bids, workPackageNewBids],
   );
+  const selectedWorkPackageId = searchParams.get("package") || "";
+  const selectWorkPackage = useCallback((packageId) => {
+    const next = new URLSearchParams(searchParams);
+    if (packageId) {
+      next.set("package", packageId);
+      next.set("tab", "Bids");
+    } else {
+      next.delete("package");
+    }
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
   const acceptedBid = useMemo(() => bids.find((bid) => bid.homeowner_decision === "accepted") || null, [bids]);
   const phaseMilestones = milestonesByPhase[selectedPhase] || [];
   const fundingSnapshot = useMemo(() => {
@@ -745,7 +769,8 @@ export default function ProjectDashboard() {
   const hubReady = !needsSignIn && !needsProjectPick;
   const postedMissingProject =
     isProjectPostedPhase(searchParams.get("phase")) && !activeProjectId && !projectsLoading;
-  const briefHasOwnPros = Boolean(briefData?.hasArchitect);
+  const hireMode = normalizeHireMode(briefData || {});
+  const briefHasOwnPros = isOwnTeamHire(hireMode);
   const localDraftProjects = useMemo(() => listLocalFlowProjects(), []);
   const activeProjectMeta = useMemo(
     () => userProjects.find((p) => p.id === activeProjectId) || null,
@@ -825,12 +850,6 @@ export default function ProjectDashboard() {
       signInRedirectPath,
     ],
   );
-
-  const addAssistantTask = (title, phase = selectedPhase) => {
-    if (!title?.trim()) return;
-    createTask(title, phase);
-    setActiveNav("Tasks");
-  };
 
   const saveMaterial = async (item) => {
     const saved = await saveProjectMaterial(activeProjectId, item);
@@ -1293,25 +1312,26 @@ export default function ProjectDashboard() {
         </div>
         <nav style={hmProjectSidebarNavScrollStyle}>
           {NAV.map((n) => {
-            const active = activeNav === n.label;
+            const key = navId(n);
+            const active = activeNav === key;
             return (
               <div
-                key={n.label}
+                key={key}
                 role="button"
                 tabIndex={0}
-                onClick={() => (n.path ? navigate(`${n.path}${hubQuery}`) : setActiveNav(n.label))}
+                onClick={() => (n.path ? navigate(`${n.path}${hubQuery}`) : setActiveNav(key))}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     if (n.path) navigate(`${n.path}${hubQuery}`);
-                    else setActiveNav(n.label);
+                    else setActiveNav(key);
                   }
                 }}
                 style={hmProjectSidebarNavItemStyle(active)}
               >
                 <n.Icon size={16} strokeWidth={active ? 2.1 : 1.8} style={{ flexShrink: 0, color: active ? OR : "#8A7F75" }} aria-hidden />
                 {n.label}
-                {n.label === "Bids" && newBidCount > 0 ? (
+                {key === "Bids" && newBidCount > 0 ? (
                   <span
                     aria-label={`${newBidCount} new bids`}
                     style={{
@@ -1331,33 +1351,6 @@ export default function ProjectDashboard() {
             );
           })}
         </nav>
-        <div style={hmProjectSidebarFooterStyle}>
-          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 3, color: "#1C1917" }}>Project assistant</div>
-          <div style={{ fontSize: 11, color: "#7A6E62", marginBottom: 10, lineHeight: 1.45 }}>Answers grounded in this project's brief, tasks, and documents.</div>
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}
-            style={{
-              width: "100%",
-              background: "#1C1917",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              padding: "9px 0",
-              fontWeight: 600,
-              fontSize: 12,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 7,
-              fontFamily: "inherit",
-            }}
-          >
-            <MessageSquareText size={14} strokeWidth={2} aria-hidden />
-            Open assistant
-          </button>
-        </div>
       </aside>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
@@ -1401,28 +1394,6 @@ export default function ProjectDashboard() {
                 ? ` — ${userProjects.length} saved project${userProjects.length === 1 ? "" : "s"} in your account.`
                 : " — finish a build or remodel flow to save your first project."}
             </span>
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}
-              style={{
-                background: "#fff",
-                border: "1px solid #D6D3D1",
-                borderRadius: 999,
-                padding: "6px 14px",
-                fontSize: 12,
-                fontWeight: 600,
-                color: "#1C1917",
-                cursor: "pointer",
-                flexShrink: 0,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                fontFamily: "inherit",
-              }}
-            >
-              <MessageSquareText size={13} strokeWidth={2} aria-hidden />
-              Project assistant
-            </button>
           </div>
         )}
         {showPostedBanner && (
@@ -1443,8 +1414,12 @@ export default function ProjectDashboard() {
             <div style={{ fontSize: 13, color: "#065F46", lineHeight: 1.5, maxWidth: 720 }}>
               <strong>Project posted.</strong>{" "}
               {briefHasOwnPros
-                ? "You chose to bring your own team — invite architects and contractors under Team, then track quotes and site work here."
-                : "Your brief is live for verified professionals. Invite the matches below to bid, then compare priced bids side by side under Bids."}
+                ? "You chose to bring your own team — invite architects and contractors under Team. Switch to trade RFQs any time under Hire."
+                : hireMode === "gc"
+                  ? "Contractors can now bid on the whole brief. Compare those bids here, or add trade packages if you want electricians and plumbers to quote separately."
+                  : hireMode === "design_first"
+                    ? "Post a design RFQ from Hire so architects price drawings before anyone quotes construction."
+                    : "Your next step is Hire: pick the trades (electrical, plumbing, carpentry, civil, materials) and go live so matching professionals can bid the same checklist."}
             </div>
             <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
               {!briefHasOwnPros ? (
@@ -1462,7 +1437,7 @@ export default function ProjectDashboard() {
                     cursor: "pointer",
                   }}
                 >
-                  Invite pros & see bids
+                  {hireMode === "gc" ? "Review contractor bids" : "Set up RFQs"}
                 </button>
               ) : (
                 <button
@@ -1561,21 +1536,6 @@ export default function ProjectDashboard() {
               >
                 Start a build (no account)
               </button>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}
-                style={{
-                  marginTop: 20,
-                  background: "transparent",
-                  border: "none",
-                  color: OR,
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: "pointer",
-                }}
-              >
-                Or ask the project assistant first →
-              </button>
             </div>
           ) : null}
           {!needsSignIn && needsProjectPick ? (
@@ -1647,21 +1607,6 @@ export default function ProjectDashboard() {
                   Remodel a room
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent("hm-open-assistant"))}
-                style={{
-                  marginTop: 22,
-                  background: "transparent",
-                  border: "none",
-                  color: OR,
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: "pointer",
-                }}
-              >
-                Or ask the project assistant how to get started →
-              </button>
             </div>
           ) : null}
           {hubReady && activeNav === "Overview" && (
@@ -2093,27 +2038,61 @@ export default function ProjectDashboard() {
           )}
 
           {hubReady && activeNav === "Bids" && (
-            <ProjectBidsPanel
-              bids={bids}
-              configured={bidsConfigured}
-              loading={bidsLoading}
-              budgetMax={activeProjectMeta?.budget_max || briefData?.budgetInr}
-              onDecision={decideBid}
-              onNavigatePath={(path) => navigate(path)}
-              onFindPros={() => navigate(browseQuotesUrl({ projectId: activeProjectId, city: briefData?.city }))}
-              matchesSlot={
-                isLiveProject ? (
-                  <div style={{ marginTop: 22 }}>
-                    <ProjectProMatches
-                      projectId={activeProjectId}
-                      brief={briefData || {}}
+            isLiveProject ? (
+              <WorkPackagesHub
+                projectId={activeProjectId}
+                project={activeProjectMeta}
+                brief={briefData || {}}
+                estimate={v0Pack?.estimate || null}
+                documents={projectDocuments}
+                selectedPackageId={selectedWorkPackageId}
+                onSelectPackage={selectWorkPackage}
+                onNavigatePath={(path) => navigate(path)}
+                hireMode={hireMode}
+                onHireModeChange={async (next) => {
+                  const result = await updateProjectHireMode(activeProjectId, next);
+                  setBriefData((current) => ({ ...(current || {}), ...(result.brief || {}) }));
+                }}
+                onChanged={({ bids: packageBids }) => setWorkPackageNewBids(
+                  packageBids.filter((bid) => bid.status === "submitted" && (bid.homeowner_decision || "pending") === "pending").length,
+                )}
+                footerSlot={
+                  postsWholeProjectLeads(hireMode) || bids.length ? (
+                  <div style={{ marginTop: 28, paddingTop: 22, borderTop: "1px solid #E6E1DA" }}>
+                    <ProjectBidsPanel
+                      bids={bids}
+                      configured={bidsConfigured}
+                      loading={bidsLoading}
+                      budgetMax={activeProjectMeta?.budget_max || briefData?.budgetInr}
+                      onDecision={decideBid}
                       onNavigatePath={(path) => navigate(path)}
-                      compact={bids.length > 0}
+                      onFindPros={() => navigate(browseQuotesUrl({ projectId: activeProjectId, city: briefData?.city }))}
+                      matchesSlot={
+                        <div style={{ marginTop: 22 }}>
+                          <ProjectProMatches
+                            projectId={activeProjectId}
+                            brief={briefData || {}}
+                            onNavigatePath={(path) => navigate(path)}
+                            compact={bids.length > 0}
+                          />
+                        </div>
+                      }
                     />
                   </div>
-                ) : null
-              }
-            />
+                  ) : null
+                }
+              />
+            ) : (
+              <ProjectBidsPanel
+                bids={bids}
+                configured={bidsConfigured}
+                loading={bidsLoading}
+                budgetMax={activeProjectMeta?.budget_max || briefData?.budgetInr}
+                onDecision={decideBid}
+                onNavigatePath={(path) => navigate(path)}
+                onFindPros={() => navigate(browseQuotesUrl({ projectId: activeProjectId, city: briefData?.city }))}
+              />
+            )
           )}
 
           {hubReady && activeNav === "Materials" && (
@@ -2551,14 +2530,6 @@ export default function ProjectDashboard() {
         initialValues={milestoneDialog.initial}
         submitLabel={milestoneDialog.mode === "add" ? "Add" : "Save"}
         onSubmit={submitMilestoneDialog}
-      />
-
-      <HmProjectAssistant
-        context={assistantContext}
-        onNavTab={setActiveNav}
-        onNavigatePath={(path) => navigate(path)}
-        onAddTask={addAssistantTask}
-        defaultPhase={selectedPhase}
       />
 
       <style>{`

@@ -40,6 +40,8 @@ const ProjectPayments = lazy(() => import("./pages/ProjectPayments"));
 const StageDashboard = lazy(() => import("./pages/StageDashboard"));
 const ProDashboard = lazy(() => import("./pages/ProDashboard"));
 const ProLeadsPage = lazy(() => import("./pages/ProLeadsPage"));
+const ProWorkPackagesPage = lazy(() => import("./pages/ProWorkPackagesPage"));
+const WpPreviewTmp = lazy(() => import("./pages/__WpPreview"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
 const PricingPage = lazy(() => import("./pages/PricingPage"));
 const CareersPage = lazy(() => import("./pages/CareersPage"));
@@ -214,6 +216,15 @@ function DesktopRoutes() {
           </ProDashboardGuard>
         }
       />
+      <Route
+        path="/pro/rfqs"
+        element={
+          <ProDashboardGuard>
+            <ProWorkPackagesPage />
+          </ProDashboardGuard>
+        }
+      />
+      <Route path="/__wp-preview" element={<WpPreviewTmp />} />
       <Route path="/terms" element={<LegalPage kind="terms" />} />
       <Route path="/privacy" element={<LegalPage kind="privacy" />} />
       <Route path="*" element={<Navigate to="/" replace />} />

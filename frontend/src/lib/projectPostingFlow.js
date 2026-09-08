@@ -12,6 +12,7 @@ export function projectHubPostedUrl({ source, projectId }) {
   if (projectId) params.set("projectId", projectId);
   if (source) params.set("source", source);
   params.set("phase", PROJECT_POSTED_PHASE);
+  params.set("tab", "Bids");
   return `/project?${params.toString()}`;
 }
 
@@ -25,13 +26,17 @@ export function browseQuotesUrl({ projectId, city } = {}) {
 
 export const WIZARD_FINAL_STEP = {
   title: "Post project",
-  subtitle: "Quotes from pros or your own team",
+  subtitle: "Trade RFQs, one contractor, or your own team",
 };
 
-export function proPathLabel(hasOwnPros) {
-  return hasOwnPros
-    ? "I'm bringing my own architect / contractors"
-    : "Post for bids & proposals from marketplace pros";
+export function proPathLabel(hireModeOrOwnTeam) {
+  const ownTeam = typeof hireModeOrOwnTeam === "boolean"
+    ? hireModeOrOwnTeam
+    : hireModeOrOwnTeam === "own_team";
+  if (ownTeam) return "I'm bringing my own architect / contractors";
+  if (hireModeOrOwnTeam === "gc") return "Post the whole project for contractor bids";
+  if (hireModeOrOwnTeam === "design_first") return "Post a design RFQ first";
+  return "Split the work into trade RFQs";
 }
 
 export function proPathToggleLabel(hasOwnPros) {

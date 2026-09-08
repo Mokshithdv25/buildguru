@@ -4,7 +4,7 @@
  */
 export const PROJECT_HUB_NAV = [
   { icon: LayoutGrid, label: "Overview", path: "/project" },
-  { icon: Inbox, label: "Bids", path: "#", tab: "Bids" },
+  { icon: Inbox, label: "Hire", path: "#", tab: "Bids" },
   { icon: CalendarDays, label: "Timeline", path: "#", tab: "Timeline" },
   { icon: ListChecks, label: "Tasks", path: "#", tab: "Tasks" },
   { icon: WalletCards, label: "Budget", path: "#", tab: "Budget" },

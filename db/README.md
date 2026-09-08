@@ -28,12 +28,16 @@ client-side claim path.
 
 | Database state | Run in this order |
 | --- | --- |
-| Existing BuildGuru production schema | `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
-| Empty Supabase project | `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
-| Older v1/v1.1/v1.2 schema missing current columns or buckets | `buildguru_supabase_align.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
-| Intentionally discard all BuildGuru data | Empty the four app buckets through Storage Admin, delete disposable users through Auth Admin, then `buildguru_production_reset.sql` → `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
+| Existing BuildGuru production schema | `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_work_packages.sql` → `buildguru_hire_workflows.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
+| Empty Supabase project | `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_work_packages.sql` → `buildguru_hire_workflows.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
+| Older v1/v1.1/v1.2 schema missing current columns or buckets | `buildguru_supabase_align.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_work_packages.sql` → `buildguru_hire_workflows.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
+| Intentionally discard all BuildGuru data | Empty the four app buckets through Storage Admin, delete disposable users through Auth Admin, then `buildguru_production_reset.sql` → `buildguru_single_setup.sql` → `buildguru_rls_hardening.sql` → `buildguru_project_workspace.sql` → `buildguru_pro_leads.sql` → `buildguru_project_bids.sql` → `buildguru_work_packages.sql` → `buildguru_hire_workflows.sql` → `buildguru_project_intelligence.sql` → `buildguru_careers.sql` → `buildguru_operational_hardening.sql` |
 
 `buildguru_project_bids.sql` must run after `buildguru_pro_leads.sql` because it alters `project_lead_responses` and replaces `can_respond_to_project` and `pro_lead_opportunities`.
+
+`buildguru_work_packages.sql` must run after `buildguru_project_bids.sql`. It depends on `project_owned_by_user`, `portfolios.craft`, `user_profiles.role`, and the `set_updated_at` trigger helper. It is idempotent and safe to re-run.
+
+`buildguru_hire_workflows.sql` must run after `buildguru_work_packages.sql`. It replaces `can_respond_to_project` and `pro_lead_opportunities` so whole-project leads only appear when the homeowner chose one contractor (`hireMode = gc`) or invited a professional. Trade RFQs (`trades`, `design_first`) stay on `pro_work_package_opportunities`. Own-team projects are not posted to the marketplace (`flow_status` stays `v0_ready`). It also adds `close_expired_work_packages`. Idempotent and safe to re-run.
 
 `buildguru_operational_hardening.sql` runs last. It contains the low-risk function and index hardening verified against production. `buildguru_backend_hardening.sql` is a staged proposal for moving privileged helpers behind a non-exposed schema and converting public API views to `security_invoker`; do not add it to a production rollout until it has passed a staging rehearsal and received an explicit change-window approval.
 
@@ -52,7 +56,8 @@ client-side claim path.
 - A backend-only, atomic UTC-day counter that limits real AI image-pack requests per user.
 - Workspace tables and progress triggers used by the web and native project hub.
 - A professional lead inbox backed by a privacy-safe homeowner-project projection. It omits homeowner IDs, contact details, full location, and raw brief content; each professional can modify only responses tied to their own portfolio.
-- A two-way bidding loop: professionals submit structured bids (amount, timeline, scope note), the project owner reads them through `project_bids_for_owner`, and decisions are recorded through `set_project_bid_decision` so a homeowner can never rewrite a bid amount. Professional contact details stay hidden until the homeowner shortlists or accepts, and homeowner contact details are released only through `pro_awarded_projects` after acceptance. Homeowners may invite specific published professionals to bid via `project_pro_invites`.
+- A two-way bidding loop: professionals submit structured bids (amount, timeline, scope note), the project owner reads them through `project_bids_for_owner`, and decisions are recorded through `set_project_bid_decision` so a homeowner can never rewrite a bid amount. Professional contact details stay hidden until the homeowner shortlists or accepts, and homeowner contact details are released only through `pro_awarded_projects` after acceptance. Homeowners may invite specific published professionals to bid via `project_pro_invites`. Whole-project leads are gated by hiring strategy (`brief_hire_mode`): only `gc` (or an explicit invite) appears in `pro_lead_opportunities`.
+- Trade-scoped work packages (RFQs): a homeowner splits a project into `project_work_packages` (design, structural, construction, interiors, carpentry, electrical, plumbing, painting, materials, other) with an itemised scope, inclusions/exclusions, pricing basis, due date, and bid cap. Eligible professionals see a privacy-safe projection through `pro_work_package_opportunities` (no owner identity, street address, contact details, documents, or raw brief; budget only when the homeowner opts in) and submit line-item bids into `project_work_package_bids`. The `enforce_work_package_bid_rules` trigger enforces the bid cap, due date, and craft eligibility in the database. Homeowners compare bids through `work_package_bids_for_owner` and decide only via `set_work_package_bid_decision`; professional contact unlocks on shortlist/accept and homeowner contact is released only through `pro_awarded_work_packages`. Pro questions stay private until answered, after which they become addenda visible to every eligible bidder (`work_package_questions_for_pros`). `project_work_package_events` is an audience-scoped activity log for both sides. `close_expired_work_packages` moves overdue open packages to `under_review`.
 - An owner-scoped editable material takeoff and an approval log for AI-suggested follow-ups, professional shortlists, document reviews, and material-plan decisions.
 - Public career listings and OAuth-free applications with private work-sample uploads, plus a separate trusted hiring-admin membership. Applicants may explicitly publish the safe portfolio projection; email and phone are never included in that public view.
 
@@ -64,6 +69,8 @@ Run the readiness contract first. It must return `true`:
 select public.launch_schema_ready();
 select public.project_intelligence_ready();
 select public.project_bids_ready();
+select public.work_packages_ready();
+select public.hire_workflows_ready();
 ```
 
 Then inspect RLS directly. Every listed table must report `rls_enabled = true`.
@@ -81,6 +88,8 @@ where n.nspname = 'public'
     'project_team_members', 'project_payments', 'billing_orders',
     'user_entitlements', 'ai_usage_daily', 'project_lead_responses',
     'project_pro_invites', 'project_material_items', 'project_agent_actions',
+    'project_work_packages', 'project_work_package_invites', 'project_work_package_bids',
+    'project_work_package_questions', 'project_work_package_events',
     'career_admins', 'career_jobs', 'career_applications'
   )
 order by c.relname;
@@ -131,7 +140,7 @@ curl -i "$HM_SUPABASE_URL/rest/v1/pro_lead_opportunities?select=*&limit=1" \
   -H "Authorization: Bearer $HM_SUPABASE_ANON_KEY"
 ```
 
-The published view should return `200` and only the safe portfolio projection. The project, billing, and professional-lead requests must return `401` or `403`; any anonymous row is a release blocker. Repeat the private-table probe for `project_briefs`, `project_v0_packs`, `project_stages`, `project_tasks`, `project_messages`, `project_documents`, `project_team_members`, `project_payments`, `project_lead_responses`, and `user_entitlements`.
+The published view should return `200` and only the safe portfolio projection. The project, billing, and professional-lead requests must return `401` or `403`; any anonymous row is a release blocker. Repeat the private-table probe for `project_briefs`, `project_v0_packs`, `project_stages`, `project_tasks`, `project_messages`, `project_documents`, `project_team_members`, `project_payments`, `project_lead_responses`, `project_work_packages`, `project_work_package_bids`, and `user_entitlements`.
 
 With two disposable professional accounts, confirm that each can see open, non-targeted project opportunities but only its own targeted opportunities and response rows. The `pro_lead_opportunities` response must never contain `owner_user_id`, `location`, contact fields, `dream_vision`, `inspirations_json`, or `brief_json`. Confirm that changing a response to another professional's `portfolio_id` fails.
 

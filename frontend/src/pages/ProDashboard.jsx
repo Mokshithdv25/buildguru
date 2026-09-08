@@ -14,6 +14,8 @@ import { findCraft } from "../lib/crafts";
 import { publicProfileUrl } from "../lib/publicWebUrl";
 import { formatInrShort } from "../lib/projectFlowApi";
 import { leadStatusLabel, listProLeads } from "../lib/proLeadsApi";
+import { listWorkPackageEvents, listWorkPackageOpportunities } from "../lib/workPackagesApi";
+import { dueState, workPackageType } from "../lib/workPackageCatalog";
 import "./ProWorkspace.css";
 
 function readPortfolioCache() {
@@ -59,6 +61,26 @@ export default function ProDashboard() {
   const [leadsLoading, setLeadsLoading] = useState(true);
   const [leadError, setLeadError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [workPackages, setWorkPackages] = useState([]);
+  const [workPackageEvents, setWorkPackageEvents] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      listWorkPackageOpportunities(cache?.id).catch(() => ({ packages: [] })),
+      listWorkPackageEvents({ unreadOnly: true, limit: 10 }).catch(() => ({ events: [] })),
+    ]).then(([oppResult, eventResult]) => {
+      if (!active) return;
+      setWorkPackages(oppResult.packages || []);
+      setWorkPackageEvents(eventResult.events || []);
+    });
+    return () => { active = false; };
+  }, [cache?.id]);
+
+  const openPackages = workPackages.filter((p) => p.status === "open" && !(p.myBid && p.myBid.status === "submitted"));
+  const invitedPackages = openPackages.filter((p) => p.invited_to_you);
+  const packageBidsOut = workPackages.filter((p) => p.myBid?.status === "submitted" && p.homeownerDecision === "pending");
+  const packageAwards = workPackages.filter((p) => p.myBid?.status === "submitted" && p.homeownerDecision === "accepted");
 
   useEffect(() => {
     let active = true;
@@ -111,6 +133,9 @@ export default function ProDashboard() {
   };
 
   const priorities = [
+    packageAwards.length ? { icon: ClipboardCheck, title: `${packageAwards.length} work ${packageAwards.length === 1 ? "package" : "packages"} awarded to you`, detail: "The homeowner accepted your bid. Their contact details are unlocked.", path: "/pro/rfqs?view=awarded" } : null,
+    invitedPackages.length ? { icon: Users, title: `${invitedPackages.length} homeowner ${invitedPackages.length === 1 ? "invitation" : "invitations"} to bid`, detail: "A homeowner picked you for a trade-scoped package. Invited bids close fastest.", path: "/pro/rfqs?view=invited" } : null,
+    openPackages.length && !invitedPackages.length ? { icon: PackageSearch, title: `${openPackages.length} open work ${openPackages.length === 1 ? "package" : "packages"} in your trade`, detail: "Scoped RFQs with a fixed checklist to price line by line.", path: "/pro/rfqs" } : null,
     acceptedBids.length ? { icon: ClipboardCheck, title: `${acceptedBids.length} accepted ${acceptedBids.length === 1 ? "bid" : "bids"} ready to start`, detail: "The homeowner picked you. Their contact details are now unlocked.", path: "/pro/leads?status=bid_submitted" } : null,
     newLeads.length ? { icon: Users, title: `Review ${newLeads.length} new homeowner ${newLeads.length === 1 ? "lead" : "leads"}`, detail: "Check scope, budget, location, and fit.", path: "/pro/leads?status=new" } : null,
     followUps.length ? { icon: MessageSquareText, title: `Follow up on ${followUps.length} open ${followUps.length === 1 ? "conversation" : "conversations"}`, detail: "Keep interested and bid-stage projects moving.", path: "/pro/leads?status=interested" } : null,
@@ -186,14 +211,34 @@ export default function ProDashboard() {
         />
 
         <section className="hm-pro-metrics" aria-label="Professional pipeline summary">
+          <Metric icon={PackageSearch} label="Open work packages" value={leadsLoading ? "—" : String(openPackages.length)} detail={invitedPackages.length ? `${invitedPackages.length} invited directly to you` : "Trade-scoped RFQs you can bid on"} />
           <Metric icon={Users} label="New leads" value={leadValue} detail="Homeowner projects waiting for review" />
-          <Metric icon={MessageSquareText} label="Bids out" value={leadsLoading ? "—" : String(openBids.length)} detail="Priced bids awaiting a homeowner decision" />
-          <Metric icon={BriefcaseBusiness} label="Active work" value={leadsLoading ? "—" : String(activeWork.length)} detail="Won projects in your working pipeline" />
+          <Metric icon={MessageSquareText} label="Bids out" value={leadsLoading ? "—" : String(openBids.length + packageBidsOut.length)} detail="Priced bids awaiting a homeowner decision" />
+          <Metric icon={BriefcaseBusiness} label="Active work" value={leadsLoading ? "—" : String(activeWork.length + packageAwards.length)} detail="Won projects and awarded packages" />
           <Metric icon={Sparkles} label="Profile strength" value={`${profileStrength}%`} detail={isPublished ? "Portfolio live for homeowners" : "Portfolio not published yet"} />
         </section>
 
         <div className="hm-pro-dashboard-grid">
           <div className="hm-pro-stack">
+            <section className="hm-pro-card">
+              <div className="hm-pro-card-head"><div><h2>Work packages for your trade</h2><p>Scoped RFQs from homeowners — bid line by line.{workPackageEvents.length ? ` ${workPackageEvents.length} unread update${workPackageEvents.length === 1 ? "" : "s"}.` : ""}</p></div><button type="button" className="hm-pro-button-quiet" onClick={() => navigate("/pro/rfqs")}>Open RFQs <ArrowRight size={14} /></button></div>
+              <div className="hm-pro-card-body">
+                {workPackages.length === 0 ? <p className="hm-pro-note">No trade-scoped work packages are open for your craft yet. Homeowners post them from their project hub; you will be notified when one matches.</p> : (
+                  <div className="hm-pro-mini-list">
+                    {[...invitedPackages, ...openPackages.filter((p) => !p.invited_to_you), ...packageBidsOut].slice(0, 4).map((pkg) => {
+                      const due = dueState(pkg.bids_due_at, pkg.status);
+                      return (
+                        <div className="hm-pro-mini-lead" key={pkg.package_id}>
+                          <div><strong>{pkg.title}</strong><span>{workPackageType(pkg.package_type).label} · {pkg.city}{pkg.budget_hint_inr ? ` · ${formatInrShort(pkg.budget_hint_inr)}` : ""}{due.label ? ` · ${due.label}` : ""}</span></div>
+                          <span className={`hm-pro-badge ${pkg.invited_to_you ? "is-targeted" : pkg.myBid?.status === "submitted" ? "is-positive" : ""}`}>{pkg.myBid?.status === "submitted" ? "Bid sent" : pkg.invited_to_you ? "Invited" : `${pkg.bid_count}/${pkg.max_bids} bids`}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </section>
+
             <section className="hm-pro-card">
               <div className="hm-pro-card-head"><div><h2>Today’s priorities</h2><p>Real actions derived from your pipeline and portfolio.</p></div></div>
               <div className="hm-pro-card-body hm-pro-priority-list">

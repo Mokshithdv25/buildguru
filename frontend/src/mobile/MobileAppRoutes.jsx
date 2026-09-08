@@ -31,6 +31,7 @@ const PortfolioThemeStep = lazy(() => import("../pages/PortfolioThemeStep"));
 const GoLive = lazy(() => import("../pages/GoLive"));
 const ProDashboard = lazy(() => import("../pages/ProDashboard"));
 const ProLeadsPage = lazy(() => import("../pages/ProLeadsPage"));
+const ProWorkPackagesPage = lazy(() => import("../pages/ProWorkPackagesPage"));
 const SubscriptionsPage = lazy(() => import("../pages/SubscriptionsPage"));
 const PricingPage = lazy(() => import("../pages/PricingPage"));
 const AccountPage = lazy(() => import("../pages/AccountPage"));
@@ -125,6 +126,7 @@ export default function MobileAppRoutes() {
       <Route path="/pro" element={<ProDashboardGuard>{withShell(ProDashboard)}</ProDashboardGuard>} />
       <Route path="/pro/dashboard" element={<ProDashboardGuard>{withShell(ProDashboard)}</ProDashboardGuard>} />
       <Route path="/pro/leads" element={<ProDashboardGuard>{withShell(ProLeadsPage)}</ProDashboardGuard>} />
+      <Route path="/pro/rfqs" element={<ProDashboardGuard>{withShell(ProWorkPackagesPage)}</ProDashboardGuard>} />
       <Route path="/terms" element={<MobileShell hideTabs><LegalPage kind="terms" /></MobileShell>} />
       <Route path="/privacy" element={<MobileShell hideTabs><LegalPage kind="privacy" /></MobileShell>} />
       <Route path="/careers" element={<MobileShell hideTabs><CareersPage /></MobileShell>} />

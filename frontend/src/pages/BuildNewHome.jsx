@@ -24,7 +24,8 @@ import {
   sanitizeV0Bundle,
   sanitizePlanBundle,
 } from "../lib/aiApi";
-import { createFlowProjectRecord, loadProjectBoard, persistFlowAfterV0, upsertFlowProject } from "../lib/projectFlowApi";
+import HireStrategyPicker from "../components/HireStrategyPicker";
+import { hireModeFromLegacyFlag, hireModeMeta, isOwnTeamHire, normalizeHireMode } from "../lib/hireMode";
 import { fetchBillingSummary } from "../lib/billingApi";
 import { buildSignInRedirect, isHomeownerSignedIn } from "../lib/requireHomeownerAuth";
 import {
@@ -363,7 +364,7 @@ export default function BuildNewHome() {
   const [revisionPrompt, setRevisionPrompt] = useState("");
   const [revisionTarget, setRevisionTarget] = useState("exterior");
   const [flowProjectId, setFlowProjectId] = useState(null);
-  const [hasArchitect, setHasArchitect] = useState(false);
+  const [hireMode, setHireMode] = useState("trades");
   const [architectHandoffNote, setArchitectHandoffNote] = useState("");
   const [form, setForm] = useState({
     dreamVision:
@@ -443,8 +444,9 @@ export default function BuildNewHome() {
     }
     if (f.projectId) setFlowProjectId(f.projectId);
     const source = (searchParams.get("source") || "").toLowerCase();
-    if (typeof f.hasArchitect === "boolean") setHasArchitect(f.hasArchitect);
-    else if (source === "portfolio") setHasArchitect(true);
+    if (f.hireMode) setHireMode(normalizeHireMode(f.hireMode));
+    else if (typeof f.hasArchitect === "boolean") setHireMode(hireModeFromLegacyFlag(f.hasArchitect));
+    else if (source === "portfolio") setHireMode("own_team");
     if (f.architectComment) setArchitectHandoffNote(String(f.architectComment));
     const savedStep = Number(f.activeStep || f.step);
     if (savedStep >= 1 && savedStep <= 6) {
@@ -715,7 +717,7 @@ export default function BuildNewHome() {
         return;
       }
       setStepBlockError("");
-      setBuildFlow({ formSnapshot: form, v0: true, hasArchitect });
+      setBuildFlow({ formSnapshot: form, v0: true, hasArchitect: isOwnTeamHire(hireMode), hireMode });
       setActiveStep(6);
       setMaxStepReached((m) => Math.max(m, 6));
       return;
@@ -730,7 +732,8 @@ export default function BuildNewHome() {
           resolvedArchStyle: archResolved,
           dreamVision: form.homeVision,
           architectHandoffNote,
-          hasArchitect,
+          hireMode,
+          hasArchitect: isOwnTeamHire(hireMode),
           step: activeStep,
           v0Generated,
         };
@@ -1879,13 +1882,14 @@ export default function BuildNewHome() {
             >
               <div style={{ fontSize: 12, color: "#57534E", lineHeight: 1.45 }}>
                 <strong style={{ color: "#1C1917" }}>How you&apos;ll hire:</strong>{" "}
-                {proPathLabel(hasArchitect)}
+                {proPathLabel(hireMode)}
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  setHasArchitect((v) => !v);
-                  setBuildFlow({ hasArchitect: !hasArchitect });
+                  const next = hireMode === "own_team" ? "trades" : "own_team";
+                  setHireMode(next);
+                  setBuildFlow({ hireMode: next, hasArchitect: next === "own_team" });
                 }}
                 style={{
                   background: "#fff",
@@ -1898,7 +1902,7 @@ export default function BuildNewHome() {
                   color: "#3D3530",
                 }}
               >
-                {proPathToggleLabel(hasArchitect)}
+                {proPathToggleLabel(hireMode === "own_team")}
               </button>
             </div>
             {!v0Generated && !v0Generating && (
@@ -2000,8 +2004,8 @@ export default function BuildNewHome() {
                 <V0EstimateSection planBundle={v0PlanBundle} />
                 <V0MilestonesSection planBundle={v0PlanBundle} />
                 <ProQuotesEngagementCallout
-                  hasOwnPros={hasArchitect}
-                  onBrowseForQuotes={hasArchitect ? undefined : () => navigate(browseQuotesUrl({ projectId: flowProjectId }))}
+                  hasOwnPros={hireMode === "own_team"}
+                  onBrowseForQuotes={hireMode === "own_team" ? undefined : () => navigate(browseQuotesUrl({ projectId: flowProjectId }))}
                 />
               </>
             )}
@@ -2012,73 +2016,16 @@ export default function BuildNewHome() {
               Post your project
             </h1>
             <p style={{ fontSize: 13, color: "#5C5147", marginBottom: 16, lineHeight: 1.55, maxWidth: 640 }}>
-              Publish this brief and v0 pack so architects and contractors can send <strong>proposals and quotes</strong> for
-              the next scope — or skip marketplace posting and invite professionals you already trust.
+              Choose how professionals will quote this home. Split-by-trade RFQs (electrical, plumbing, carpentry, civil) keep every bidder on the same scope — the way construction bid packages work.
             </p>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                marginBottom: 18,
-              }}
-            >
-              <label
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  alignItems: "flex-start",
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: hasArchitect ? "1px solid #E8E6E3" : `2px solid #C85F2B`,
-                  background: hasArchitect ? "#fff" : "#FDF4EF",
-                  cursor: "pointer",
+            <div style={{ marginBottom: 18, maxWidth: 720 }}>
+              <HireStrategyPicker
+                value={hireMode}
+                onChange={(next) => {
+                  setHireMode(next);
+                  setBuildFlow({ hireMode: next, hasArchitect: next === "own_team" });
                 }}
-              >
-                <input
-                  type="radio"
-                  name="proPath"
-                  checked={!hasArchitect}
-                  onChange={() => {
-                    setHasArchitect(false);
-                    setBuildFlow({ hasArchitect: false });
-                  }}
-                  style={{ marginTop: 3, accentColor: "#C85F2B" }}
-                />
-                <span style={{ fontSize: 13, color: "#44403C", lineHeight: 1.5 }}>
-                  <strong style={{ color: "#1C1917" }}>Get bids from marketplace pros</strong>
-                  <br />
-                  Post the project; compare quotes for design, sanction, and build phases.
-                </span>
-              </label>
-              <label
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  alignItems: "flex-start",
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: hasArchitect ? `2px solid #C85F2B` : "1px solid #E8E6E3",
-                  background: hasArchitect ? "#FDF4EF" : "#fff",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="radio"
-                  name="proPath"
-                  checked={hasArchitect}
-                  onChange={() => {
-                    setHasArchitect(true);
-                    setBuildFlow({ hasArchitect: true });
-                  }}
-                  style={{ marginTop: 3, accentColor: "#C85F2B" }}
-                />
-                <span style={{ fontSize: 13, color: "#44403C", lineHeight: 1.5 }}>
-                  <strong style={{ color: "#1C1917" }}>Bring my own team</strong>
-                  <br />
-                  Invite your architect, contractor, or trades into the project hub — no marketplace post required.
-                </span>
-              </label>
+              />
             </div>
             <div style={{ background: "#F7F3EE", border: "1px solid #E6DFD3", borderRadius: 12, padding: 16, marginBottom: 16, maxHeight: 420, overflow: "auto" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#44403C", marginBottom: 10 }}>Shared project specification</div>
@@ -2155,9 +2102,7 @@ export default function BuildNewHome() {
                 {activeStep === 6 &&
                   (projectSaving
                     ? "Saving & posting…"
-                    : hasArchitect
-                      ? "Save & open project hub"
-                      : "Post project & get quotes")}
+                    : hireModeMeta(hireMode).cta)}
                 {![4, 5, 6].includes(activeStep) && "Continue"}
                 <svg className="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </button>

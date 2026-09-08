@@ -1,5 +1,6 @@
 import { getSupabase } from "./supabaseClient";
 import { persistV0ImagesToStorage, refreshV0ImagesFromStorage } from "./supabaseStorage";
+import { isOwnTeamHire, marketplacePostsProject, normalizeHireMode } from "./hireMode";
 
 const supabase = getSupabase();
 
@@ -500,8 +501,12 @@ export async function upsertFlowProject({
     projectId = project.id;
   }
 
+  const hireMode = normalizeHireMode(brief);
+  const posted = flowStep === "handoff" || flowStep === "posted";
   const briefPayload = {
     ...brief,
+    hireMode,
+    hasArchitect: isOwnTeamHire(hireMode),
     budgetBand: budget.budgetBand,
     budgetInr: brief?.budgetInr ?? budget.budget_max ?? budget.budget_min,
     ownerUserId,
@@ -515,7 +520,7 @@ export async function upsertFlowProject({
       dream_vision: brief?.dreamVision || brief?.homeVision || "",
       inspirations_json: brief?.visionInspirationItems || [],
       last_completed_step: Number(brief?.step || brief?.activeStep || 5),
-      flow_status: flowStep === "handoff" || flowStep === "posted" ? "open_for_quotes" : "v0_ready",
+      flow_status: posted && marketplacePostsProject(hireMode) ? "open_for_quotes" : "v0_ready",
       flow_step: flowStep,
     },
     { onConflict: "project_id" }
@@ -572,6 +577,32 @@ export async function createFlowProjectRecord({
     v0Plan: v0Plan || aiPlan,
     flowStep: "posted",
   });
+}
+
+/** Switch hiring strategy on a posted project without re-running the wizard. */
+export async function updateProjectHireMode(projectId, hireMode) {
+  if (!supabase || !projectId) throw new Error("A saved project is required.");
+  const mode = normalizeHireMode(hireMode);
+  const { data: brief, error: readError } = await supabase
+    .from("project_briefs")
+    .select("brief_json")
+    .eq("project_id", projectId)
+    .maybeSingle();
+  if (readError) throw readError;
+  const nextJson = {
+    ...(brief?.brief_json || {}),
+    hireMode: mode,
+    hasArchitect: isOwnTeamHire(mode),
+  };
+  const { error } = await supabase
+    .from("project_briefs")
+    .update({
+      brief_json: nextJson,
+      flow_status: marketplacePostsProject(mode) ? "open_for_quotes" : "v0_ready",
+    })
+    .eq("project_id", projectId);
+  if (error) throw error;
+  return { hireMode: mode, brief: nextJson };
 }
 
 async function loadV0Pack(projectId) {

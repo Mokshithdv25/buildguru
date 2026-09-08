@@ -24,6 +24,7 @@ import {
   setProjectTaskDone,
   updateProjectSchedule,
   updateProjectStageSchedule,
+  updateProjectHireMode,
 } from "../../lib/projectFlowApi";
 import { buildSignInRedirect } from "../../lib/requireHomeownerAuth";
 import { buildHubAssistantContext } from "../../lib/hubAssistantContext";
@@ -32,6 +33,8 @@ import HmCommandCenter from "../../components/HmCommandCenter";
 import HmMorningBriefing from "../../components/HmMorningBriefing";
 import HmProjectIntelligence from "../../components/HmProjectIntelligence";
 import ProjectBidsPanel from "../../components/ProjectBidsPanel";
+import WorkPackagesHub from "../../components/workPackages/WorkPackagesHub";
+import { normalizeHireMode, postsWholeProjectLeads } from "../../lib/hireMode";
 import ProjectMaterialsPanel from "../../components/ProjectMaterialsPanel";
 import ProjectProMatches from "../../components/ProjectProMatches";
 import ProjectTimelineEditor from "../../components/ProjectTimelineEditor";
@@ -361,6 +364,8 @@ export default function MobileProjectPage() {
     ],
   );
 
+  const hireMode = normalizeHireMode(board?.brief || {});
+
   return (
     <>
       <MobileHeader
@@ -376,7 +381,7 @@ export default function MobileProjectPage() {
       {project?.id ? (
         <nav className="hm-m-project-nav" aria-label="Project sections">
           <button type="button" onClick={() => goToSection(overviewRef)}>Overview</button>
-          <button type="button" onClick={() => goToSection(bidsRef)}>Bids{bids.length ? ` (${bids.length})` : ""}</button>
+          <button type="button" onClick={() => goToSection(bidsRef)}>Hire{bids.length ? ` (${bids.length})` : ""}</button>
           <button type="button" onClick={() => goToSection(designsRef)}>Designs</button>
           <button type="button" onClick={() => goToSection(stagesRef)}>Stages</button>
           <button type="button" onClick={() => goToSection(tasksRef)}>Tasks</button>
@@ -494,25 +499,47 @@ export default function MobileProjectPage() {
           </div>
 
           <div ref={bidsRef} className="hm-m-project-section-anchor" style={{ padding: "0 16px", marginTop: 16 }}>
-            <ProjectBidsPanel
-              bids={bids}
-              configured={bidsConfigured}
-              loading={boardLoading}
-              budgetMax={project?.budget_max || board?.brief?.budgetInr}
-              onDecision={decideBid}
-              onNavigatePath={(path) => navigate(path)}
-              onFindPros={() => navigate(`/project/browse${hubQuery}`)}
-              matchesSlot={
-                <div style={{ marginTop: 18 }}>
-                  <ProjectProMatches
-                    projectId={project?.id}
-                    brief={board?.brief || {}}
-                    onNavigatePath={(path) => navigate(path)}
-                    compact
-                  />
-                </div>
-              }
-            />
+            {project?.id ? (
+              <WorkPackagesHub
+                projectId={project.id}
+                project={project}
+                brief={board?.brief || {}}
+                estimate={board?.v0Pack?.estimate || null}
+                documents={documents}
+                onNavigatePath={(path) => navigate(path)}
+                hireMode={hireMode}
+                onHireModeChange={async (next) => {
+                  if (!project?.id) return;
+                  const result = await updateProjectHireMode(project.id, next);
+                  setBoard((current) => ({ ...current, brief: { ...(current?.brief || {}), ...(result.brief || {}) } }));
+                }}
+                footerSlot={
+                  postsWholeProjectLeads(hireMode) || bids.length ? (
+                  <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid #E6E1DA" }}>
+                    <ProjectBidsPanel
+                      bids={bids}
+                      configured={bidsConfigured}
+                      loading={boardLoading}
+                      budgetMax={project?.budget_max || board?.brief?.budgetInr}
+                      onDecision={decideBid}
+                      onNavigatePath={(path) => navigate(path)}
+                      onFindPros={() => navigate(`/project/browse${hubQuery}`)}
+                      matchesSlot={
+                        <div style={{ marginTop: 18 }}>
+                          <ProjectProMatches
+                            projectId={project?.id}
+                            brief={board?.brief || {}}
+                            onNavigatePath={(path) => navigate(path)}
+                            compact
+                          />
+                        </div>
+                      }
+                    />
+                  </div>
+                  ) : null
+                }
+              />
+            ) : null}
           </div>
 
           {v0Media.length > 0 || board?.v0Pack?.estimate ? (

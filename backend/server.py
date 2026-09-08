@@ -1389,6 +1389,46 @@ class AIEstimatePlanResponse(BaseModel):
     provider_note: Optional[str] = None
 
 
+WorkPackageType = Literal[
+    "design", "structural", "construction", "interiors", "carpentry",
+    "electrical", "plumbing", "painting", "materials", "other",
+]
+
+
+class AIWorkPackageScopeRequest(BaseModel):
+    """Homeowner asks for a trade-scoped RFQ draft from their saved brief."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    package_type: WorkPackageType
+    flow: FlowKind
+    brief: dict
+    title: Optional[str] = Field(default=None, max_length=140)
+
+    @field_validator("brief")
+    @classmethod
+    def validate_brief_size(cls, value: dict) -> dict:
+        return _bounded_json_object(value, AI_BRIEF_MAX_BYTES, "brief")
+
+
+class AIWorkPackageScopeItem(BaseModel):
+    label: str = Field(min_length=1, max_length=240)
+    quantity: Optional[str] = Field(default=None, max_length=30)
+    unit: Optional[str] = Field(default=None, max_length=30)
+    notes: Optional[str] = Field(default=None, max_length=400)
+
+
+class AIWorkPackageScopeResponse(BaseModel):
+    title: str
+    summary: str
+    scope_items: List[AIWorkPackageScopeItem]
+    inclusions: str = ""
+    exclusions: str = ""
+    site_visit_required: bool = True
+    mock: bool = False
+    provider_note: Optional[str] = None
+
+
 def _allow_ai_mocks() -> bool:
     """Mocks are opt-in so production provider outages surface as real failures."""
     return _env_flag("ALLOW_AI_MOCKS", False)
@@ -3030,6 +3070,346 @@ def ai_estimate_plan(payload: AIEstimatePlanRequest, _user: dict = Depends(_ai_r
         status_code=502,
         detail="AI estimate generation is temporarily unavailable. Please try again.",
     )
+
+
+# ---------------------------------------------------------------------------
+# Work-package (trade RFQ) scope drafting
+# ---------------------------------------------------------------------------
+
+_WORK_PACKAGE_LABELS: dict[str, str] = {
+    "design": "Architecture & interior design",
+    "structural": "Structural engineering",
+    "construction": "Civil construction (shell & core)",
+    "interiors": "Interior fit-out",
+    "carpentry": "Carpentry & modular",
+    "electrical": "Electrical",
+    "plumbing": "Plumbing & sanitary",
+    "painting": "Painting & finishes",
+    "materials": "Materials supply",
+    "other": "Specialist work",
+}
+
+# Curated, trade-specific checklists. Used verbatim when no LLM provider is
+# configured, and as a floor for the LLM output (the model must cover at least
+# the essentials a bidding pro needs to price the work).
+_WORK_PACKAGE_CHECKLISTS: dict[str, dict] = {
+    "design": {
+        "scope": [
+            ("Site measurement and as-built drawings", "1", "set", "Verify plot / room dimensions on site"),
+            ("Concept options with 3D views", "2", "options", "Exterior + key interior views"),
+            ("Detailed floor plans and elevations", "1", "set", "Furniture layout, openings, levels"),
+            ("Working drawings (GFC) for civil, electrical, plumbing", "1", "set", "Sufficient for contractor pricing"),
+            ("Material and finish schedule", "1", "set", "Brand / grade / rate band per item"),
+            ("Site visits during execution", "6", "visits", "Design supervision at key stages"),
+        ],
+        "inclusions": "Revisions: up to 2 rounds per stage. Soft copies of all drawings in PDF and CAD. Coordination with structural consultant.",
+        "exclusions": "Statutory approvals and liaison fees. Structural design (separate package). 3D walkthrough beyond the agreed views.",
+    },
+    "structural": {
+        "scope": [
+            ("Soil report review and foundation recommendation", "1", "report", "Coordinate with geotech"),
+            ("Structural design with column, beam and slab layout", "1", "set", "Per architectural GFC"),
+            ("Reinforcement detailing and bar bending schedule", "1", "set", "All RCC members"),
+            ("Structural stability certificate", "1", "certificate", "Signed by licensed engineer"),
+            ("Site inspections at critical pours", "4", "visits", "Footing, plinth, slab checks"),
+        ],
+        "inclusions": "Design as per IS 456 / IS 1893 with seismic zone applicable to the site. Two revision rounds.",
+        "exclusions": "Soil testing charges. Architectural drawings. Third-party proof checking fees.",
+    },
+    "construction": {
+        "scope": [
+            ("Excavation, PCC and foundation", "1", "lot", "Per structural drawings"),
+            ("RCC frame: columns, beams, slabs", "1", "lot", "M25 grade unless specified"),
+            ("Brickwork / block masonry", "1", "lot", "External 200 mm, internal 100 mm"),
+            ("Internal and external plastering", "1", "lot", "Including grooves and bands"),
+            ("Waterproofing: terrace, bathrooms, sunken areas", "1", "lot", "Brand and warranty to be quoted"),
+            ("Flooring base preparation and levelling", "1", "lot", "Ready for finish flooring"),
+            ("Doors and windows frames fixing", "1", "lot", "Frames supplied under carpentry package"),
+            ("Site cleaning and debris removal", "1", "lot", "Weekly and at handover"),
+        ],
+        "inclusions": "All labour, scaffolding, shuttering and consumables. Curing and quality tests (cube tests every pour). Site safety measures.",
+        "exclusions": "Electrical and plumbing (separate packages). Finish flooring, painting and carpentry. Government approvals and electricity/water connection deposits.",
+    },
+    "interiors": {
+        "scope": [
+            ("False ceiling with cove and light cutouts", "1", "lot", "Gypsum on GI frame, per drawing"),
+            ("Wall panelling and feature walls", "1", "lot", "Per finish schedule"),
+            ("Floor finish laying: tile / wood / stone", "1", "lot", "Material supplied by owner or vendor as specified"),
+            ("Loose furniture procurement and placement", "1", "lot", "Per approved mood board"),
+            ("Soft furnishings: curtains, blinds, rugs", "1", "lot", "Fabric selections from approved range"),
+            ("Decorative lighting supply and fixing", "1", "lot", "Fixtures per lighting plan"),
+        ],
+        "inclusions": "Deep cleaning at handover. Coordination with electrical and carpentry teams.",
+        "exclusions": "Civil alterations. Modular kitchen and wardrobes (carpentry package). Appliances.",
+    },
+    "carpentry": {
+        "scope": [
+            ("Modular kitchen: base and wall units", "1", "set", "Per kitchen layout; specify ply grade + laminate"),
+            ("Wardrobes with internal fittings", "1", "lot", "Count per bedroom; sliding or hinged"),
+            ("TV unit and living storage", "1", "lot", "Per drawings"),
+            ("Main door and internal doors with hardware", "1", "lot", "Flush / panel per schedule"),
+            ("Vanity units for bathrooms", "1", "lot", "Moisture-resistant board"),
+            ("Study / crockery / shoe units", "1", "lot", "As per layout"),
+        ],
+        "inclusions": "Hardware brand (hinges, channels, handles) to be quoted. Edge banding, installation and site polishing. 1-year workmanship warranty minimum.",
+        "exclusions": "Countertops and sink (materials package). Appliances. Civil pockets for sliding doors.",
+    },
+    "electrical": {
+        "scope": [
+            ("Concealed conduiting and wiring", "1", "lot", "FRLS copper wire, brand to be quoted"),
+            ("Distribution board with MCB / RCCB", "1", "set", "Per load calculation"),
+            ("Light, fan and 5A / 15A points", "1", "lot", "Count per electrical layout"),
+            ("AC points with dedicated MCB", "1", "lot", "Count per room"),
+            ("Data, TV and intercom points", "1", "lot", "CAT6 / coaxial"),
+            ("Earthing and lightning protection", "1", "set", "Per IS 3043"),
+            ("Modular switches and plates", "1", "lot", "Brand and series to be quoted"),
+        ],
+        "inclusions": "Testing, insulation resistance report and single-line diagram at handover. Chasing and making good.",
+        "exclusions": "Light fixtures and fans (interiors package). Meter, connection and utility deposits. Inverter / solar.",
+    },
+    "plumbing": {
+        "scope": [
+            ("Concealed water supply lines (hot and cold)", "1", "lot", "CPVC / PPR, brand to be quoted"),
+            ("Soil, waste and vent piping", "1", "lot", "uPVC SWR per layout"),
+            ("Bathroom fixture installation", "1", "lot", "WC, basin, shower, faucets — count per bathroom"),
+            ("Kitchen and utility plumbing points", "1", "lot", "Sink, dishwasher, washing machine, RO"),
+            ("Overhead and underground tank connections", "1", "set", "With float valves and pump wiring coordination"),
+            ("Rainwater and terrace drainage", "1", "lot", "Per site drawing"),
+            ("Pressure testing and leak checks", "1", "lot", "Report at handover"),
+        ],
+        "inclusions": "All fittings, clamps and consumables. Chasing and making good. Coordination with civil for sunken slabs.",
+        "exclusions": "Sanitaryware and CP fittings supply unless specified. Water heater and pump supply. Municipal connection charges.",
+    },
+    "painting": {
+        "scope": [
+            ("Internal walls: putty, primer and 2 coats emulsion", "1", "sq ft", "Enter measured area; brand and grade to be quoted"),
+            ("Ceiling painting", "1", "sq ft", "Matching or white emulsion"),
+            ("External walls: weatherproof paint", "1", "sq ft", "Include texture if specified"),
+            ("Wood and metal polish / enamel", "1", "lot", "Doors, grills, railings"),
+            ("Protection, masking and cleanup", "1", "lot", "Floors, fixtures, furniture"),
+        ],
+        "inclusions": "Scaffolding for external work. Minor crack filling. Touch-up after other trades finish.",
+        "exclusions": "Structural crack repair. Waterproofing of terrace or walls. Wallpaper.",
+    },
+    "materials": {
+        "scope": [
+            ("Vitrified / ceramic tiles", "1", "sq ft", "Size, brand and grade per finish schedule"),
+            ("Kitchen and vanity countertops", "1", "sq ft", "Granite / quartz; edge profile"),
+            ("Sanitaryware and CP fittings", "1", "lot", "Brand and series per bathroom"),
+            ("Electrical fixtures and fans", "1", "lot", "Count per lighting plan"),
+            ("Paint and putty", "1", "lot", "Brand and grade"),
+            ("Hardware and fittings", "1", "lot", "Per carpentry spec"),
+        ],
+        "inclusions": "Delivery to site, unloading and stacking. Breakage replacement up to 3%. GST-inclusive rates.",
+        "exclusions": "Installation labour. Storage beyond agreed delivery window.",
+    },
+    "other": {
+        "scope": [
+            ("Describe the work item and expected outcome", "1", "lot", "Be specific about location and finish"),
+            ("Materials to be supplied by the contractor", "1", "lot", "Brand / grade"),
+            ("Testing, certification or handover documents", "1", "lot", "If applicable"),
+        ],
+        "inclusions": "Labour, tools and consumables. Site cleanup.",
+        "exclusions": "Work outside the described area. Statutory approvals.",
+    },
+}
+
+
+def _work_package_system_prompt(package_type: str, flow: FlowKind) -> str:
+    label = _WORK_PACKAGE_LABELS.get(package_type, "Specialist work")
+    flow_label = "room remodel" if flow == "remodel" else "new home build"
+    return (
+        "You are a senior quantity surveyor in India writing a Request for Quotation (RFQ) for a homeowner. "
+        f"The trade package is: {label}. The overall project is a {flow_label}. "
+        "Write scope lines that a contractor can price line by line without a phone call: each line names the "
+        "work item, a quantity with unit where measurable (sq ft, running ft, nos, points, sets, lot), and a short "
+        "note on the expected material grade or method. Do not include items that belong to another trade. "
+        "Do not include prices. Use plain Indian construction terminology (RCC, putty, CPVC, MCB, etc.). "
+        "Respond ONLY with a JSON object of the form: "
+        '{"title": string (<=100 chars), "summary": string (2-3 sentences describing the package to a bidder), '
+        '"scope_items": [{"label": string, "quantity": string|null, "unit": string|null, "notes": string|null}] '
+        '(8-16 items), "inclusions": string (what the contractor must cover), '
+        '"exclusions": string (what is out of this package), "site_visit_required": boolean}'
+    )
+
+
+def _work_package_user_prompt(payload: AIWorkPackageScopeRequest) -> str:
+    constraints = _brief_constraints_summary(payload.flow, payload.brief)
+    brief_json = json.dumps(payload.brief or {}, ensure_ascii=False)
+    title_line = f"Homeowner's working title: {payload.title}\n" if payload.title else ""
+    return (
+        f"Package type: {payload.package_type}\n"
+        f"{title_line}"
+        f"Structured constraints:\n{constraints}\n\n"
+        f"Full brief JSON: {brief_json}\n"
+        "Tailor quantities and notes to the rooms, area, floors, style and budget band in the brief."
+    )
+
+
+def _parse_work_package_scope_json(parsed: dict, package_type: str) -> Optional[AIWorkPackageScopeResponse]:
+    if not isinstance(parsed, dict):
+        return None
+    raw_items = parsed.get("scope_items") or []
+    items: List[AIWorkPackageScopeItem] = []
+    for row in raw_items:
+        if not isinstance(row, dict):
+            continue
+        label = str(row.get("label") or "").strip()
+        if not label:
+            continue
+        quantity = row.get("quantity")
+        unit = row.get("unit")
+        notes = row.get("notes")
+        items.append(
+            AIWorkPackageScopeItem(
+                label=label[:240],
+                quantity=None if quantity in (None, "") else str(quantity)[:30],
+                unit=None if unit in (None, "") else str(unit)[:30],
+                notes=None if notes in (None, "") else str(notes)[:400],
+            )
+        )
+        if len(items) >= 30:
+            break
+    if len(items) < 3:
+        return None
+    title = str(parsed.get("title") or "").strip()[:140] or _WORK_PACKAGE_LABELS.get(package_type, "Work package")
+    summary = str(parsed.get("summary") or "").strip()[:4000]
+    if not summary:
+        return None
+    site_visit = parsed.get("site_visit_required")
+    return AIWorkPackageScopeResponse(
+        title=title,
+        summary=summary,
+        scope_items=items,
+        inclusions=str(parsed.get("inclusions") or "").strip()[:3000],
+        exclusions=str(parsed.get("exclusions") or "").strip()[:3000],
+        site_visit_required=bool(site_visit) if isinstance(site_visit, bool) else True,
+        mock=False,
+    )
+
+
+def _extract_json_object(content: str) -> Optional[dict]:
+    text = (content or "").strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+    try:
+        parsed = json.loads(text)
+    except Exception:
+        start, end = text.find("{"), text.rfind("}")
+        if start < 0 or end <= start:
+            return None
+        try:
+            parsed = json.loads(text[start : end + 1])
+        except Exception:
+            return None
+    return parsed if isinstance(parsed, dict) else None
+
+
+def _grok_work_package_scope(payload: AIWorkPackageScopeRequest) -> Optional[AIWorkPackageScopeResponse]:
+    key = _xai_api_key("plan")
+    if not key:
+        return None
+    model = os.getenv("GROK_CHAT_MODEL", "grok-3-mini").strip() or "grok-3-mini"
+    try:
+        resp = requests.post(
+            "https://api.x.ai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={
+                "model": model,
+                "temperature": 0.2,
+                "messages": [
+                    {"role": "system", "content": _work_package_system_prompt(payload.package_type, payload.flow)},
+                    {"role": "user", "content": _work_package_user_prompt(payload)},
+                ],
+            },
+            timeout=45,
+        )
+        resp.raise_for_status()
+        content = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "{}")
+        parsed = _extract_json_object(content)
+        result = _parse_work_package_scope_json(parsed, payload.package_type) if parsed else None
+        if result is None:
+            return None
+        result.provider_note = f"Drafted by xAI {model} (Grok)."
+        return result
+    except Exception as exc:
+        logger.exception("Grok work-package scope drafting failed: %s", exc)
+        return None
+
+
+def _openai_work_package_scope(payload: AIWorkPackageScopeRequest) -> Optional[AIWorkPackageScopeResponse]:
+    key = os.getenv("HM_AI_PLAN_API_KEY", "").strip() or os.getenv("OPENAI_API_KEY", "").strip()
+    if not key:
+        return None
+    try:
+        resp = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={
+                "model": "gpt-4o-mini",
+                "temperature": 0.2,
+                "response_format": {"type": "json_object"},
+                "messages": [
+                    {"role": "system", "content": _work_package_system_prompt(payload.package_type, payload.flow)},
+                    {"role": "user", "content": _work_package_user_prompt(payload)},
+                ],
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        content = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "{}")
+        parsed = _extract_json_object(content)
+        result = _parse_work_package_scope_json(parsed, payload.package_type) if parsed else None
+        if result is None:
+            return None
+        result.provider_note = "Drafted by OpenAI gpt-4o-mini."
+        return result
+    except Exception as exc:
+        logger.exception("OpenAI work-package scope drafting failed: %s", exc)
+        return None
+
+
+def _checklist_work_package_scope(payload: AIWorkPackageScopeRequest) -> AIWorkPackageScopeResponse:
+    """Deterministic, trade-curated draft used when no LLM provider answers."""
+    spec = _WORK_PACKAGE_CHECKLISTS.get(payload.package_type) or _WORK_PACKAGE_CHECKLISTS["other"]
+    brief = payload.brief or {}
+    loc = str(brief.get("location") or "").split(",")[0].strip()
+    room = str(brief.get("room") or "").strip()
+    label = _WORK_PACKAGE_LABELS.get(payload.package_type, "Work package")
+    where = f" for the {room} remodel" if payload.flow == "remodel" and room else (" for the new home" if payload.flow != "remodel" else "")
+    place = f" in {loc}" if loc else ""
+    title = (payload.title or "").strip() or f"{label}{where}"
+    summary = (
+        f"{label}{where}{place}. Price each scope line separately so the homeowner can compare bids line by line. "
+        "Quantities are indicative from the homeowner's brief; confirm on a site visit before final pricing."
+    )
+    return AIWorkPackageScopeResponse(
+        title=title[:140],
+        summary=summary,
+        scope_items=[
+            AIWorkPackageScopeItem(label=lbl, quantity=qty, unit=unit, notes=note)
+            for lbl, qty, unit, note in spec["scope"]
+        ],
+        inclusions=spec["inclusions"],
+        exclusions=spec["exclusions"],
+        site_visit_required=payload.package_type not in ("materials", "design"),
+        mock=True,
+        provider_note="AI drafting was unavailable — this is the curated trade checklist. Edit quantities to match your home.",
+    )
+
+
+@api_router.post("/ai/work-package-scope", response_model=AIWorkPackageScopeResponse)
+def ai_work_package_scope(payload: AIWorkPackageScopeRequest, _user: dict = Depends(_ai_request_slot)):
+    result = _grok_work_package_scope(payload) or _openai_work_package_scope(payload)
+    if result is not None:
+        return result
+    logger.warning(
+        "ai/work-package-scope falling back to curated checklist; package_type=%s flow=%s",
+        payload.package_type,
+        payload.flow,
+    )
+    return _checklist_work_package_scope(payload)
 
 
 app.include_router(api_router)

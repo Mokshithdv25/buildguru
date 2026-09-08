@@ -366,6 +366,45 @@ export async function requestEstimatePlan(flow, brief, imageBundle = null) {
   return sanitizePlanBundle(data);
 }
 
+/**
+ * Draft a trade-scoped work package (scope lines, inclusions, exclusions) from
+ * the project brief. Falls back to a clear error so the composer can offer the
+ * curated checklist instead.
+ */
+export async function draftWorkPackageScope({ packageType, flow, brief, title = "" }) {
+  if (!aiClient) {
+    throw new Error("AI drafting is not configured on this workspace. Use the trade checklist instead.");
+  }
+  try {
+    const { data } = await aiClient.post(
+      "/ai/work-package-scope",
+      { package_type: packageType, flow, brief: brief || {}, title: title || null },
+      await withBackendAuth({ timeout: 60000 }),
+    );
+    return {
+      title: typeof data?.title === "string" ? data.title.slice(0, 140) : "",
+      summary: typeof data?.summary === "string" ? data.summary.slice(0, 4000) : "",
+      scope_items: Array.isArray(data?.scope_items)
+        ? data.scope_items
+            .filter((row) => row && typeof row.label === "string" && row.label.trim())
+            .slice(0, 30)
+            .map((row) => ({
+              label: row.label.trim().slice(0, 240),
+              quantity: row.quantity == null ? "" : String(row.quantity).slice(0, 30),
+              unit: typeof row.unit === "string" ? row.unit.slice(0, 30) : "",
+              notes: typeof row.notes === "string" ? row.notes.slice(0, 400) : "",
+            }))
+        : [],
+      inclusions: typeof data?.inclusions === "string" ? data.inclusions.slice(0, 3000) : "",
+      exclusions: typeof data?.exclusions === "string" ? data.exclusions.slice(0, 3000) : "",
+      site_visit_required: typeof data?.site_visit_required === "boolean" ? data.site_visit_required : undefined,
+      provider_note: typeof data?.provider_note === "string" ? data.provider_note : "",
+    };
+  } catch (err) {
+    throw new Error(formatAiApiError(err));
+  }
+}
+
 export function formatAiApiError(err) {
   if (err?.code === "ECONNABORTED") {
     return "This is taking longer than usual — the AI server may be waking up. Wait a moment and tap Regenerate.";

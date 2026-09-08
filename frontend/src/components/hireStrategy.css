@@ -1,0 +1,93 @@
+.hm-hire {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.hm-hire.is-stack { grid-template-columns: 1fr; }
+.hm-hire__card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  border: 1.5px solid #e8e0d8;
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px 14px 14px 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.hm-hire__card:hover { border-color: #d3b49a; }
+.hm-hire__card.is-selected {
+  border-color: #c85f2b;
+  background: #fdf6f0;
+  box-shadow: 0 10px 28px -18px rgba(200, 95, 43, 0.55);
+}
+.hm-hire__card.is-recommended.is-selected { background: #fff7f0; }
+.hm-hire__card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.hm-hire__icon {
+  display: flex;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #f4eee8;
+  color: #c85f2b;
+}
+.hm-hire__card.is-selected .hm-hire__icon { background: #c85f2b; color: #fff; }
+.hm-hire__body { min-width: 0; flex: 1; }
+.hm-hire__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: #1c1917;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.hm-hire__title em {
+  border-radius: 999px;
+  background: #fff0df;
+  color: #a54818;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.hm-hire__summary {
+  display: block;
+  margin-top: 4px;
+  color: #71675f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.hm-hire__check {
+  display: flex;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1.5px solid #e2d8cf;
+  color: transparent;
+}
+.hm-hire__check.is-on {
+  border-color: #c85f2b;
+  background: #c85f2b;
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .hm-hire { grid-template-columns: 1fr; }
+}

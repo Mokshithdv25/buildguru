@@ -35,7 +35,8 @@ import {
 import LandingNavbar from "../components/landing/LandingNavbar";
 import { HM_FIXED_NAV_OFFSET_TAGLINE_CLASS, HM_TAGLINE_REMODEL } from "../lib/hmBrand";
 import { canVisitWizardStep, nextMaxStepReached, wizardExitPath } from "../lib/wizardSteps";
-import VisionCaptureStep from "../components/VisionCaptureStep";
+import HireStrategyPicker from "../components/HireStrategyPicker";
+import { hireModeFromLegacyFlag, hireModeMeta, isOwnTeamHire, normalizeHireMode } from "../lib/hireMode";
 import HmMediaDropzone from "../components/HmMediaDropzone";
 import WizardMobileStepBar from "../components/WizardMobileStepBar";
 import { optimizeImageFileToDataUrl } from "../lib/imageDataUrl";
@@ -302,7 +303,7 @@ export default function RemodelHome() {
   const [v0PlanBundle, setV0PlanBundle] = useState(null);
   const [flowProjectId, setFlowProjectId] = useState(null);
   const [architectHandoffNote, setArchitectHandoffNote] = useState("");
-  const [hasOwnPros, setHasOwnPros] = useState(false);
+  const [hireMode, setHireMode] = useState("trades");
   const [stepBlockError, setStepBlockError] = useState("");
   const [inspirationImgs, setInspirationImgs] = useState([]);
   const toggleStyle = (s) => setStyles(prev => prev.includes(s) ? prev.filter(x=>x!==s) : prev.length < 2 ? [...prev, s] : prev);
@@ -357,7 +358,8 @@ export default function RemodelHome() {
     }
     if (f.projectId) setFlowProjectId(f.projectId);
     if (f.architectComment) setArchitectHandoffNote(String(f.architectComment));
-    if (typeof f.hasArchitect === "boolean") setHasOwnPros(f.hasArchitect);
+    if (f.hireMode) setHireMode(normalizeHireMode(f.hireMode));
+    else if (typeof f.hasArchitect === "boolean") setHireMode(hireModeFromLegacyFlag(f.hasArchitect));
   }, []);
 
   useEffect(() => {
@@ -1164,13 +1166,14 @@ export default function RemodelHome() {
               }}
             >
               <div style={{ fontSize: 12, color: "#57534E", lineHeight: 1.45 }}>
-                <strong style={{ color: "#1C1917" }}>How you&apos;ll hire:</strong> {proPathLabel(hasOwnPros)}
+                <strong style={{ color: "#1C1917" }}>How you&apos;ll hire:</strong> {proPathLabel(hireMode)}
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  setHasOwnPros((v) => !v);
-                  setRemodelFlow({ hasArchitect: !hasOwnPros });
+                  const next = hireMode === "own_team" ? "trades" : "own_team";
+                  setHireMode(next);
+                  setRemodelFlow({ hireMode: next, hasArchitect: next === "own_team" });
                 }}
                 style={{
                   background: "#fff",
@@ -1183,12 +1186,12 @@ export default function RemodelHome() {
                   color: "#3D3530",
                 }}
               >
-                {proPathToggleLabel(hasOwnPros)}
+                {proPathToggleLabel(hireMode === "own_team")}
               </button>
             </div>
             <ProQuotesEngagementCallout
-              hasOwnPros={hasOwnPros}
-              onBrowseForQuotes={hasOwnPros ? undefined : () => navigate(browseQuotesUrl({ projectId: flowProjectId }))}
+              hasOwnPros={hireMode === "own_team"}
+              onBrowseForQuotes={hireMode === "own_team" ? undefined : () => navigate(browseQuotesUrl({ projectId: flowProjectId }))}
             />
 
             {/* BEFORE / AFTER */}
@@ -1275,66 +1278,16 @@ export default function RemodelHome() {
               Post your project
             </h1>
             <p style={{ fontSize: 13, color: "#57534E", margin: "0 0 16px", lineHeight: 1.55, maxWidth: 640 }}>
-              Publish this remodel brief so professionals can send <strong>quotes and proposals</strong> for design, execution, or
-              both — or invite people you already work with.
+              Choose how professionals will quote this remodel. Trade RFQs let electricians, plumbers and carpenters price the same checklist — the pattern Houzz and construction bid packages use so bids are comparable.
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
-              <label
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  alignItems: "flex-start",
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: hasOwnPros ? "1px solid #E8E6E3" : `2px solid ${OR}`,
-                  background: hasOwnPros ? "#fff" : "#FDF4EF",
-                  cursor: "pointer",
+            <div style={{ marginBottom: 18, maxWidth: 720 }}>
+              <HireStrategyPicker
+                value={hireMode}
+                onChange={(next) => {
+                  setHireMode(next);
+                  setRemodelFlow({ hireMode: next, hasArchitect: next === "own_team" });
                 }}
-              >
-                <input
-                  type="radio"
-                  name="remodelProPath"
-                  checked={!hasOwnPros}
-                  onChange={() => {
-                    setHasOwnPros(false);
-                    setRemodelFlow({ hasArchitect: false });
-                  }}
-                  style={{ marginTop: 3, accentColor: OR }}
-                />
-                <span style={{ fontSize: 13, color: "#44403C", lineHeight: 1.5 }}>
-                  <strong style={{ color: "#1C1917" }}>Get bids from marketplace pros</strong>
-                  <br />
-                  Architects, remodel specialists, and trades can quote the next scope.
-                </span>
-              </label>
-              <label
-                style={{
-                  display: "flex",
-                  gap: 10,
-                  alignItems: "flex-start",
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: hasOwnPros ? `2px solid ${OR}` : "1px solid #E8E6E3",
-                  background: hasOwnPros ? "#FDF4EF" : "#fff",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="radio"
-                  name="remodelProPath"
-                  checked={hasOwnPros}
-                  onChange={() => {
-                    setHasOwnPros(true);
-                    setRemodelFlow({ hasArchitect: true });
-                  }}
-                  style={{ marginTop: 3, accentColor: OR }}
-                />
-                <span style={{ fontSize: 13, color: "#44403C", lineHeight: 1.5 }}>
-                  <strong style={{ color: "#1C1917" }}>Bring my own team</strong>
-                  <br />
-                  Skip marketplace posting and onboard your pros in the hub.
-                </span>
-              </label>
+              />
             </div>
             <div style={{ background: "#F7F3EE", border: "1px solid #E6DFD3", borderRadius: 12, padding: 16, marginBottom: 16, maxHeight: 420, overflow: "auto" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#44403C", marginBottom: 10 }}>Shared remodel specification</div>
@@ -1466,7 +1419,8 @@ export default function RemodelHome() {
                     }
                     setRemodelFlow({
                       v0: true,
-                      hasArchitect: hasOwnPros,
+                      hasArchitect: isOwnTeamHire(hireMode),
+                      hireMode,
                     });
                     setStep(6);
                     setMaxStepReached((m) => Math.max(m, 6));
@@ -1479,7 +1433,8 @@ export default function RemodelHome() {
                         ...remodelBriefPayload(),
                         referredProSlug,
                         architectHandoffNote,
-                        hasArchitect: hasOwnPros,
+                        hireMode,
+                        hasArchitect: isOwnTeamHire(hireMode),
                         postAiNotes,
                         step,
                         v0Generated,
@@ -1531,9 +1486,7 @@ export default function RemodelHome() {
                 {step === 6 &&
                   (projectSaving
                     ? "Saving & posting…"
-                    : hasOwnPros
-                      ? "Save & open project hub"
-                      : "Post project & get quotes")}
+                    : hireModeMeta(hireMode).cta)}
                 {step < 4 && "Continue"}
                 <svg className="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M5 12h14M12 5l7 7-7 7" />
