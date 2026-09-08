@@ -63,7 +63,9 @@
     "@capacitor/haptics": "^7.0.1",
     "@capacitor/keyboard": "^7.0.1",
     "@capacitor/splash-screen": "^7.0.1",
-    "@capacitor/status-bar": "^7.0.1"
+    "@capacitor/status-bar": "^7.0.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.10.38"
   },
   "scripts": {
     "start": "craco start",
