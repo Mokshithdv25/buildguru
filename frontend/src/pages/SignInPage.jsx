@@ -91,7 +91,7 @@ function AuthBrandPanel({ role, mode }) {
   const panel = BRAND_PANELS[role] || BRAND_PANELS.default;
   const image = mode === "signup" ? `${PUBLIC_URL}/auth-signup.jpg` : panel.image;
   return (
-    <aside className="relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-end" aria-hidden="true">
+    <aside className="relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-center" aria-hidden="true">
       <AnimatePresence mode="wait" initial={false}>
         <motion.img
           key={image}
