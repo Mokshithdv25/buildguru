@@ -157,6 +157,26 @@ export async function removeProjectDocument(projectId, document) {
   if (error) throw error;
 }
 
+export async function updateProjectDocumentCategory(projectId, documentId, category) {
+  requireProject(projectId);
+  const value = String(category || "other").trim().slice(0, 60) || "other";
+  if (PROJECT_STORAGE_ENABLED) {
+    try {
+      return await storageRequest(`/documents/${encodeURIComponent(documentId)}?projectId=${encodeURIComponent(projectId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ kind: value }),
+        headers: { "Content-Type": "application/json" },
+      });
+    } finally { notifyStorageChanged(); }
+  }
+  await requireUser();
+  const { data, error } = await supabase.from("project_documents").update({ kind: value }).eq("project_id", projectId).eq("id", documentId).select("*").maybeSingle();
+  if (error) throw error;
+  if (!data?.id) throw new Error("The document category could not be updated.");
+  const { data: signed } = data.storage_path ? await supabase.storage.from(DOCUMENT_BUCKET).createSignedUrl(data.storage_path, 3600) : { data: null };
+  return { ...data, signed_url: signed?.signedUrl || data.file_url || null };
+}
+
 export async function listProjectPayments(projectId) {
   requireProject(projectId);
   await requireUser();

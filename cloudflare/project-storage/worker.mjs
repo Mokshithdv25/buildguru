@@ -119,6 +119,15 @@ async function route(request,env) {
     }
     return json({deleted:true});
   }
+  if(url.pathname.startsWith('/documents/') && request.method==='PATCH') {
+    const id=url.pathname.slice('/documents/'.length); if(!UUID.test(id)) throw new Failure(400,'Invalid file.');
+    const body=await request.json().catch(()=>null);
+    const kind=String(body?.kind || 'other').trim().slice(0,60) || 'other';
+    const rows=await db(env,`project_documents?id=eq.${id}&project_id=eq.${projectId}&select=*`);
+    if(!rows[0]) throw new Failure(404,'File not found.');
+    const updated=await db(env,`project_documents?id=eq.${id}&project_id=eq.${projectId}`,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({kind})});
+    return json((await Promise.all(updated.map(doc=>signed(env,url.origin,doc))))[0] || {...rows[0],kind});
+  }
   throw new Failure(404,'Not found.');
 }
 export default {
@@ -126,7 +135,7 @@ export default {
     const origin=request.headers.get('Origin');
     const allowed=(env.ALLOWED_ORIGINS || '').split(',');
     if(origin && !allowed.includes(origin)) return json({error:'Origin not allowed.'},403);
-    const cors={'Access-Control-Allow-Origin':origin || allowed[0] || '', 'Access-Control-Allow-Methods':'GET, POST, DELETE, OPTIONS','Access-Control-Allow-Headers':'Authorization, Content-Type','Vary':'Origin'};
+    const cors={'Access-Control-Allow-Origin':origin || allowed[0] || '', 'Access-Control-Allow-Methods':'GET, POST, PATCH, DELETE, OPTIONS','Access-Control-Allow-Headers':'Authorization, Content-Type','Vary':'Origin'};
     if(request.method==='OPTIONS') return new Response(null,{status:204,headers:cors});
     let response;
     try {

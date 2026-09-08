@@ -47,7 +47,7 @@ import {
   updateProjectStageSchedule,
   updateProjectTaskDueDate,
 } from "../lib/projectFlowApi";
-import { listProjectDocuments, listProjectPayments, updateProjectBudget, updateProjectTitle, uploadProjectDocument } from "../lib/projectWorkspaceApi";
+import { listProjectDocuments, listProjectPayments, removeProjectDocument, updateProjectBudget, updateProjectTitle, uploadProjectDocument } from "../lib/projectWorkspaceApi";
 import { buildSignInRedirect } from "../lib/requireHomeownerAuth";
 import { buildHubAssistantContext } from "../lib/hubAssistantContext";
 import HmFormDialog from "../components/HmFormDialog";
@@ -884,6 +884,7 @@ export default function ProjectDashboard() {
           ...projectDocuments
             .filter((document) => document.kind === "site_photo" && document.signed_url)
             .map((document) => ({
+              documentId: document.id,
               url: document.signed_url,
               label: document.file_name,
               kind: "site",
@@ -1035,6 +1036,19 @@ export default function ProjectDashboard() {
       setBoardError(err?.message || "Could not upload the site photo.");
     } finally {
       setSiteUploading(false);
+    }
+  };
+
+  const removeSitePhoto = async (entry) => {
+    if (!entry?.documentId || !activeProjectId) return;
+    if (!window.confirm(`Delete ${entry.label || "this site photo"}? This cannot be undone.`)) return;
+    setBoardError("");
+    try {
+      const document = projectDocuments.find((row) => row.id === entry.documentId);
+      if (document) await removeProjectDocument(activeProjectId, document);
+      setProjectDocuments((rows) => rows.filter((row) => row.id !== entry.documentId));
+    } catch (err) {
+      setBoardError(err?.message || "Could not delete the site photo.");
     }
   };
 
@@ -2427,9 +2441,12 @@ export default function ProjectDashboard() {
                     <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                       <div style={{ fontSize: 12, color: "#9A8F87", marginBottom: 8 }}>{entry.time}</div>
                       <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.45 }}>{entry.caption}</div>
-                      <button type="button" onClick={() => { setSelectedPhase(entry.phase); setActiveNav("Overview"); }} style={{ marginTop: 14, alignSelf: "flex-start", background: "none", border: "none", color: OR, fontWeight: 700, fontSize: 13, cursor: "pointer", padding: 0 }}>
-                        Open stage on Overview →
-                      </button>
+                      <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 14 }}>
+                        <button type="button" onClick={() => { setSelectedPhase(entry.phase); setActiveNav("Overview"); }} style={{ background: "none", border: "none", color: OR, fontWeight: 700, fontSize: 13, cursor: "pointer", padding: 0 }}>
+                          Open stage on Overview →
+                        </button>
+                        {entry.documentId ? <button type="button" onClick={() => removeSitePhoto(entry)} style={{ background: "none", border: "none", color: "#B42318", fontWeight: 700, fontSize: 13, cursor: "pointer", padding: 0 }}>Delete photo</button> : null}
+                      </div>
                     </div>
                   </div>
                 ))}

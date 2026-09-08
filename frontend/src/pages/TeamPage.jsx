@@ -18,10 +18,10 @@ export default function TeamPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId) { setMembers([]); setLoading(false); return undefined; }
     let cancelled = false;
     (async () => {
-      setLoading(true); setError("");
+      setLoading(true); setError(""); setMembers([]);
       try { const rows = await listProjectTeam(projectId); if (!cancelled) setMembers(rows); }
       catch (err) { if (!cancelled) setError(err?.message || "Could not load the project team."); }
       finally { if (!cancelled) setLoading(false); }
@@ -68,7 +68,7 @@ export default function TeamPage() {
             </form>
             <section style={{ background: "#fff", border: "1px solid #E8E4DE", borderRadius: 14, padding: 20 }}>
               <h2 style={{ margin: "0 0 14px", fontSize: 18 }}>{project.title || "Project"} · {members.length} members</h2>
-              {loading ? <p>Loading team…</p> : members.length === 0 ? <p style={{ color: "#78716C" }}>No team members have been saved.</p> : members.map((member) => <div key={member.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "13px 0", borderTop: "1px solid #F0E8DF" }}><div style={{ width: 38, height: 38, borderRadius: "50%", background: "#FBE8DC", color: OR, display: "grid", placeItems: "center", fontWeight: 800 }}>{member.name.slice(0,2).toUpperCase()}</div><div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{member.name}</div><div style={{ color: "#78716C", fontSize: 12, marginTop: 3 }}>{member.role}{member.email ? ` · ${member.email}` : ""}{member.phone ? ` · ${member.phone}` : ""}</div></div><select value={member.status} onChange={(event) => changeStatus(member, event.target.value)} style={{ border: "1px solid #D7CEC5", borderRadius: 8, padding: "7px" }}><option value="invited">Invited</option><option value="active">Active</option><option value="inactive">Inactive</option></select><button type="button" onClick={() => remove(member)} style={{ border: 0, background: "none", color: "#B42318", cursor: "pointer" }}>Remove</button></div>)}
+              {loading ? <p>Loading team…</p> : members.length === 0 ? <p style={{ color: "#78716C" }}>No team members have been saved.</p> : members.map((member) => <div key={member.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "13px 0", borderTop: "1px solid #F0E8DF" }}><div style={{ width: 38, height: 38, borderRadius: "50%", background: "#FBE8DC", color: OR, display: "grid", placeItems: "center", fontWeight: 800 }}>{String(member.name || "TM").slice(0,2).toUpperCase()}</div><div style={{ flex: 1 }}><div style={{ fontWeight: 700 }}>{member.name || "Unnamed member"}</div><div style={{ color: "#78716C", fontSize: 12, marginTop: 3 }}>{member.role || "Team member"}{member.email ? ` · ${member.email}` : ""}{member.phone ? ` · ${member.phone}` : ""}</div></div><select value={member.status || "active"} onChange={(event) => changeStatus(member, event.target.value)} style={{ border: "1px solid #D7CEC5", borderRadius: 8, padding: "7px" }}><option value="invited">Invited</option><option value="active">Active</option><option value="inactive">Inactive</option></select><button type="button" onClick={() => remove(member)} style={{ border: 0, background: "none", color: "#B42318", cursor: "pointer" }}>Remove</button></div>)}
             </section>
           </div>
         )}
