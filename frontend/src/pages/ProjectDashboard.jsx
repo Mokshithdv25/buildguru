@@ -47,7 +47,7 @@ import {
   updateProjectStageSchedule,
   updateProjectTaskDueDate,
 } from "../lib/projectFlowApi";
-import { listProjectDocuments, listProjectPayments, updateProjectTitle, uploadProjectDocument } from "../lib/projectWorkspaceApi";
+import { listProjectDocuments, listProjectPayments, updateProjectBudget, updateProjectTitle, uploadProjectDocument } from "../lib/projectWorkspaceApi";
 import { buildSignInRedirect } from "../lib/requireHomeownerAuth";
 import { buildHubAssistantContext } from "../lib/hubAssistantContext";
 import HmFormDialog from "../components/HmFormDialog";
@@ -448,6 +448,7 @@ export default function ProjectDashboard() {
   const [boardError, setBoardError] = useState("");
   const [budgetDetailOpen, setBudgetDetailOpen] = useState(false);
   const [budgetDetailScope, setBudgetDetailScope] = useState("stage");
+  const [budgetEditOpen, setBudgetEditOpen] = useState(false);
   const [taskAddOpen, setTaskAddOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskStage, setNewTaskStage] = useState("Structure");
@@ -541,6 +542,7 @@ export default function ProjectDashboard() {
     ].map((img) => img?.url).filter(Boolean);
     const estimate = v0Pack?.estimate;
     const budgetTotal =
+      (userProjects.find((row) => row.id === activeProjectId)?.budget_max ? formatInrShort(userProjects.find((row) => row.id === activeProjectId).budget_max) : null) ||
       briefData?.budgetLabel ||
       (briefData?.budgetInr ? formatInrShort(briefData.budgetInr) : null) ||
       (briefData?.budgetUnit && briefData?.budgetAmount
@@ -581,7 +583,7 @@ export default function ProjectDashboard() {
       miniGallery: [...uploadedPhotos, ...v0Images].slice(0, 4),
       budgetLines: budgetLines.length ? budgetLines : [["Planning baseline", budgetTotal]],
     };
-  }, [isLiveProject, v0Pack, briefData, selectedPhase, phaseRows, projectDocuments]);
+  }, [isLiveProject, v0Pack, briefData, selectedPhase, phaseRows, projectDocuments, userProjects, activeProjectId]);
   const stageDetail = isLiveProject && liveStageDetail ? liveStageDetail : STAGE_DETAILS[selectedPhase];
   useEffect(() => {
     if (!activeProjectId) {
@@ -700,6 +702,7 @@ export default function ProjectDashboard() {
   const fundingSnapshot = useMemo(() => {
     if (!isLiveProject) return PROJECT_FUNDING;
     const totalLabel =
+      (userProjects.find((row) => row.id === activeProjectId)?.budget_max ? formatInrShort(userProjects.find((row) => row.id === activeProjectId).budget_max) : null) ||
       briefData?.budgetLabel ||
       (briefData?.budgetUnit && briefData?.budgetAmount
         ? `₹${briefData.budgetAmount} ${briefData.budgetUnit === "Crores" ? "Cr" : "L"}`
@@ -999,6 +1002,17 @@ export default function ProjectDashboard() {
       setBoardError(err?.message || "Could not rename the project.");
     } finally {
       setRenamingProject(false);
+    }
+  };
+
+  const saveProjectBudget = async ({ amount }) => {
+    try {
+      const updated = await updateProjectBudget(activeProjectId, amount.replace(/[,₹\s]/g, ""));
+      setUserProjects((rows) => rows.map((row) => row.id === updated.id ? { ...row, ...updated } : row));
+      setBudgetEditOpen(false);
+      setBoardError("");
+    } catch (err) {
+      setBoardError(err?.message || "Could not update the project budget.");
     }
   };
 
@@ -2309,7 +2323,10 @@ export default function ProjectDashboard() {
               </p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16, marginBottom: 18 }}>
                 <div style={{ ...panel, padding: "18px 20px" }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#9A8F87", letterSpacing: "0.06em" }}>TOTAL BUDGET</div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#9A8F87", letterSpacing: "0.06em" }}>TOTAL BUDGET</div>
+                    {isLiveProject ? <button type="button" onClick={() => setBudgetEditOpen(true)} style={{ border: 0, background: "none", color: OR, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0 }}>Edit budget</button> : null}
+                  </div>
                   <div style={{ fontSize: 28, fontWeight: 800, marginTop: 8 }}>{fundingSnapshot.totalBudget}</div>
                   <div style={{ fontSize: 13, color: "#7A6E62", marginTop: 6 }}>Spent to date: {fundingSnapshot.spentToDate}</div>
                   <div style={{ height: 10, background: "#E8E6E3", borderRadius: 6, marginTop: 14, overflow: "hidden" }}>
@@ -2478,6 +2495,16 @@ export default function ProjectDashboard() {
       </div>
     </div>
 
+      <HmFormDialog
+        open={budgetEditOpen}
+        onOpenChange={setBudgetEditOpen}
+        title="Update project budget"
+        description="Set the current total budget for this project."
+        fields={[{ name: "amount", label: "Total budget (INR)", placeholder: "e.g. 2500000" }]}
+        initialValues={{ amount: String(activeProjectMeta?.budget_max || briefData?.budgetInr || "") }}
+        submitLabel="Save budget"
+        onSubmit={saveProjectBudget}
+      />
       <HmFormDialog
         open={taskDialogOpen}
         onOpenChange={setTaskDialogOpen}

@@ -126,6 +126,22 @@ export async function updateProjectTitle(projectId, title) {
   return data;
 }
 
+export async function updateProjectBudget(projectId, amountInr) {
+  requireProject(projectId);
+  await requireUser();
+  const amount = Number(amountInr);
+  if (!Number.isFinite(amount) || amount <= 0) throw new Error("Enter a budget greater than ₹0.");
+  const { data, error } = await supabase
+    .from("projects")
+    .update({ budget_min: amount, budget_max: amount, last_active_at: new Date().toISOString() })
+    .eq("id", projectId)
+    .select("id, budget_min, budget_max, updated_at")
+    .maybeSingle();
+  if (error) throw error;
+  if (!data?.id) throw new Error("The project budget could not be updated.");
+  return data;
+}
+
 export async function removeProjectDocument(projectId, document) {
   requireProject(projectId);
   if (PROJECT_STORAGE_ENABLED) {
