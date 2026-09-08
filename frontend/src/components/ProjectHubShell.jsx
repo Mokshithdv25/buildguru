@@ -73,7 +73,7 @@ export default function ProjectHubShell({ children, hubQuery: hubQueryProp }) {
                 }}
                 style={hmProjectSidebarNavItemStyle(hubNavActive(pathname, n.path, n.tab, currentTab))}
               >
-                <span style={{ fontSize: 15 }}>{n.icon}</span>
+                <n.icon size={16} strokeWidth={hubNavActive(pathname, n.path, n.tab, currentTab) ? 2.1 : 1.8} style={{ flexShrink: 0 }} aria-hidden />
                 {n.label}
               </div>
             ))}

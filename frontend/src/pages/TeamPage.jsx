@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ProjectHubShell from "../components/ProjectHubShell";
+import { projectDisplayName } from "../lib/projectFlowApi";
 import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
 import { addProjectTeamMember, listProjectTeam, removeProjectTeamMember, updateProjectTeamMember } from "../lib/projectWorkspaceApi";
 
@@ -53,7 +54,7 @@ export default function TeamPage() {
         <button type="button" onClick={() => navigate(projectId ? `/project?projectId=${encodeURIComponent(projectId)}` : "/project")} style={{ border: 0, background: "none", color: OR, fontWeight: 700, cursor: "pointer", padding: 0 }}>← Project hub</button>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "end", flexWrap: "wrap", margin: "18px 0" }}>
           <div><h1 style={{ margin: 0, fontSize: 28 }}>Project team</h1><p style={{ color: "#78716C", margin: "6px 0 0" }}>People and contact details saved to this project.</p></div>
-          {projects.length > 1 ? <select value={projectId} onChange={(event) => selectProject(event.target.value)} style={{ padding: "10px 12px", border: "1px solid #D7CEC5", borderRadius: 9 }}>{projects.map((row) => <option key={row.id} value={row.id}>{row.title || "Project"}</option>)}</select> : null}
+          {projects.length > 1 ? <select value={projectId} onChange={(event) => selectProject(event.target.value)} style={{ padding: "10px 12px", border: "1px solid #D7CEC5", borderRadius: 9 }}>{projects.map((row, index) => <option key={row.id} value={row.id}>{projectDisplayName(row, index, projects)}</option>)}</select> : null}
         </div>
         {projectError || error ? <p role="alert" style={{ color: "#B42318" }}>{projectError || error}</p> : null}
         {projectsLoading ? <p>Loading projects…</p> : !project ? <div style={{ background: "#fff", padding: 24, borderRadius: 14 }}>Create a project before adding a team.</div> : (

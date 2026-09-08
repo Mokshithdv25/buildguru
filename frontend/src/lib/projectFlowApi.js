@@ -101,6 +101,15 @@ export function formatInrShort(amountInr) {
   return `₹${Math.round(n).toLocaleString("en-IN")}`;
 }
 
+export function projectDisplayName(project, index = 0, projects = []) {
+  const base = String(project?.title || (project?.flow_type === "remodel" || project?.source === "remodel" ? "Remodel project" : "New home build")).trim();
+  const sameBase = projects.filter((row) => String(row?.title || (row?.flow_type === "remodel" || row?.source === "remodel" ? "Remodel project" : "New home build")).trim() === base);
+  if (sameBase.length <= 1) return base;
+  const context = String(project?.location || project?.city || "").trim();
+  if (context && sameBase.filter((row) => String(row?.location || row?.city || "").trim() === context).length === 1) return `${base} · ${context}`;
+  return `${base} ${index + 1}`;
+}
+
 function budgetFieldsFromBrief(brief) {
   if (typeof brief?.budgetInr === "number" && brief.budgetInr > 0) {
     const cap = Math.round(brief.budgetInr);

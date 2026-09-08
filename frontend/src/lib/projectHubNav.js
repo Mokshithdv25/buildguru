@@ -3,19 +3,19 @@
  * Paths must match App.js routes.
  */
 export const PROJECT_HUB_NAV = [
-  { icon: "⊞", label: "Overview", path: "/project" },
-  { icon: "📩", label: "Bids", path: "#", tab: "Bids" },
-  { icon: "📅", label: "Timeline", path: "#", tab: "Timeline" },
-  { icon: "✓", label: "Tasks", path: "#", tab: "Tasks" },
-  { icon: "₹", label: "Budget", path: "#", tab: "Budget" },
-  { icon: "💳", label: "Payments", path: "/project/payments" },
-  { icon: "📸", label: "Site Feed", path: "#", tab: "Site Feed" },
-  { icon: "📄", label: "Documents", path: "/documents" },
-  { icon: "🧭", label: "Design journey", path: "/project/journey" },
-  { icon: "🛒", label: "Shop", path: "/project/shop" },
-  { icon: "👷", label: "Find Pros", path: "/project/browse" },
-  { icon: "👥", label: "Team", path: "/team" },
-  { icon: "⚙️", label: "Settings", path: "#" },
+  { icon: LayoutGrid, label: "Overview", path: "/project" },
+  { icon: Inbox, label: "Bids", path: "#", tab: "Bids" },
+  { icon: CalendarDays, label: "Timeline", path: "#", tab: "Timeline" },
+  { icon: ListChecks, label: "Tasks", path: "#", tab: "Tasks" },
+  { icon: WalletCards, label: "Budget", path: "#", tab: "Budget" },
+  { icon: CreditCard, label: "Payments", path: "/project/payments" },
+  { icon: Camera, label: "Site Feed", path: "#", tab: "Site Feed" },
+  { icon: FileText, label: "Documents", path: "/documents" },
+  { icon: Compass, label: "Design journey", path: "/project/journey" },
+  { icon: ShoppingCart, label: "Shop", path: "/project/shop" },
+  { icon: HardHat, label: "Find Pros", path: "/project/browse" },
+  { icon: Users, label: "Team", path: "/team" },
+  { icon: Settings, label: "Settings", path: "#" },
 ];
 
 /** Whether a sidebar item should render as active for the current pathname. */
@@ -25,3 +25,4 @@ export function hubNavActive(pathname, itemPath, itemTab = "", currentTab = "") 
   if (itemPath === "/project/browse") return pathname === "/project/browse" || pathname === "/marketplace";
   return pathname === itemPath;
 }
+import { CalendarDays, Camera, Compass, CreditCard, FileText, HardHat, Inbox, LayoutGrid, ListChecks, Settings, ShoppingCart, Users, WalletCards } from "lucide-react";

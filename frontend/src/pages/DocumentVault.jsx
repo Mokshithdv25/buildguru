@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ProjectHubShell from "../components/ProjectHubShell";
 import { useProjectWorkspace } from "../hooks/useProjectWorkspace";
+import { projectDisplayName } from "../lib/projectFlowApi";
 import { listProjectDocuments, removeProjectDocument, updateProjectDocumentCategory, uploadProjectDocument } from "../lib/projectWorkspaceApi";
 
 const OR = "#C85F2B";
@@ -92,7 +93,7 @@ export default function DocumentVault() {
         <button type="button" onClick={() => navigate(projectId ? `/project?projectId=${encodeURIComponent(projectId)}` : "/project")} style={{ border: 0, background: "none", color: OR, fontWeight: 700, cursor: "pointer", padding: 0 }}>← Project hub</button>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "end", flexWrap: "wrap", margin: "18px 0" }}>
           <div><h1 style={{ margin: 0, fontSize: 28 }}>Project documents</h1><p style={{ color: "#78716C", margin: "6px 0 0" }}>Private files saved to the selected homeowner project.</p></div>
-          {projects.length > 1 ? <select value={projectId} onChange={(event) => selectProject(event.target.value)} style={{ padding: "10px 12px", border: "1px solid #D7CEC5", borderRadius: 9 }}>{projects.map((row) => <option key={row.id} value={row.id}>{row.title || "Project"}</option>)}</select> : null}
+          {projects.length > 1 ? <select value={projectId} onChange={(event) => selectProject(event.target.value)} style={{ padding: "10px 12px", border: "1px solid #D7CEC5", borderRadius: 9 }}>{projects.map((row, index) => <option key={row.id} value={row.id}>{projectDisplayName(row, index, projects)}</option>)}</select> : null}
         </div>
         <ProjectStorageMeter />
         {projectError || error ? <p role="alert" style={{ color: "#B42318" }}>{projectError || error}</p> : null}

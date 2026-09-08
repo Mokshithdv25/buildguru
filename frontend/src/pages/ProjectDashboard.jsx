@@ -46,6 +46,7 @@ import {
   updateProjectSchedule,
   updateProjectStageSchedule,
   updateProjectTaskDueDate,
+  projectDisplayName,
 } from "../lib/projectFlowApi";
 import { listProjectDocuments, listProjectPayments, removeProjectDocument, updateProjectBudget, updateProjectDocumentCategory, updateProjectTitle, uploadProjectDocument } from "../lib/projectWorkspaceApi";
 import { buildSignInRedirect } from "../lib/requireHomeownerAuth";
@@ -1239,7 +1240,7 @@ export default function ProjectDashboard() {
                 }}
                 style={{ width: "100%", boxSizing: "border-box", padding: "10px 9px", borderRadius: 8, border: `1.5px solid ${OR}`, background: "#FDF4EF", color: "#1C1917", fontFamily: "inherit", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
               >
-                {userProjects.map((p) => <option key={p.id} value={p.id}>{p.title || "Untitled project"} · {flowSourceLabel(p.flow_type, p.source)}</option>)}
+                {userProjects.map((p, index) => <option key={p.id} value={p.id}>{projectDisplayName(p, index, userProjects)}</option>)}
               </select>
             )}
           </div>
@@ -1588,7 +1589,7 @@ export default function ProjectDashboard() {
               </p>
               {userProjects.length > 0 ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20, textAlign: "left" }}>
-                  {userProjects.slice(0, 4).map((p) => (
+                  {userProjects.slice(0, 4).map((p, index) => (
                     <button
                       key={p.id}
                       type="button"
@@ -1604,7 +1605,7 @@ export default function ProjectDashboard() {
                         fontFamily: "inherit",
                       }}
                     >
-                      <div style={{ fontWeight: 700, fontSize: 14, color: "#1C1917" }}>{p.title || "Untitled project"}</div>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: "#1C1917" }}>{projectDisplayName(p, index, userProjects)}</div>
                       <div style={{ fontSize: 12, color: "#78716C", marginTop: 2 }}>{flowSourceLabel(p.flow_type, p.source)}</div>
                     </button>
                   ))}
