@@ -47,7 +47,7 @@ import {
   updateProjectStageSchedule,
   updateProjectTaskDueDate,
 } from "../lib/projectFlowApi";
-import { listProjectDocuments, listProjectPayments, removeProjectDocument, updateProjectBudget, updateProjectTitle, uploadProjectDocument } from "../lib/projectWorkspaceApi";
+import { listProjectDocuments, listProjectPayments, removeProjectDocument, updateProjectBudget, updateProjectDocumentCategory, updateProjectTitle, uploadProjectDocument } from "../lib/projectWorkspaceApi";
 import { buildSignInRedirect } from "../lib/requireHomeownerAuth";
 import { buildHubAssistantContext } from "../lib/hubAssistantContext";
 import HmFormDialog from "../components/HmFormDialog";
@@ -69,6 +69,13 @@ import { listProjectBids, setBidDecision } from "../lib/projectBidsApi";
 import { browseQuotesUrl, isProjectPostedPhase } from "../lib/projectPostingFlow";
 
 const OR = "#C85F2B";
+const SITE_FEED_CATEGORIES = [
+  ["site_photo", "Progress photo"],
+  ["site_progress", "Construction progress"],
+  ["site_material", "Material delivery"],
+  ["site_issue", "Issue or inspection"],
+  ["site_other", "Other site update"],
+];
 
 /** Soft panels — reference UI: warm off-white, hairline border, minimal shadow (not heavy white boxes). */
 const panel = {
@@ -556,7 +563,7 @@ export default function ProjectDashboard() {
     ]);
     const selectedStageId = phaseRows.find((row) => row.name === selectedPhase)?.id;
     const uploadedForStage = projectDocuments.filter((document) => !document.stage_id || document.stage_id === selectedStageId);
-    const uploadedPhotos = uploadedForStage.filter((document) => document.kind === "site_photo" && document.signed_url).map((document) => document.signed_url);
+    const uploadedPhotos = uploadedForStage.filter((document) => String(document.kind || "").startsWith("site_") && document.signed_url).map((document) => document.signed_url);
     return {
       siteImage: v0Images[0] || "",
       siteCaption:
@@ -882,12 +889,13 @@ export default function ProjectDashboard() {
           ...(v0Pack?.images?.images || []).map((image) => ({ ...image, kind: "concept" })),
           ...(v0Pack?.images?.floor_plans || v0Pack?.images?.floorPlans || v0Pack?.floorPlans || []).map((image) => ({ ...image, kind: "floor" })),
           ...projectDocuments
-            .filter((document) => document.kind === "site_photo" && document.signed_url)
+            .filter((document) => String(document.kind || "").startsWith("site_") && document.signed_url)
             .map((document) => ({
               documentId: document.id,
               url: document.signed_url,
               label: document.file_name,
               kind: "site",
+              category: document.kind,
               created_at: document.created_at,
               stage_id: document.stage_id,
             })),
@@ -1049,6 +1057,17 @@ export default function ProjectDashboard() {
       setProjectDocuments((rows) => rows.filter((row) => row.id !== entry.documentId));
     } catch (err) {
       setBoardError(err?.message || "Could not delete the site photo.");
+    }
+  };
+
+  const changeSiteFeedCategory = async (entry, kind) => {
+    if (!entry?.documentId || !activeProjectId) return;
+    setBoardError("");
+    try {
+      const updated = await updateProjectDocumentCategory(activeProjectId, entry.documentId, kind);
+      setProjectDocuments((rows) => rows.map((row) => row.id === entry.documentId ? { ...row, ...updated, kind } : row));
+    } catch (err) {
+      setBoardError(err?.message || "Could not update the site feed category.");
     }
   };
 
@@ -2442,6 +2461,7 @@ export default function ProjectDashboard() {
                       <div style={{ fontSize: 12, color: "#9A8F87", marginBottom: 8 }}>{entry.time}</div>
                       <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.45 }}>{entry.caption}</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 14 }}>
+                        {entry.documentId ? <select value={entry.category || "site_photo"} onChange={(event) => changeSiteFeedCategory(entry, event.target.value)} aria-label={`Category for ${entry.caption}`} style={{ padding: "7px 9px", border: "1px solid #D7CEC5", borderRadius: 8, background: "#fff", maxWidth: 210 }}><option value="site_photo">Progress photo</option>{SITE_FEED_CATEGORIES.slice(1).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select> : null}
                         <button type="button" onClick={() => { setSelectedPhase(entry.phase); setActiveNav("Overview"); }} style={{ background: "none", border: "none", color: OR, fontWeight: 700, fontSize: 13, cursor: "pointer", padding: 0 }}>
                           Open stage on Overview →
                         </button>
