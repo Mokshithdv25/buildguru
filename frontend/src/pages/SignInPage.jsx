@@ -53,7 +53,7 @@ const PUBLIC_URL = (typeof process !== "undefined" && process.env && process.env
 /** Left-hand brand visual — same photography the marketing home uses, so sign-in feels like the same product. */
 const BRAND_PANELS = {
   default: {
-    image: `${PUBLIC_URL}/landing-hero.png`,
+    image: `${PUBLIC_URL}/auth-signin.jpg`,
     alt: "Bright modern living room designed on BuildGuru",
     kicker: "India's complete home platform",
     headline: "From first idea to moving in, all in one place.",
@@ -64,7 +64,7 @@ const BRAND_PANELS = {
     ],
   },
   homeowner: {
-    image: `${PUBLIC_URL}/landing-hero.png`,
+    image: `${PUBLIC_URL}/auth-signin.jpg`,
     alt: "Bright modern living room designed on BuildGuru",
     kicker: "For homeowners",
     headline: "Design, build, and manage your home in one place.",
@@ -87,14 +87,15 @@ const BRAND_PANELS = {
   },
 };
 
-function AuthBrandPanel({ role }) {
+function AuthBrandPanel({ role, mode }) {
   const panel = BRAND_PANELS[role] || BRAND_PANELS.default;
+  const image = mode === "signup" ? `${PUBLIC_URL}/auth-signup.jpg` : panel.image;
   return (
     <aside className="relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-end" aria-hidden="true">
       <AnimatePresence mode="wait" initial={false}>
         <motion.img
-          key={panel.image}
-          src={panel.image}
+          key={image}
+          src={image}
           alt={panel.alt}
           initial={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -869,7 +870,10 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
 
       {/* Split layout: brand visual (desktop only) + form */}
       <div className="grid flex-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:grid-cols-2">
-        <AuthBrandPanel role={roleSelected || passwordRecovery ? accountRole : "default"} />
+        <AuthBrandPanel
+          role={roleSelected || passwordRecovery ? accountRole : "default"}
+          mode={isSignUp ? "signup" : "signin"}
+        />
         <div className="flex items-center justify-center px-5 py-8 sm:p-10">
         <div className="w-full max-w-[26rem]">
           <AnimatePresence mode="wait">
@@ -928,7 +932,7 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
                     <div className="grid gap-3">
                       <RoleCard
                         icon={Home}
-                        image={BRAND_PANELS.homeowner.image}
+                        image={`${PUBLIC_URL}/auth-signup.jpg`}
                         title="I'm a homeowner"
                         description="Plan, design, estimate, and hire for my project."
                         onClick={() => handleRoleSelection("homeowner")}
