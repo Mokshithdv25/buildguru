@@ -67,7 +67,8 @@ export async function listProjectDocuments(projectId) {
   if (error) throw error;
   return Promise.all((data || []).map(async (document) => {
     if (!document.storage_path) return { ...document, signed_url: document.file_url };
-    const { data: signed, error: signedError } = await supabase.storage.from(DOCUMENT_BUCKET).createSignedUrl(document.storage_path, 3600);
+    const bucket = document.storage_provider === "supabase_v0" ? "project-v0" : DOCUMENT_BUCKET;
+    const { data: signed, error: signedError } = await supabase.storage.from(bucket).createSignedUrl(document.storage_path, 3600);
     return { ...document, signed_url: signedError ? null : signed?.signedUrl || null };
   }));
 }
@@ -173,7 +174,8 @@ export async function updateProjectDocumentCategory(projectId, documentId, categ
   const { data, error } = await supabase.from("project_documents").update({ kind: value }).eq("project_id", projectId).eq("id", documentId).select("*").maybeSingle();
   if (error) throw error;
   if (!data?.id) throw new Error("The document category could not be updated.");
-  const { data: signed } = data.storage_path ? await supabase.storage.from(DOCUMENT_BUCKET).createSignedUrl(data.storage_path, 3600) : { data: null };
+  const bucket = data.storage_provider === "supabase_v0" ? "project-v0" : DOCUMENT_BUCKET;
+  const { data: signed } = data.storage_path ? await supabase.storage.from(bucket).createSignedUrl(data.storage_path, 3600) : { data: null };
   return { ...data, signed_url: signed?.signedUrl || data.file_url || null };
 }
 

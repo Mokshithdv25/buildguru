@@ -367,6 +367,40 @@ async function saveProjectV0Pack(projectId, v0Images, v0Plan) {
   }
 }
 
+function v0MimeType(item) {
+  const value = String(item?.mime_type || item?.mimeType || item?.storage_path || item?.url || '').toLowerCase();
+  if (value.includes('.png') || value.includes('image/png')) return 'image/png';
+  if (value.includes('.webp') || value.includes('image/webp')) return 'image/webp';
+  if (value.includes('.gif') || value.includes('image/gif')) return 'image/gif';
+  return 'image/jpeg';
+}
+
+/** Index private v0 assets in the document vault without copying their bytes. */
+async function indexV0DesignDocuments(projectId, ownerUserId, imageBundle) {
+  if (!projectId || !ownerUserId || !imageBundle) return;
+  const items = [
+    ...(imageBundle.images || []).map((item) => ({ item, prefix: 'Initial design concept' })),
+    ...(imageBundle.floor_plans || imageBundle.floorPlans || []).map((item) => ({ item, prefix: 'Initial design floor plan' })),
+  ].filter(({ item }) => item?.storage_path);
+  if (!items.length) return;
+  const rows = items.map(({ item, prefix }, index) => ({
+    project_id: projectId,
+    uploaded_by_user_id: ownerUserId,
+    kind: 'design_drawing',
+    source_type: 'v0_design',
+    file_name: `${prefix} ${index + 1}.${v0MimeType(item).split('/')[1]}`,
+    file_url: item.storage_path,
+    storage_path: item.storage_path,
+    storage_provider: 'supabase_v0',
+    mime_type: v0MimeType(item),
+    size_bytes: Number(item.size_bytes) || null,
+  }));
+  const { error } = await supabase.from('project_documents').upsert(rows, {
+    onConflict: 'project_id,source_type,storage_path',
+  });
+  if (error) throw new Error(`Could not index the saved design in project documents: ${error.message}`);
+}
+
 async function ensureProjectStagesAndTasks(projectId, brief, flowType, aiPlan) {
   const { data: existingStages, error: stagesCheckError } = await supabase
     .from("project_stages")
@@ -537,6 +571,7 @@ export async function upsertFlowProject({
     });
   }
   await saveProjectV0Pack(projectId, imagesForStore, plan);
+  await indexV0DesignDocuments(projectId, ownerUserId, imagesForStore);
   await ensureProjectStagesAndTasks(projectId, briefPayload, flowType, plan);
 
   if (ownerUserId) rememberActiveProject(ownerUserId, projectId, source);

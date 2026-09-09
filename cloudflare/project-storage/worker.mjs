@@ -41,7 +41,8 @@ async function signed(env, base, doc) {
   if (doc.storage_provider !== 'r2') {
     if (!doc.storage_path) return {...doc,signed_url:null};
     const path=doc.storage_path.split('/').map(encodeURIComponent).join('/');
-    const response=await fetch(`${env.SUPABASE_URL}/storage/v1/object/sign/project-documents/${path}`,{method:'POST',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:3600}),signal:AbortSignal.timeout(10000)});
+    const bucket = doc.storage_provider === 'supabase_v0' ? 'project-v0' : 'project-documents';
+    const response=await fetch(`${env.SUPABASE_URL}/storage/v1/object/sign/${bucket}/${path}`,{method:'POST',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:3600}),signal:AbortSignal.timeout(10000)});
     const result=response.ok ? await response.json() : {};
     return {...doc,signed_url:result.signedURL ? `${env.SUPABASE_URL}/storage/v1${result.signedURL}` : null};
   }
@@ -112,6 +113,10 @@ async function route(request,env) {
     const doc=rows[0]; if(!doc) return json({deleted:true});
     if(doc.storage_provider==='r2') {
       await cleanup(env,{id:doc.id,object_key:doc.storage_path});
+    } else if (doc.storage_provider === 'supabase_v0') {
+      // The vault row is only an index entry. Keep the shared v0 object
+      // available to Design Journey when it is removed from the vault.
+      await db(env,`project_documents?id=eq.${id}`,{method:'DELETE'});
     } else {
       const response=await fetch(`${env.SUPABASE_URL}/storage/v1/object/project-documents`,{method:'DELETE',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({prefixes:[doc.storage_path]}),signal:AbortSignal.timeout(10000)});
       if(!response.ok) throw new Failure(503,'Could not delete the file. Please try again.');
