@@ -52,12 +52,12 @@ export default function LandingHero({ onGetStarted, onExploreDesigns }) {
 
             <div className="mb-9 max-w-lg">
               <p className="mb-6 font-body text-[1.1rem] font-light leading-relaxed text-[#f2eee9]/90 md:text-xl">
-                India&apos;s first complete home platform. From idea to execution, all in one place.
+                A clearer way to plan a build or remodel in India — from your first brief to a project workspace.
               </p>
               <div className="flex items-center gap-3">
                 <div className="h-px w-8 bg-[#cfa170]/60" aria-hidden />
                 <p className="font-display text-[15px] font-medium tracking-[0.08em] uppercase text-[#e3c7a3] m-0">
-                  Design. Build. Move In. <span className="text-[#fcfbfa]/70">Without the Chaos.</span>
+                  Design. Plan. Build with clarity. <span className="text-[#fcfbfa]/70">Keep control of the important decisions.</span>
                 </p>
               </div>
             </div>
@@ -74,7 +74,7 @@ export default function LandingHero({ onGetStarted, onExploreDesigns }) {
                 ))}
               </div>
               <p className="m-0 font-body text-[13px] font-medium text-[#f2eee9]/80 sm:max-w-[16rem]">
-                Join 2,400+ homeowners already building on BuildGuru
+                Built for homeowners planning a new home or remodel
               </p>
             </div>
 

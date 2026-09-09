@@ -13,19 +13,19 @@ const steps = [
     icon: Unlock,
     title: "Unlock designs & estimates",
     description:
-      "AI generates layouts, visuals, and cost ranges in days so your dream is easy to explain. Review at home, align family, then share with your team.",
+      "AI generates early layouts, visual concepts, and indicative cost ranges so your brief is easier to explain. Review at home, align family, then share with your team.",
   },
   {
     icon: UsersRound,
     title: "Bring in the right pros",
     description:
-      "AI professional matching in our marketplace, or bring your own architect. You approve every hire before work starts.",
+      "Browse professionals that fit your city and scope, or bring your own architect. You approve every hire before work starts.",
   },
   {
     icon: ClipboardList,
     title: "Run the build with clarity",
     description:
-      "One AI-assisted hub for visits, photos, documents, and checklists—with smart reminders, schedule tracking, and follow-ups. Agentic shopping suggests material picks you can edit and approve.",
+      "One AI-assisted hub for visits, photos, documents, checklists, and project questions—with schedule tracking and follow-ups. Agentic shopping is coming soon; today you can edit and approve a material plan before vendor pricing.",
   },
 ];
 
@@ -44,7 +44,7 @@ export default function LandingHowItWorks() {
             How it works
           </span>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-foreground mt-4 mb-4 leading-tight">
-            From first sketch to keys in hand
+            From first sketch to a clearer project plan
           </h2>
           <p className="text-muted-foreground font-body text-lg leading-relaxed max-w-2xl">
             AI helps at each stage: design, estimates, contractor matching, project management, and materials. Built

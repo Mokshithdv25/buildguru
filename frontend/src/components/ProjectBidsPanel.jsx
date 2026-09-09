@@ -113,7 +113,7 @@ export default function ProjectBidsPanel({
           <p className="hm-bids__kicker">Marketplace bids</p>
           <h2>Bids on your project</h2>
           <span>
-            Verified professionals price your posted brief and send a bid with what the amount covers. Shortlist a bid to
+            Professionals price your posted brief and send a bid with what the amount covers. Shortlist a bid to
             unlock the professional's contact details, and accept when you are ready to engage them.
           </span>
         </div>

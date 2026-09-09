@@ -55,11 +55,11 @@ const BRAND_PANELS = {
   default: {
     image: `${PUBLIC_URL}/auth-signin.jpg`,
     alt: "Bright modern living room designed on BuildGuru",
-    kicker: "India's complete home platform",
-    headline: "From first idea to moving in, all in one place.",
+    kicker: "India home planning workspace",
+    headline: "From first idea to a clearer project plan.",
     points: [
       { icon: Sparkles, text: "AI designs, estimates, and project plans" },
-      { icon: Users, text: "Homeowners and verified professionals together" },
+      { icon: Users, text: "Homeowners and professionals together" },
       { icon: ShieldCheck, text: "One account, one workspace, no chaos" },
     ],
   },
@@ -69,9 +69,9 @@ const BRAND_PANELS = {
     kicker: "For homeowners",
     headline: "Design, build, and manage your home in one place.",
     points: [
-      { icon: Sparkles, text: "AI floor plans and 3D concepts in minutes" },
-      { icon: Users, text: "Verified architects, contractors, and trades" },
-      { icon: ShieldCheck, text: "Live cost estimates and project tracking" },
+      { icon: Sparkles, text: "AI design concepts and floor-plan directions" },
+      { icon: Users, text: "Architects, contractors, and trades" },
+      { icon: ShieldCheck, text: "Indicative cost estimates and project tracking" },
     ],
   },
   pro: {

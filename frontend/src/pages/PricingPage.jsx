@@ -4,7 +4,6 @@ import { ArrowLeft, Check } from "lucide-react";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import LandingFooter from "../components/landing/LandingFooter";
 import { LEGAL_BUSINESS_NAME, SUPPORT_EMAIL, legalEntityLine } from "../lib/legalBusiness";
-import { AUTH_UI_ENABLED } from "../lib/authMode";
 
 const SERVICES = [
   {
@@ -34,7 +33,7 @@ const SERVICES = [
       "Design revisions with written change requests",
       "Project hub: tasks, timeline, documents, site feed",
       "Share structured brief with professionals",
-      "Secure Razorpay checkout",
+      "Account entitlement when paid access is enabled",
     ],
     cta: "View checkout",
     path: "/subscriptions",
@@ -50,7 +49,7 @@ const SERVICES = [
       "Published portfolio and shareable profile link",
       "Marketplace / directory visibility",
       "Portfolio media, specialties, business details",
-      "Secure Razorpay checkout",
+      "Account entitlement when paid access is enabled",
     ],
     cta: "View checkout",
     path: "/subscriptions",
@@ -81,7 +80,7 @@ export default function PricingPage() {
           </h1>
           <p className="font-body text-sm md:text-base text-muted-foreground leading-relaxed mt-3 max-w-2xl">
             {legalEntityLine()} All prices are in Indian Rupees (INR), inclusive of applicable taxes where charged.
-            Digital services are delivered inside your BuildGuru account after payment verification.
+            Digital services are delivered inside your BuildGuru account. Paid checkout is being rolled out; no charge is taken while it is disabled.
           </p>
           {LEGAL_BUSINESS_NAME ? (
             <p className="font-body text-sm text-foreground mt-2">
@@ -120,7 +119,7 @@ export default function PricingPage() {
                       : "bg-secondary text-foreground hover:bg-secondary/80"
                   }`}
                 >
-                  {plan.id === "free" ? plan.cta : billingEnabled || !AUTH_UI_ENABLED ? plan.cta : "Sign in to purchase"}
+                  {plan.id === "free" ? plan.cta : billingEnabled ? plan.cta : "View plan"}
                 </button>
               </article>
             ))}
@@ -129,8 +128,8 @@ export default function PricingPage() {
           <section className="mt-12 rounded-2xl border border-border bg-card p-6 md:p-8">
             <h2 className="font-display text-xl font-semibold text-foreground m-0">How payment works</h2>
             <p className="font-body text-sm text-muted-foreground leading-relaxed mt-3 mb-0">
-              Paid plans use Razorpay Standard Checkout (HTTPS). Your card or UPI details are entered on Razorpay&apos;s
-              secure page — not on BuildGuru. Access activates only after our server verifies the payment signature.
+              When paid checkout is enabled, card or UPI details will be entered on Razorpay&apos;s secure page — not on BuildGuru.
+              Access will activate only after our server verifies the payment signature.
               {SUPPORT_EMAIL ? (
                 <>
                   {" "}Questions or billing support:{" "}

@@ -11,7 +11,7 @@ const capabilityGroups = [
   {
     title: "Estimates & decisions",
     Icon: Calculator,
-    items: ["Indicative cost estimates", "Material takeoffs", "Quantity & brand editing", "AI contractor matching", "Approval-ready suggestions"],
+    items: ["Indicative cost estimates", "Material takeoffs", "Quantity & brand editing", "Professional discovery", "Approval-ready suggestions"],
   },
   {
     title: "Project management",
@@ -19,9 +19,9 @@ const capabilityGroups = [
     items: ["Schedules & task management", "Daily briefings & site logs", "Documents & approvals", "Project-grounded AI Q&A", "Client project dashboard"],
   },
   {
-    title: "Professionals & materials",
+    title: "Professionals & material planning",
     Icon: ShoppingCart,
-    items: ["Professional portfolios & leads", "Proposal-stage tracking", "AI- and pro-suggested carts", "Project-linked material shopping", "Payments & receipt ledger"],
+    items: ["Professional portfolios & leads", "RFQ and proposal-stage tracking", "Editable material takeoffs", "Project-linked shopping checklist", "Payments & receipt ledger"],
   },
 ];
 
@@ -31,8 +31,8 @@ export default function LandingTestimonials() {
       <div className="container max-w-6xl">
         <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto mb-12 max-w-4xl text-center">
           <span className="section-kicker">One connected BuildGuru workflow</span>
-          <h2 className="mt-4 font-display text-4xl font-bold leading-tight text-foreground md:text-5xl">End-to-end AI tools for planning, hiring, shopping, and running a home project.</h2>
-          <p className="mx-auto mt-5 max-w-3xl font-body text-sm leading-relaxed text-muted-foreground md:text-base">BuildGuru connects design concepts, floor-plan directions, estimates, material takeoffs, professional matching, project shopping, and day-to-day project management—without pretending every construction-business tool belongs in the homeowner workflow.</p>
+          <h2 className="mt-4 font-display text-4xl font-bold leading-tight text-foreground md:text-5xl">Connected tools for planning, hiring, and running a home project.</h2>
+          <p className="mx-auto mt-5 max-w-3xl font-body text-sm leading-relaxed text-muted-foreground md:text-base">BuildGuru connects early design concepts, floor-plan directions, indicative estimates, material planning, professional discovery, and day-to-day project management. Agentic shopping and payment protection are coming soon.</p>
         </motion.div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {capabilityGroups.map(({ title, Icon, items }, groupIndex) => (

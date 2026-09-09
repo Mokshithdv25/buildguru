@@ -20,7 +20,7 @@ const PLAN_COPY = {
       "Regenerate and revise designs with written change requests",
       "Saved project hub, tasks, timeline and documents",
       "Share your structured brief with professionals",
-      "Secure Razorpay checkout and payment receipt",
+      "Account entitlement when paid access is enabled",
     ],
   },
   pro: {
@@ -33,7 +33,7 @@ const PLAN_COPY = {
       "Published professional portfolio and shareable profile",
       "Directory visibility and homeowner discovery",
       "Portfolio media, specialties and business details",
-      "Secure Razorpay checkout and payment receipt",
+      "Account entitlement when paid access is enabled",
     ],
   },
 };

@@ -1115,9 +1115,9 @@ export default function RemodelHome() {
                   Here&apos;s a first design direction from everything you shared.
                 </p>
               </div>
-              <button type="button" style={{ background:"#fff", border:"1.5px solid #D1C9BF", borderRadius:9, padding:"9px 18px", fontWeight:700, fontSize:13, cursor:"pointer", display:"flex", alignItems:"center", gap:6 }}>
-                🎯 View in 3D
-              </button>
+              <span style={{ background:"#F5EFE8", border:"1px solid #EEDCCB", borderRadius:999, padding:"7px 12px", fontWeight:700, fontSize:12, color:"#8B5E3C" }}>
+                AI concept preview
+              </span>
             </div>
 
             {/* Quick stats */}

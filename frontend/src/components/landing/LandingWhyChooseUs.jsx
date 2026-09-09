@@ -11,21 +11,21 @@ const features = [
   },
   {
     id: 2,
-    title: "AI professional matching",
+    title: "Professional directory",
     description:
-      "Browse our marketplace or bring your own team. AI surfaces architects and contractors that fit your city and scope. You choose who to hire.",
+      "Browse published professionals by craft and city, or bring your own team. You choose who to contact and hire.",
   },
   {
     id: 3,
     title: "Smart project hub",
     description:
-      "Site visits, documents, checklists, and team updates in one place. Smart reminders, schedule tracking, and follow-ups keep work moving. Agentic shopping suggests materials you approve.",
+      "Site visits, documents, checklists, and team updates in one place. Schedule tracking, project questions, and an editable material plan help keep work organized. Agentic shopping is coming soon.",
   },
   {
     id: 4,
-    title: "Payment protection",
+    title: "Payment records",
     description:
-      "Milestone approvals for homeowners and predictable payouts for pros — funds release when work is signed off (escrow-style protection, coming soon).",
+      "Record planned, due, and paid project items in one ledger. Escrow-style milestone protection is coming soon; payments are currently arranged directly with the professional.",
   },
 ];
 

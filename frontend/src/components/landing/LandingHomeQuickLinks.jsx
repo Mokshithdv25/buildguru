@@ -31,7 +31,7 @@ const PATHS = [
   {
     id: "marketplace",
     title: "Marketplace & shop",
-    description: "AI professional matching, browse pros, and agentic material picks you review before you buy.",
+    description: "Browse professionals and review an editable material plan before you shop.",
     to: "/browse",
     icon: Store,
   },
@@ -107,7 +107,7 @@ export default function LandingHomeQuickLinks() {
         </div>
         <div id="how-it-works" className="mt-14 border-t border-border/60 pt-12">
           <span className="section-kicker">How it works</span>
-          <h2 className="mt-4 font-display text-3xl font-semibold leading-tight text-foreground md:text-4xl">From first sketch to keys in hand</h2>
+          <h2 className="mt-4 font-display text-3xl font-semibold leading-tight text-foreground md:text-4xl">From first sketch to a clearer project plan</h2>
           <p className="mt-3 max-w-2xl font-body text-sm leading-relaxed text-muted-foreground md:text-base">AI helps where it saves time. Homeowners and qualified professionals remain in control of every important decision.</p>
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {JOURNEY.map((step, index) => <article key={step.title} className="rounded-2xl border border-border/60 bg-white/80 p-5"><span className="font-body text-xs font-bold text-copper">0{index + 1}</span><h3 className="mt-3 font-display text-lg font-semibold text-foreground">{step.title}</h3><p className="mt-2 font-body text-sm leading-relaxed text-muted-foreground">{step.text}</p></article>)}

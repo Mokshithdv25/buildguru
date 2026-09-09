@@ -1843,7 +1843,7 @@ export default function BuildNewHome() {
 
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10 }}>Each design option includes</div>
             <div style={{ fontSize: 13, color: "#57534E", lineHeight: 1.65, marginBottom: 24 }}>
-              Floor plans · 3D exteriors and interiors · Elevations · Cost estimate with breakup (indicative for {form.location.split(",")[0]}).
+              Floor-plan directions · Exterior and interior concept visuals · Elevation concepts · Cost estimate with breakup (indicative for {form.location.split(",")[0]}).
             </div>
 
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 10 }}>Before you generate</div>
