@@ -53,25 +53,6 @@ const HOMEOWNER_SOFTWARE_GROUPS = [
 
 const PRO_SOFTWARE_GROUPS = HOMEOWNER_SOFTWARE_GROUPS.slice(1);
 
-const FIND_PROS_GROUPS = [
-  {
-    heading: "Design & engineering",
-    items: ["Architects", "Interior designers", "Landscape designers", "Structural engineers", "MEP consultants", "Vastu consultants"],
-  },
-  {
-    heading: "Build & site",
-    items: ["General contractors", "Civil contractors", "Renovation specialists", "Site supervisors", "Project managers"],
-  },
-  {
-    heading: "Skilled trades",
-    items: ["Electricians", "Plumbers", "Carpenters & woodworkers", "Painters", "Masons & tile layers", "HVAC technicians", "Glass & aluminium", "Modular kitchen installers"],
-  },
-  {
-    heading: "Supplies & specialty",
-    items: ["Material suppliers", "Waterproofing", "False ceiling", "Steel fabrication", "Solar installers", "Smart home integrators"],
-  },
-];
-
 /**
  * Marketing / homeowner / pro nav. Pro sessions hide homeowner-only items (Find Pros, My Project).
  */
@@ -93,7 +74,6 @@ export default function LandingNavbar({ tagline = null }) {
   const isProSession = session?.role === "pro";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [softwareOpen, setSoftwareOpen] = useState(false);
-  const [findProsOpen, setFindProsOpen] = useState(false);
 
   const softwareGroups = useMemo(
     () => (isProSession ? PRO_SOFTWARE_GROUPS : HOMEOWNER_SOFTWARE_GROUPS),
@@ -128,15 +108,6 @@ export default function LandingNavbar({ tagline = null }) {
     navigate(path);
     setMobileOpen(false);
     setSoftwareOpen(false);
-    setFindProsOpen(false);
-  };
-
-  const goShopWithTrade = (label) => {
-    const q = encodeURIComponent(label);
-    navigate(`/browse?trade=${q}`);
-    setMobileOpen(false);
-    setFindProsOpen(false);
-    setSoftwareOpen(false);
   };
 
   const renderSoftwareMenu = () => (
@@ -145,7 +116,6 @@ export default function LandingNavbar({ tagline = null }) {
         type="button"
         onClick={() => {
           setSoftwareOpen((o) => !o);
-          setFindProsOpen(false);
         }}
         className="inline-flex items-center gap-1.5 rounded-full px-1 py-1 font-body text-[15px] font-medium text-foreground/74 transition-colors hover:text-foreground bg-transparent border-none cursor-pointer"
       >
@@ -172,66 +142,13 @@ export default function LandingNavbar({ tagline = null }) {
   );
 
   const renderFindPros = () => (
-    <div className="relative">
-      <div className="inline-flex items-center gap-0.5">
-        <button
-          type="button"
-          onClick={() => {
-            go("/browse");
-            setSoftwareOpen(false);
-          }}
-          className="rounded-full px-1 py-1 font-body text-[15px] font-medium text-foreground/74 transition-colors hover:text-foreground bg-transparent border-none cursor-pointer"
-        >
-          Find Pros
-        </button>
-        <button
-          type="button"
-          aria-expanded={findProsOpen}
-          aria-haspopup="menu"
-          aria-label="Browse by specialty"
-          onClick={() => {
-            setFindProsOpen((o) => !o);
-            setSoftwareOpen(false);
-          }}
-          className="inline-flex items-center justify-center rounded-full p-1 text-foreground/74 transition-colors hover:text-foreground hover:bg-secondary/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-copper/50 bg-transparent border-none cursor-pointer"
-        >
-          <ChevronDown className={`h-4 w-4 transition-transform ${findProsOpen ? "rotate-180" : ""}`} />
-        </button>
-      </div>
-      {findProsOpen && (
-        <div className="absolute left-0 top-[calc(100%+0.9rem)] w-[20rem] max-h-[min(75vh,560px)] overflow-y-auto rounded-[1.35rem] border border-black/8 bg-[rgba(255,252,249,0.98)] p-3 shadow-[0_28px_80px_rgba(48,33,21,0.14)] backdrop-blur-xl">
-          <p className="mb-2 px-1 font-body text-[11px] font-medium leading-snug text-muted-foreground">
-            Browse professionals by specialty — pick a trade to jump into the directory.
-          </p>
-          {FIND_PROS_GROUPS.map((g) => (
-            <div key={g.heading} className="mb-3 last:mb-0">
-              <div className="px-2 pb-1.5 pt-1 font-body text-[10px] font-bold uppercase tracking-[0.14em] text-copper/90">
-                {g.heading}
-              </div>
-              <div className="flex flex-col gap-0.5">
-                {g.items.map((label) => (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => goShopWithTrade(label)}
-                    className="rounded-lg px-2.5 py-2 text-left font-body text-sm text-foreground/80 transition-colors hover:bg-secondary/70 hover:text-foreground bg-transparent border-none cursor-pointer"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => go("/browse")}
-            className="mt-1 w-full rounded-xl border border-border/80 bg-card/80 px-3 py-2.5 text-center font-body text-xs font-semibold text-foreground transition-colors hover:bg-secondary/60"
-          >
-            Browse all professionals
-          </button>
-        </div>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={() => go("/browse")}
+      className="rounded-full border-none bg-transparent px-1 py-1 font-body text-[15px] font-medium text-foreground/74 transition-colors hover:text-foreground cursor-pointer"
+    >
+      Find Pros
+    </button>
   );
 
   return (
@@ -266,7 +183,6 @@ export default function LandingNavbar({ tagline = null }) {
               onClick={() => {
                 go(item.path);
                 setSoftwareOpen(false);
-                setFindProsOpen(false);
               }}
               className="font-body text-[15px] font-medium text-foreground/74 transition-colors hover:text-foreground bg-transparent border-none cursor-pointer"
             >
@@ -294,7 +210,7 @@ export default function LandingNavbar({ tagline = null }) {
                   type="button"
                   variant="outline"
                   onClick={() => go(getProEntryPath())}
-                  className="rounded-full border-foreground/15 bg-white/70 px-4 font-body text-sm gap-2 shadow-sm hover:bg-secondary"
+                  className="rounded-full border-foreground/15 bg-white/70 px-4 font-body text-sm text-[#1C1917] gap-2 shadow-sm hover:bg-[#F4E2D3] hover:text-[#1C1917]"
                 >
                   <Briefcase className="w-4 h-4" />
                   Join as a Pro
@@ -306,7 +222,7 @@ export default function LandingNavbar({ tagline = null }) {
               type="button"
               variant="outline"
               onClick={() => go(getProEntryPath())}
-              className="rounded-full border-foreground/15 bg-white/70 px-4 font-body text-sm gap-2 shadow-sm hover:bg-secondary"
+              className="rounded-full border-foreground/15 bg-white/70 px-4 font-body text-sm text-[#1C1917] gap-2 shadow-sm hover:bg-[#F4E2D3] hover:text-[#1C1917]"
             >
               <Briefcase className="w-4 h-4" />
               Join as a Pro
@@ -365,7 +281,7 @@ export default function LandingNavbar({ tagline = null }) {
                   type="button"
                   variant="outline"
                   onClick={() => go(getProEntryPath())}
-                  className="w-full rounded-2xl border-foreground/20 font-body text-sm gap-2"
+                  className="w-full rounded-2xl border-foreground/20 font-body text-sm text-[#1C1917] gap-2 hover:bg-[#F4E2D3] hover:text-[#1C1917]"
                 >
                   <Briefcase className="w-4 h-4" />
                   Join as a Pro
@@ -377,7 +293,7 @@ export default function LandingNavbar({ tagline = null }) {
               type="button"
               variant="outline"
               onClick={() => go(getProEntryPath())}
-              className="w-full rounded-2xl border-foreground/20 font-body text-sm gap-2"
+              className="w-full rounded-2xl border-foreground/20 font-body text-sm text-[#1C1917] gap-2 hover:bg-[#F4E2D3] hover:text-[#1C1917]"
             >
               <Briefcase className="w-4 h-4" />
               Join as a Pro
