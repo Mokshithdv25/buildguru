@@ -483,11 +483,11 @@ class LaunchContractsTest(unittest.TestCase):
         pros = (ROOT / "frontend/src/components/landing/LandingForProfessionals.jsx").read_text()
 
         self.assertIn("AI design, plans & estimates", why)
-        self.assertIn("AI professional matching", why)
+        self.assertIn("Professional directory", why)
         self.assertIn("Smart project hub", why)
-        self.assertIn("Payment protection", why)
-        self.assertIn("Smart reminders, schedule tracking, and follow-ups", why)
-        self.assertIn("Agentic shopping suggests materials you approve", why)
+        self.assertIn("Payment records", why)
+        self.assertIn("Schedule tracking", why)
+        self.assertIn("Agentic shopping is coming soon", why)
         self.assertIn("A shareable portfolio, directory visibility", pros)
         self.assertIn("Smart reminders and client follow-ups are the next layer", pros)
 
