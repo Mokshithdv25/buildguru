@@ -270,6 +270,7 @@ export default function RemodelHome() {
   const [visionInspirationItems, setVisionInspirationItems] = useState([]);
   // Step 2 — capture space
   const [photos, setPhotos] = useState([]);
+  const [beforeImage, setBeforeImage] = useState(null);
   const [ptype, setPtype] = useState("Apartment");
   const [room, setRoom] = useState("Living room");
   const [len, setLen] = useState("15");
@@ -327,6 +328,8 @@ export default function RemodelHome() {
       const encoded = await readImagesAsDataUrls(files);
       if (encoded.length) {
         setPhotos((prev) => [...prev, ...encoded.map((url, i) => ({ url, label: `Photo ${prev.length + i + 1}` }))]);
+        setBeforeImage((current) => current || encoded[0]);
+        setRemodelFlow({ beforeImage: encoded[0] });
       }
     } finally {
       setPhotosEncoding(false);
@@ -359,6 +362,7 @@ export default function RemodelHome() {
       }
     }
     if (f.projectId) setFlowProjectId(f.projectId);
+    if (f.beforeImage) setBeforeImage(String(f.beforeImage));
     if (f.architectComment) setArchitectHandoffNote(String(f.architectComment));
     if (f.hireMode) setHireMode(normalizeHireMode(f.hireMode));
     else if (typeof f.hasArchitect === "boolean") setHireMode(hireModeFromLegacyFlag(f.hasArchitect));
@@ -1200,7 +1204,7 @@ export default function RemodelHome() {
               <div style={{ fontWeight:700, fontSize:15, marginBottom:12 }}>{room} — first AI v0</div>
               <div style={{ position:"relative", height:200, borderRadius:12, overflow:"hidden", border:"1px solid #EEDCCB", marginBottom:8 }}>
                 <img src={v0ImageBundle?.images?.[0]?.url || "https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=400&q=75"} alt="after AI v0" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
-                <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=75" alt="before" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"left", clipPath:`inset(0 ${100 - beforeAfterPosition}% 0 0)`, zIndex:1, display:"block" }}/>
+                <img src={beforeImage || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=75"} alt={beforeImage ? "Your uploaded room before remodel" : "Before remodel placeholder"} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"left", clipPath:`inset(0 ${100 - beforeAfterPosition}% 0 0)`, zIndex:1, display:"block" }}/>
                 <div style={{ position:"absolute", top:0, bottom:0, left:`calc(${beforeAfterPosition}% - 1px)`, width:2, background:"#fff", boxShadow:"0 0 0 1px rgba(28,25,23,.2)", zIndex:2, pointerEvents:"none" }} />
                 <div style={{ position:"absolute", top:10, left:10, background:"rgba(0,0,0,0.55)", color:"#fff", fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:4, zIndex:3 }}>BEFORE</div>
                 <div style={{ position:"absolute", top:10, right:10, background:"#22A36B", color:"#fff", fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:4, zIndex:3 }}>AFTER (AI v0)</div>
