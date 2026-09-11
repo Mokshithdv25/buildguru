@@ -2031,12 +2031,6 @@ export default function BuildNewHome() {
             <div style={{ background: "#F7F3EE", border: "1px solid #E6DFD3", borderRadius: 12, padding: 16, marginBottom: 16, maxHeight: 420, overflow: "auto" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#44403C", marginBottom: 10 }}>Shared project specification</div>
               <BuildNewHomeSpecView form={form} archResolved={archResolved} budgetLabel={budgetSingleLabel(form)} />
-              <details style={{ marginTop: 14, borderTop: "1px solid #E6DFD3", paddingTop: 10 }}>
-                <summary style={{ cursor: "pointer", fontSize: 11, color: "#9A8F87", fontWeight: 600 }}>Technical JSON (optional export)</summary>
-                <pre style={{ margin: "10px 0 0", fontSize: 10, lineHeight: 1.4, color: "#57534E", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                  {JSON.stringify(form, null, 2)}
-                </pre>
-              </details>
             </div>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#44403C", marginBottom: 6 }}>
               Notes for pros reviewing this project (optional)

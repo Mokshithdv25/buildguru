@@ -1324,39 +1324,6 @@ export default function RemodelHome() {
                 inspirationCount={inspirationImgs.length}
                 photoCount={photos.length}
               />
-              <details style={{ marginTop: 14, borderTop: "1px solid #E6DFD3", paddingTop: 10 }}>
-                <summary style={{ cursor: "pointer", fontSize: 11, color: "#9A8F87", fontWeight: 600 }}>Technical JSON (optional export)</summary>
-                <pre style={{ margin: "10px 0 0", fontSize: 10, lineHeight: 1.4, color: "#57534E", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                  {JSON.stringify(
-                    {
-                      dreamVision,
-                      room,
-                      ptype,
-                      len,
-                      breadth,
-                      spaceNotes,
-                      mainGoal,
-                      painPoints,
-                      changeLevel,
-                      budgetUnit,
-                      budgetAmount,
-                      budgetNotes,
-                      startTimeline,
-                      completionTime,
-                      layoutOk,
-                      mustKeep,
-                      dealbreakers3,
-                      styles,
-                      finishTier,
-                      colourBase,
-                      colourSecondary,
-                      postAiNotes,
-                    },
-                    null,
-                    2
-                  )}
-                </pre>
-              </details>
             </div>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#44403C", marginBottom: 6 }}>Notes for pros reviewing this project (optional)</div>
             <textarea
