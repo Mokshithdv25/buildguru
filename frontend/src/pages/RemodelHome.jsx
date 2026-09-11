@@ -91,7 +91,7 @@ function budgetAmountClampedRemodel(budgetAmount) {
 function remodelBudgetLabel(budgetUnit, budgetAmount) {
   const n = budgetAmountClampedRemodel(budgetAmount);
   if (n === 0) return "₹0";
-  return budgetUnit === "Crores" ? `₹${n} Cr` : `₹${n} L`;
+  return budgetUnit === "Thousands" ? `₹${n}K` : `₹${n} L`;
 }
 
 const flowSection = { marginBottom: 28, paddingBottom: 26, borderBottom: "1px solid #EDE8E0" };
@@ -279,7 +279,7 @@ export default function RemodelHome() {
   const [mainGoal, setMainGoal] = useState("Improve Layout");
   const [painPoints, setPainPoints] = useState(["Cramped / Small","Poor Lighting","Not Enough Storage"]);
   const [changeLevel, setChangeLevel] = useState("Moderate Remodel");
-  // Step 4 — same budget logic as new home (lakhs / crores · 0–99)
+  // Step 4 — remodel budget in thousands or lakhs (0–99)
   const [budgetUnit, setBudgetUnit] = useState("Lakhs");
   const [budgetAmount, setBudgetAmount] = useState("25");
   const [budgetNotes, setBudgetNotes] = useState("");
@@ -374,8 +374,7 @@ export default function RemodelHome() {
   const remodelBriefPayload = () => {
     const areaSqFt = (parseInt(len, 10) || 0) * (parseInt(breadth, 10) || 0);
     const budgetN = budgetAmountClampedRemodel(budgetAmount);
-    const budgetInr =
-      budgetUnit === "Crores" ? budgetN * 10_000_000 : budgetN * 100_000;
+    const budgetInr = budgetUnit === "Thousands" ? budgetN * 1_000 : budgetN * 100_000;
     const referenceImages = [
       ...photos.map((photo) => photo?.url),
       ...visionInspirationItems
@@ -779,7 +778,7 @@ export default function RemodelHome() {
                 <span style={{ fontSize: 12, color: "#78716C", fontWeight: 600 }}>(required · above ₹0)</span>
               </div>
               <div style={{ fontSize: 13, color: "#5C5147", marginBottom: 16, maxWidth: 560, lineHeight: 1.55 }}>
-                Choose <strong>lakhs</strong> or <strong>crores</strong>, then set the amount from <strong>0 to 99</strong> (all-in band for this scope — materials, labour, finishes).
+                Choose <strong>thousands</strong> or <strong>lakhs</strong>, then set the amount from <strong>0 to 99</strong> (all-in band for this scope — materials, labour, finishes).
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "flex-end", marginBottom: 18 }}>
                 <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 11, fontWeight: 600, color: "#78716C", letterSpacing: "0.04em" }}>
@@ -798,8 +797,8 @@ export default function RemodelHome() {
                       minWidth: 140,
                     }}
                   >
+                    <option value="Thousands">Thousands (₹ K)</option>
                     <option value="Lakhs">Lakhs (₹ L)</option>
-                    <option value="Crores">Crores (₹ Cr)</option>
                   </select>
                 </label>
                 <div style={{ fontSize: 28, fontWeight: 800, color: "#C85F2B", fontVariantNumeric: "tabular-nums", paddingBottom: 2 }}>{remodelBudgetLabel(budgetUnit, budgetAmount)}</div>
