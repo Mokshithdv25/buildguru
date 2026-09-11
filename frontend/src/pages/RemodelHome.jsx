@@ -309,6 +309,7 @@ export default function RemodelHome() {
   const [hireMode, setHireMode] = useState("trades");
   const [stepBlockError, setStepBlockError] = useState("");
   const [inspirationImgs, setInspirationImgs] = useState([]);
+  const suppressStepHistoryRef = useRef(false);
   const toggleStyle = (s) => setStyles(prev => prev.includes(s) ? prev.filter(x=>x!==s) : prev.length < 2 ? [...prev, s] : prev);
 
   const togglePain = (p) => setPainPoints(prev => prev.includes(p)?prev.filter(x=>x!==p):[...prev,p]);
@@ -394,6 +395,26 @@ export default function RemodelHome() {
     if (f.hireMode) setHireMode(normalizeHireMode(f.hireMode));
     else if (typeof f.hasArchitect === "boolean") setHireMode(hireModeFromLegacyFlag(f.hasArchitect));
   }, []);
+
+  useEffect(() => {
+    const marker = "hm-remodel-step";
+    const current = window.history.state;
+    if (!current?.[marker]) window.history.replaceState({ ...(current || {}), [marker]: step }, "", window.location.href);
+    const onPopState = (event) => {
+      const previous = Number(event.state?.[marker]);
+      if (previous >= 1 && previous <= 6) { suppressStepHistoryRef.current = true; setStep(previous); setMaxStepReached((m) => Math.max(m, previous)); }
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  // Install the history listener once; step is intentionally captured only for the initial entry.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (suppressStepHistoryRef.current) { suppressStepHistoryRef.current = false; return; }
+    const marker = "hm-remodel-step";
+    if (window.history.state?.[marker] !== step) window.history.pushState({ ...(window.history.state || {}), [marker]: step }, "", window.location.href);
+  }, [step]);
 
   useEffect(() => {
     const snapshot = { dreamVision, visionInspirationItems, photos, ptype, room, len, breadth, spaceNotes, mainGoal, painPoints, changeLevel, budgetUnit, budgetAmount, budgetNotes, startTimeline, completionTime, layoutOk, mustKeep, dealbreakers3, styles, finishTier, colourBase, colourSecondary, postAiNotes };

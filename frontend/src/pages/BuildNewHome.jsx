@@ -419,6 +419,7 @@ export default function BuildNewHome() {
   });
 
   const [stepBlockError, setStepBlockError] = useState("");
+  const suppressStepHistoryRef = useRef(false);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
   const toggleLifestyle = (s) => set("lifestyle", form.lifestyle.includes(s) ? form.lifestyle.filter(x => x !== s) : [...form.lifestyle, s]);
@@ -455,6 +456,26 @@ export default function BuildNewHome() {
       setMaxStepReached(savedStep);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const marker = "hm-build-step";
+    const current = window.history.state;
+    if (!current?.[marker]) window.history.replaceState({ ...(current || {}), [marker]: activeStep }, "", window.location.href);
+    const onPopState = (event) => {
+      const previous = Number(event.state?.[marker]);
+      if (previous >= 1 && previous <= 6) { suppressStepHistoryRef.current = true; setActiveStep(previous); setMaxStepReached((m) => Math.max(m, previous)); }
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  // Install the history listener once; activeStep is intentionally captured only for the initial entry.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (suppressStepHistoryRef.current) { suppressStepHistoryRef.current = false; return; }
+    const marker = "hm-build-step";
+    if (window.history.state?.[marker] !== activeStep) window.history.pushState({ ...(window.history.state || {}), [marker]: activeStep }, "", window.location.href);
+  }, [activeStep]);
 
   useEffect(() => {
     setBuildFlow({ activeStep, step: activeStep });
