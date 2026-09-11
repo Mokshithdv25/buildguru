@@ -299,6 +299,7 @@ export default function RemodelHome() {
   const [v0Generating, setV0Generating] = useState(false);
   const [v0GenPhase, setV0GenPhase] = useState("");
   const [v0GenStatus, setV0GenStatus] = useState("");
+  const [beforeAfterPosition, setBeforeAfterPosition] = useState(50);
   const [projectSaving, setProjectSaving] = useState(false);
   const [v0ImageBundle, setV0ImageBundle] = useState(null);
   const [v0PlanBundle, setV0PlanBundle] = useState(null);
@@ -1197,17 +1198,16 @@ export default function RemodelHome() {
             {/* BEFORE / AFTER */}
             <div style={{ ...cardStyle, border: "1px solid #E8E4DE", boxShadow: "0 4px 20px -8px rgba(28,25,23,0.08)" }}>
               <div style={{ fontWeight:700, fontSize:15, marginBottom:12 }}>{room} — first AI v0</div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", borderRadius:12, overflow:"hidden", border:"1px solid #EEDCCB", position:"relative", marginBottom:12 }}>
-                <div style={{ position:"relative" }}>
-                  <div style={{ position:"absolute", top:10, left:10, background:"rgba(0,0,0,0.55)", color:"#fff", fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:4, zIndex:1 }}>BEFORE</div>
-                  <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=75" alt="before" style={{ width:"100%", height:200, objectFit:"cover", display:"block" }}/>
-                </div>
-                <div style={{ position:"relative" }}>
-                  <div style={{ position:"absolute", top:10, left:10, background:"#22A36B", color:"#fff", fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:4, zIndex:1 }}>AFTER (AI v0)</div>
-                  <img src={v0ImageBundle?.images?.[0]?.url || "https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=400&q=75"} alt="after AI v0" style={{ width:"100%", height:200, objectFit:"cover", display:"block" }}/>
-                </div>
-                <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", background:"rgba(255,255,255,0.95)", border:"1px solid #EEDCCB", borderRadius:"50%", width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, zIndex:2, cursor:"pointer", fontSize:14 }}>⟷</div>
+              <div style={{ position:"relative", height:200, borderRadius:12, overflow:"hidden", border:"1px solid #EEDCCB", marginBottom:8 }}>
+                <img src={v0ImageBundle?.images?.[0]?.url || "https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=400&q=75"} alt="after AI v0" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", display:"block" }}/>
+                <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=75" alt="before" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"left", clipPath:`inset(0 ${100 - beforeAfterPosition}% 0 0)`, zIndex:1, display:"block" }}/>
+                <div style={{ position:"absolute", top:0, bottom:0, left:`calc(${beforeAfterPosition}% - 1px)`, width:2, background:"#fff", boxShadow:"0 0 0 1px rgba(28,25,23,.2)", zIndex:2, pointerEvents:"none" }} />
+                <div style={{ position:"absolute", top:10, left:10, background:"rgba(0,0,0,0.55)", color:"#fff", fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:4, zIndex:3 }}>BEFORE</div>
+                <div style={{ position:"absolute", top:10, right:10, background:"#22A36B", color:"#fff", fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:4, zIndex:3 }}>AFTER (AI v0)</div>
+                <input aria-label="Compare before and after" type="range" min="0" max="100" value={beforeAfterPosition} onChange={(e) => setBeforeAfterPosition(Number(e.target.value))} style={{ position:"absolute", inset:0, width:"100%", height:"100%", opacity:0, cursor:"ew-resize", zIndex:4, margin:0 }} />
+                <div aria-hidden="true" style={{ position:"absolute", top:"50%", left:`${beforeAfterPosition}%`, transform:"translate(-50%,-50%)", background:"rgba(255,255,255,0.95)", border:"1px solid #EEDCCB", borderRadius:"50%", width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700, zIndex:3, pointerEvents:"none", fontSize:14 }}>⟷</div>
               </div>
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"#78716C", marginBottom:12 }}><span>Drag to compare</span><span>{beforeAfterPosition}% before</span></div>
               <div style={{ background:"#FBF6F0", border:"1px solid #EEDCCB", borderRadius:12, padding:"14px 16px", marginBottom:14 }}>
                 <div style={{ fontWeight:700, fontSize:13, color:"#44403C", marginBottom:8 }}>After this AI pass</div>
                 <p style={{ fontSize:12, color:"#57534E", lineHeight:1.6, margin:0 }}>
