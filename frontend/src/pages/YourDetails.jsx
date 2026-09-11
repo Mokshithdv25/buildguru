@@ -7,6 +7,7 @@ import { HM_HEADER_BAR_CLASS, HM_TAGLINE_PORTFOLIO } from "../lib/hmBrand";
 import { findCraft } from "../lib/crafts";
 import { updatePortfolio } from "../lib/api";
 import { useHmSession } from "../hooks/useHmSession";
+import RouteFallback from "../components/RouteFallback";
 import {
   getPortfolioBase,
   getPortfolioMedia,
@@ -229,7 +230,7 @@ export default function YourDetails() {
     }
   };
 
-  if (loading) return null;
+  if (loading) return <RouteFallback label="Loading your details…" />;
 
   return (
     <div className="relative min-h-screen bg-[#FBF7F2] overflow-x-hidden">

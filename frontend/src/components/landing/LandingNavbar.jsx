@@ -6,6 +6,7 @@ import { HM_HEADER_BAR_CHROME_CLASS, HM_WORDMARK_TAGLINE_CLASS, hmLogoMarkSrc } 
 import { AUTH_UI_ENABLED } from "../../lib/authMode";
 import { getProEntryPath } from "../../lib/proEntryPath";
 import { useHmSession } from "../../hooks/useHmSession";
+import { navigateToHomeownerFlow } from "../../lib/requireHomeownerAuth";
 import HmUserMenu from "../HmUserMenu";
 import HmMarketingWordmark from "../HmMarketingWordmark";
 
@@ -105,7 +106,17 @@ export default function LandingNavbar({ tagline = null }) {
   }, [isProSession]);
 
   const go = (path) => {
-    navigate(path);
+    const pathOnly = String(path).split("?")[0];
+    const homeownerOnly = [
+      "/build/new-home",
+      "/build/remodel",
+      "/project",
+      "/documents",
+      "/project/payments",
+      "/team",
+    ].includes(pathOnly);
+    if (homeownerOnly) navigateToHomeownerFlow(navigate, path);
+    else navigate(path);
     setMobileOpen(false);
     setSoftwareOpen(false);
   };
@@ -195,6 +206,8 @@ export default function LandingNavbar({ tagline = null }) {
           {AUTH_UI_ENABLED ? (
             session ? (
               <HmUserMenu />
+            ) : session === undefined ? (
+              <div className="h-9 w-[7.5rem] rounded-full bg-black/5" aria-hidden />
             ) : (
               <>
                 <Button
@@ -271,6 +284,8 @@ export default function LandingNavbar({ tagline = null }) {
               <div className="flex justify-end py-1">
                 <HmUserMenu />
               </div>
+            ) : session === undefined ? (
+              <div className="h-11 rounded-2xl bg-black/5" aria-hidden />
             ) : (
               <>
                 <Button type="button" variant="ghost" onClick={() => go(signInHref())} className="w-full justify-start font-body text-sm gap-2">

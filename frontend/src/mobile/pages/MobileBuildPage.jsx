@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, Check, Home, Images, MapPinned, Palette, Ruler, Sparkles, Wrench } from "lucide-react";
 import MobileHeader from "../MobileHeader";
 import { publicAsset } from "../../lib/publicAsset";
+import { navigateToHomeownerFlow } from "../../lib/requireHomeownerAuth";
 
 const NEW_HOME_STEPS = [
   { Icon: MapPinned, label: "Define plot" },
@@ -83,7 +84,7 @@ export default function MobileBuildPage() {
           description="Describe your plot and lifestyle — get floor plans, renders, and a ballpark cost."
           features={["Saved brief", "AI exterior concepts", "Estimate + project hub"]}
           steps={NEW_HOME_STEPS}
-          onClick={() => navigate("/build/new-home" + q)}
+          onClick={() => navigateToHomeownerFlow(navigate, "/build/new-home" + q)}
         />
         <FlowCard
           image={publicAsset("mobile_flow_remodel.jpg")}
@@ -92,7 +93,7 @@ export default function MobileBuildPage() {
           description="Upload room photos, describe your vision, and get AI designs and costs."
           features={["Room photo upload", "AI remodel concepts", "Costs, tasks + pros"]}
           steps={REMODEL_STEPS}
-          onClick={() => navigate("/build/remodel" + q)}
+          onClick={() => navigateToHomeownerFlow(navigate, "/build/remodel" + q)}
           accent="sand"
         />
       </div>

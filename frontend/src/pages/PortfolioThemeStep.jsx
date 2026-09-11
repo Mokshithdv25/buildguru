@@ -14,6 +14,7 @@ import {
 import { getPortfolioBase, getPortfolioMedia, setPortfolioBase } from "../lib/portfolioStorage";
 import { updatePortfolio } from "../lib/api";
 import { ArrowLeft, ArrowRight, Palette, LayoutTemplate, Check } from "lucide-react";
+import RouteFallback from "../components/RouteFallback";
 
 function ThemeCard({ theme, selected, onSelect }) {
   return (
@@ -124,7 +125,7 @@ export default function PortfolioThemeStep() {
     }
   };
 
-  if (!form) return null;
+  if (!form) return <RouteFallback label="Loading theme…" />;
 
   return (
     <div className="relative min-h-screen bg-[#FBF7F2] overflow-x-hidden">

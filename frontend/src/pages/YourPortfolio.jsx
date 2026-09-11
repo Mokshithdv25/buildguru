@@ -13,6 +13,7 @@ import {
   setPortfolioMedia,
 } from "../lib/portfolioStorage";
 import { updatePortfolio } from "../lib/api";
+import RouteFallback from "../components/RouteFallback";
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const MAX_MEDIA_CHARS = 3_200_000;
@@ -143,7 +144,7 @@ export default function YourPortfolio() {
     }
   };
 
-  if (loading) return null;
+  if (loading) return <RouteFallback label="Loading your portfolio…" />;
 
   const photos = form?.photos || [];
 

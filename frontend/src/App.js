@@ -1,7 +1,7 @@
 import "@/App.css";
 import "./mobile/mobile.css";
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { getSupabase } from "./lib/supabaseClient";
 import { fetchUserProfile } from "./lib/userProfileApi";
@@ -11,14 +11,22 @@ import { warmAiBackend } from "./lib/aiApi";
 import { getOAuthRootRecoveryPath, readOAuthSignInIntent } from "./lib/authIntent";
 import { LOCAL_OPS_UI_ENABLED } from "./lib/opsMode";
 import { useMobileNative } from "./hooks/useMobileNative";
+import { HmSessionProvider } from "./hooks/useHmSession";
 import SignInErrorBoundary from "./components/SignInErrorBoundary";
+import AppErrorBoundary from "./components/AppErrorBoundary";
+import RouteFallback from "./components/RouteFallback";
 import ProOnboardingGuard from "./components/ProOnboardingGuard";
 import ProDashboardGuard from "./components/ProDashboardGuard";
 import HomeownerFlowGuard from "./components/HomeownerFlowGuard";
+import HomePage from "./pages/HomePage";
+import SignInPage from "./pages/SignInPage";
+import WhatAreYouBuilding from "./pages/WhatAreYouBuilding";
+import BuildNewHome from "./pages/BuildNewHome";
+import RemodelHome from "./pages/RemodelHome";
+import DesignPage from "./pages/DesignPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 const MobileAppRoutes = lazy(() => import("./mobile/MobileAppRoutes"));
-const HomePage = lazy(() => import("./pages/HomePage"));
-const SignInPage = lazy(() => import("./pages/SignInPage"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const SubscriptionsPage = lazy(() => import("./pages/SubscriptionsPage"));
 const CraftSelection = lazy(() => import("./pages/CraftSelection"));
@@ -27,9 +35,6 @@ const YourPortfolio = lazy(() => import("./pages/YourPortfolio"));
 const GoLive = lazy(() => import("./pages/GoLive"));
 const PortfolioThemeStep = lazy(() => import("./pages/PortfolioThemeStep"));
 const PortfolioPage = lazy(() => import("./pages/PortfolioPage"));
-const WhatAreYouBuilding = lazy(() => import("./pages/WhatAreYouBuilding"));
-const BuildNewHome = lazy(() => import("./pages/BuildNewHome"));
-const RemodelHome = lazy(() => import("./pages/RemodelHome"));
 const ProjectDashboard = lazy(() => import("./pages/ProjectDashboard"));
 const Marketplace = lazy(() => import("./pages/Marketplace"));
 const ShopPage = lazy(() => import("./pages/ShopPage"));
@@ -47,10 +52,6 @@ const CareersPage = lazy(() => import("./pages/CareersPage"));
 const CareerProfilePage = lazy(() => import("./pages/CareerProfilePage"));
 const ProfessionalIntakeAdminPage = lazy(() => import("./pages/ProfessionalIntakeAdminPage"));
 const GuidesPage = lazy(() => import("./pages/GuidesPage"));
-
-function RouteLoading() {
-  return <div className="hm-route-loading" role="status" aria-live="polite"><span />Loading BuildGuru…</div>;
-}
 
 function ScrollToTopOnRouteChange() {
   const { pathname, search, hash } = useLocation();
@@ -80,6 +81,7 @@ function DesktopRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/design" element={<DesignPage />} />
       <Route
         path="/sign-in"
         element={AUTH_UI_ENABLED ? <SignInErrorBoundary><SignInPage portalMode="signin" /></SignInErrorBoundary> : <Navigate to="/" replace />}
@@ -225,7 +227,7 @@ function DesktopRoutes() {
       />
       <Route path="/terms" element={<LegalPage kind="terms" />} />
       <Route path="/privacy" element={<LegalPage kind="privacy" />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
@@ -233,21 +235,27 @@ function DesktopRoutes() {
 function AppRoutes() {
   const mobileNative = useMobileNative();
   return (
-    <Suspense fallback={<RouteLoading />}>
+    <Suspense fallback={<RouteFallback />}>
       {mobileNative ? <MobileAppRoutes /> : <DesktopRoutes />}
     </Suspense>
   );
 }
 
-function App() {
-  useEffect(() => {
-    warmAiBackend();
-  }, []);
+function AuthSessionSync() {
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!AUTH_UI_ENABLED) return undefined;
     const sb = getSupabase();
     if (!sb) return undefined;
+
+    const recoverOauthIfNeeded = () => {
+      const oauthIntent = readOAuthSignInIntent();
+      const recoveryPath = getOAuthRootRecoveryPath(window.location.pathname, oauthIntent);
+      if (!recoveryPath) return;
+      const hash = window.location.hash || "";
+      navigate(hash ? `${recoveryPath}${hash}` : recoveryPath, { replace: true });
+    };
 
     const syncSession = async (session) => {
       if (!session?.user) return;
@@ -261,30 +269,51 @@ function App() {
       await establishHmSession(session.user, profile, {
         signInIntent: oauthIntent?.role,
       });
-      const recoveryPath = getOAuthRootRecoveryPath(window.location.pathname, oauthIntent);
-      if (recoveryPath) window.location.replace(recoveryPath);
+      recoverOauthIfNeeded();
     };
+
+    recoverOauthIfNeeded();
 
     sb.auth.getSession().then(({ data: { session } }) => {
       if (session) syncSession(session);
-      else clearHmSessionState();
+      // A missing session here is not a sign-out. Clearing the cache on first
+      // getSession() races token restore and kicks signed-in homeowners off
+      // /build/new-home onto a blank or login screen.
     });
 
     const {
       data: { subscription },
     } = sb.auth.onAuthStateChange((event, session) => {
-      if (session) syncSession(session);
-      else clearHmSessionState();
+      if (session) {
+        syncSession(session);
+        return;
+      }
+      if (event === "SIGNED_OUT" || event === "USER_DELETED") {
+        clearHmSessionState();
+      }
     });
 
     return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  return null;
+}
+
+function App() {
+  useEffect(() => {
+    warmAiBackend();
   }, []);
 
   return (
     <div className="App">
       <BrowserRouter>
-        <ScrollToTopOnRouteChange />
-        <AppRoutes />
+        <HmSessionProvider>
+          <AppErrorBoundary>
+            <AuthSessionSync />
+            <ScrollToTopOnRouteChange />
+            <AppRoutes />
+          </AppErrorBoundary>
+        </HmSessionProvider>
       </BrowserRouter>
     </div>
   );

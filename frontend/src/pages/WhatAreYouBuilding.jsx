@@ -1,8 +1,9 @@
 import React from "react";
 import { Home, Images, MapPinned, Palette, Ruler, Sparkles, Wrench } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import { HM_FIXED_NAV_OFFSET_TAGLINE_CLASS, HM_TAGLINE_BUILD_CHOOSER } from "../lib/hmBrand";
+import { isHomeownerSignedIn, navigateToHomeownerFlow } from "../lib/requireHomeownerAuth";
 
 const NEW_HOME_STEPS = [
   { Icon: MapPinned, label: "Define plot" },
@@ -71,6 +72,7 @@ function FeatureRow({ text }) {
 }
 
 export default function WhatAreYouBuilding() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromPortfolio = (searchParams.get("source") || "").toLowerCase() === "portfolio";
   const referredPro = searchParams.get("pro") || "";
@@ -78,6 +80,11 @@ export default function WhatAreYouBuilding() {
   if (fromPortfolio) flowParams.set("source", "portfolio");
   if (referredPro) flowParams.set("pro", referredPro);
   const flowQuery = flowParams.toString() ? `?${flowParams.toString()}` : "";
+  const goHomeowner = (event, path) => {
+    if (isHomeownerSignedIn()) return;
+    event.preventDefault();
+    navigateToHomeownerFlow(navigate, path);
+  };
 
   return (
     <div
@@ -123,6 +130,7 @@ export default function WhatAreYouBuilding() {
           {/* Card 1 – whole card navigates (single Link = reliable cursor + click) */}
           <Link
             to={`/build/new-home${flowQuery}`}
+            onClick={(event) => goHomeowner(event, `/build/new-home${flowQuery}`)}
             aria-label="Build a New Home — Get started"
             className="group relative z-10 block cursor-pointer rounded-2xl border border-[#EEDCCB] text-inherit no-underline outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#4A90D9] focus-visible:ring-offset-2 hover:ring-2 hover:ring-[#4A90D9] hover:shadow-[0_10px_36px_-12px_rgba(74,144,217,0.22),0_1px_3px_rgba(28,25,23,0.05)]"
             style={{
@@ -208,6 +216,7 @@ export default function WhatAreYouBuilding() {
           {/* Card 2 – Renovate / Remodel */}
           <Link
             to={`/build/remodel${flowQuery}`}
+            onClick={(event) => goHomeowner(event, `/build/remodel${flowQuery}`)}
             aria-label="Renovate or remodel — Get started"
             className="group relative z-10 block cursor-pointer rounded-2xl border border-[#EEDCCB] text-inherit no-underline outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#C85F2B] focus-visible:ring-offset-2 hover:ring-2 hover:ring-[#C85F2B] hover:shadow-[0_10px_36px_-12px_rgba(200,95,43,0.2),0_1px_3px_rgba(28,25,23,0.05)]"
             style={{

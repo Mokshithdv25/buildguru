@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { getSupabase } from "../lib/supabaseClient";
 import {
   clearHmSessionState,
@@ -10,29 +10,31 @@ import {
 import { fetchUserProfile } from "../lib/userProfileApi";
 import { readOAuthSignInIntent } from "../lib/authIntent";
 
-/** Reactive homeowner/pro session from localStorage + Supabase auth events. */
-export function useHmSession() {
-  // undefined means auth is still hydrating; null means confirmed signed out.
-  const [session, setSession] = useState(undefined);
+const HmSessionContext = createContext(undefined);
+
+function useHmSessionSource() {
+  // Cached session paints immediately so chrome never flashes "Sign In".
+  // undefined means no cache yet and Supabase is still hydrating; null means signed out.
+  const [session, setSession] = useState(() => readHmSession() || undefined);
 
   useEffect(() => {
     const refresh = () => setSession(readHmSession());
 
     let cancelled = false;
 
-    // If Supabase has a session but our local cache is missing/stale, restore it.
     const hydrateFromSupabase = async () => {
       const sb = getSupabase();
       if (!sb) {
-        if (!cancelled) refresh();
+        if (!cancelled) setSession(readHmSession());
         return;
       }
       try {
         const { data: { session: sbSession } } = await sb.auth.getSession();
         if (cancelled) return;
         if (!sbSession?.user) {
-          clearHmSessionState();
-          if (!cancelled) setSession(null);
+          // Keep a cached homeowner session until SIGNED_OUT. getSession() can
+          // report null while the client is still restoring the user.
+          if (!cancelled) setSession(readHmSession() || null);
           return;
         }
         const cached = readHmSession();
@@ -51,7 +53,7 @@ export function useHmSession() {
         });
         if (!cancelled) refresh();
       } catch (_) {
-        if (!cancelled) setSession(readHmSession());
+        if (!cancelled) setSession(readHmSession() || undefined);
       }
     };
     void hydrateFromSupabase();
@@ -65,13 +67,15 @@ export function useHmSession() {
 
     const sb = getSupabase();
     const subscription = sb
-      ? sb.auth.onAuthStateChange((_event, sbSession) => {
-          if (!sbSession) {
-            clearHmSessionState();
-            if (!cancelled) setSession(null);
+      ? sb.auth.onAuthStateChange((event, sbSession) => {
+          if (sbSession) {
+            void hydrateFromSupabase();
             return;
           }
-          void hydrateFromSupabase();
+          if (event === "SIGNED_OUT" || event === "USER_DELETED") {
+            clearHmSessionState();
+            if (!cancelled) setSession(null);
+          }
         }).data.subscription
       : null;
 
@@ -85,4 +89,18 @@ export function useHmSession() {
   }, []);
 
   return session;
+}
+
+/** One auth subscription for the whole app so nav chrome does not re-hydrate on every route. */
+export function HmSessionProvider({ children }) {
+  const session = useHmSessionSource();
+  return <HmSessionContext.Provider value={session}>{children}</HmSessionContext.Provider>;
+}
+
+/** Reactive homeowner/pro session from localStorage + Supabase auth events. */
+export function useHmSession() {
+  const ctx = useContext(HmSessionContext);
+  // Provider value is the live session. If a tree renders without the provider,
+  // fall back to the device cache so gated pages never sit on a blank screen.
+  return ctx === undefined ? readHmSession() || undefined : ctx;
 }

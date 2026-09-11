@@ -60,13 +60,33 @@ export function readOAuthSignInIntent(now = Date.now()) {
   }
 }
 
+function locationLooksLikeOAuthCallback(location) {
+  const hash = String(location?.hash || "");
+  const search = String(location?.search || "");
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  return (
+    hash.includes("access_token=") ||
+    hash.includes("refresh_token=") ||
+    params.has("code") ||
+    params.get("oauth") === "1"
+  );
+}
+
 /**
  * Supabase falls back to the configured Site URL when a requested redirect is
  * not allow-listed. Recover that root callback through the normal sign-in
  * completion page so profile setup and role-specific navigation still run.
+ *
+ * Only fire when the URL still looks like a provider callback. A leftover
+ * 15-minute intent must not bounce an already-signed-in homepage visit.
  */
-export function getOAuthRootRecoveryPath(pathname, intent = readOAuthSignInIntent()) {
+export function getOAuthRootRecoveryPath(
+  pathname,
+  intent = readOAuthSignInIntent(),
+  location = typeof window === "undefined" ? { search: "", hash: "" } : window.location,
+) {
   if (pathname !== "/" || !intent?.role) return null;
+  if (!locationLooksLikeOAuthCallback(location)) return null;
   const params = new URLSearchParams({ oauth: "1", role: intent.role });
   if (intent.redirectPath) params.set("redirect", intent.redirectPath);
   return `/sign-in?${params.toString()}`;

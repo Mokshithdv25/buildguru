@@ -41,7 +41,7 @@ import { canVisitWizardStep, nextMaxStepReached, wizardExitPath } from "../lib/w
 import VisionCaptureStep from "../components/VisionCaptureStep";
 import LocationAutocomplete from "../components/LocationAutocomplete";
 import WizardMobileStepBar from "../components/WizardMobileStepBar";
-import { createFlowProjectRecord, persistFlowAfterV0, updateProjectEstimate } from "../lib/projectFlowApi";
+import { createFlowProjectRecord, persistFlowAfterV0, updateProjectEstimate, upsertFlowProject, loadProjectBoard } from "../lib/projectFlowApi";
 
 const STEPS = [
   { n: 1, title: "Site and vision", sub: "Location, plot, brief", icon: "✨" },
@@ -543,11 +543,12 @@ export default function BuildNewHome() {
   }, []);
 
   useEffect(() => {
-    if (!isHomeownerSignedIn()) return;
+    if (!isHomeownerSignedIn()) return undefined;
     const local = getBuildFlow();
     let cancelled = false;
-    loadProjectBoard({ projectId: local.projectId || "", source: "build-new" })
-      .then((board) => {
+    const resume = async () => {
+      try {
+        const board = await loadProjectBoard({ projectId: local.projectId || "", source: "build-new" });
         if (cancelled || !board?.projectId) return;
         const savedBundle = sanitizeV0Bundle(board.v0Pack?.images || null);
         const savedPlan = sanitizePlanBundle(board.v0Pack?.estimate || null);
@@ -585,8 +586,11 @@ export default function BuildNewHome() {
             });
           }
         }
-      })
-      .catch((error) => console.warn("Could not resume saved AI v0:", error?.message || error));
+      } catch (error) {
+        console.warn("Could not resume saved AI v0:", error?.message || error);
+      }
+    };
+    void resume();
     return () => {
       cancelled = true;
     };

@@ -34,49 +34,29 @@ export function detectMobileNative() {
 
 /** Mobile-native UI: Capacitor, `?mobile=1`, or viewport ≤ {@link MOBILE_VIEWPORT_MAX_PX}px. Use `?mobile=0` to force desktop on a phone. */
 export function useMobileNative() {
-  const [mobile, setMobile] = useState(detectMobileNative);
+  // Lock after first paint. Swapping desktop/mobile route trees on resize remounts
+  // the whole app and looks like a blank page during a demo.
+  const [mobile] = useState(detectMobileNative);
 
   useEffect(() => {
-    const apply = () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("mobile") === "1") {
-        try {
-          localStorage.setItem(STORAGE_KEY, "1");
-        } catch (_) {
-          /* ignore */
-        }
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mobile") === "1") {
+      try {
+        localStorage.setItem(STORAGE_KEY, "1");
+      } catch (_) {
+        /* ignore */
       }
-      if (params.get("mobile") === "0") {
-        try {
-          localStorage.removeItem(STORAGE_KEY);
-        } catch (_) {
-          /* ignore */
-        }
-      }
-      const on = detectMobileNative();
-      setMobile(on);
-      document.documentElement.classList.toggle("hm-mobile-app", on);
-      document.body.classList.toggle("hm-mobile-app", on);
-    };
-
-    apply();
-    window.addEventListener("storage", apply);
-
-    let mq;
-    try {
-      mq = window.matchMedia(`(max-width: ${MOBILE_VIEWPORT_MAX_PX}px)`);
-      mq.addEventListener("change", apply);
-    } catch (_) {
-      /* ignore */
     }
-    window.addEventListener("resize", apply);
-
-    return () => {
-      window.removeEventListener("storage", apply);
-      window.removeEventListener("resize", apply);
-      if (mq) mq.removeEventListener("change", apply);
-    };
-  }, []);
+    if (params.get("mobile") === "0") {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    document.documentElement.classList.toggle("hm-mobile-app", mobile);
+    document.body.classList.toggle("hm-mobile-app", mobile);
+  }, [mobile]);
 
   return mobile;
 }

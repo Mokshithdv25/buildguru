@@ -119,14 +119,13 @@ export default function AccountPage() {
     }
   };
 
-  if (session === undefined) {
+  if (session === undefined || session === null) {
     return (
       <div className="min-h-screen bg-[#FBF2E8] flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-[#C85F2B]" />
       </div>
     );
   }
-  if (session === null) return null;
 
   const initial = getProfileInitial(session);
 

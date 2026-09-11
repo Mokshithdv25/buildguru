@@ -67,7 +67,8 @@
 
 .hm-route-loading,
 .hm-m-route-loading {
-  min-height: 45dvh;
+  min-height: 100dvh;
+  background: #FBF7F2;
   display: flex;
   align-items: center;
   justify-content: center;

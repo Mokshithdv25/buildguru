@@ -101,14 +101,13 @@ export default function SubscriptionsPage() {
     }
   };
 
-  if (session === undefined) {
+  if (session === undefined || (AUTH_UI_ENABLED && session === null)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-copper" />
       </div>
     );
   }
-  if (AUTH_UI_ENABLED && session === null) return null;
 
   const backPath = role === "pro" ? "/pro/dashboard" : "/project";
   const expiry = entitlement?.active_until

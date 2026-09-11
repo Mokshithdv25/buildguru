@@ -3,14 +3,19 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import MobileShell from "./MobileShell";
 import MobileWizardLayout from "./MobileWizardLayout";
 import SignInErrorBoundary from "../components/SignInErrorBoundary";
+import RouteFallback from "../components/RouteFallback";
 import { AUTH_UI_ENABLED } from "../lib/authMode";
 import HomeownerFlowGuard from "../components/HomeownerFlowGuard";
 import ProOnboardingGuard from "../components/ProOnboardingGuard";
 import ProDashboardGuard from "../components/ProDashboardGuard";
+import MobileHomePage from "./pages/MobileHomePage";
+import MobileBuildPage from "./pages/MobileBuildPage";
+import SignInPage from "../pages/SignInPage";
+import BuildNewHome from "../pages/BuildNewHome";
+import RemodelHome from "../pages/RemodelHome";
+import NotFoundPage from "../pages/NotFoundPage";
 
-const MobileHomePage = lazy(() => import("./pages/MobileHomePage"));
 const MobileDesignPage = lazy(() => import("./pages/MobileDesignPage"));
-const MobileBuildPage = lazy(() => import("./pages/MobileBuildPage"));
 const MobileProsPage = lazy(() => import("./pages/MobileProsPage"));
 const MobileProjectPage = lazy(() => import("./pages/MobileProjectPage"));
 const MobileAccountPage = lazy(() => import("./pages/MobileAccountPage"));
@@ -21,9 +26,6 @@ const MobilePaymentsPage = lazy(() => import("./pages/MobilePaymentsPage"));
 const MobileShopPage = lazy(() => import("./pages/MobileShopPage"));
 const MobileDesignJourneyPage = lazy(() => import("./pages/MobileDesignJourneyPage"));
 const MobileProProfilePage = lazy(() => import("./pages/MobileProProfilePage"));
-const SignInPage = lazy(() => import("../pages/SignInPage"));
-const BuildNewHome = lazy(() => import("../pages/BuildNewHome"));
-const RemodelHome = lazy(() => import("../pages/RemodelHome"));
 const CraftSelection = lazy(() => import("../pages/CraftSelection"));
 const YourDetails = lazy(() => import("../pages/YourDetails"));
 const YourPortfolio = lazy(() => import("../pages/YourPortfolio"));
@@ -40,7 +42,7 @@ const CareersPage = lazy(() => import("../pages/CareersPage"));
 const CareerProfilePage = lazy(() => import("../pages/CareerProfilePage"));
 
 function MobileRouteLoading() {
-  return <div className="hm-m-route-loading" role="status"><span />Loading…</div>;
+  return <RouteFallback label="Loading…" />;
 }
 
 function withShell(Page) {
@@ -131,7 +133,7 @@ export default function MobileAppRoutes() {
       <Route path="/privacy" element={<MobileShell hideTabs><LegalPage kind="privacy" /></MobileShell>} />
       <Route path="/careers" element={<MobileShell hideTabs><CareersPage /></MobileShell>} />
       <Route path="/career-profile/:slug" element={<MobileShell hideTabs><CareerProfilePage /></MobileShell>} />
-      <Route path="*" element={withShell(MobileHomePage)} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes></Suspense>
   );
 }

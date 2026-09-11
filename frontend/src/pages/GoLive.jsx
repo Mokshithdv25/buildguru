@@ -8,6 +8,7 @@ import { HM_HEADER_BAR_CLASS, HM_TAGLINE_PORTFOLIO } from "../lib/hmBrand";
 import { getPortfolioBase, getPortfolioMedia, migrateLegacyPortfolioMedia, setPortfolioBase, setPortfolioMedia } from "../lib/portfolioStorage";
 import { publishPortfolio } from "../lib/api";
 import { publicProfileUrl } from "../lib/publicWebUrl";
+import RouteFallback from "../components/RouteFallback";
 
 function WhatsAppLogo() {
   return (
@@ -107,7 +108,7 @@ export default function GoLive() {
     copyLink();
   };
 
-  if (loading) return null;
+  if (loading) return <RouteFallback label="Publishing your portfolio…" />;
   if (error) return <div className="min-h-screen bg-[#FBF7F2] p-10 text-center"><p className="text-red-600">{error}</p><button type="button" className="hm-primary-btn mt-5" onClick={() => window.location.reload()}>Try publishing again</button></div>;
 
   const firstName = form?.full_name?.split(" ")[0] || "there";
