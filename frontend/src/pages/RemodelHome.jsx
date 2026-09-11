@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { RemodelSpecView } from "../components/ArchitectBriefSpec";
+import VisionCaptureStep from "../components/VisionCaptureStep";
 import ProQuotesEngagementCallout from "../components/ProQuotesEngagementCallout";
 import {
   browseQuotesUrl,
