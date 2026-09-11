@@ -108,8 +108,11 @@ function downloadEstimateCsv(planBundle) {
 /**
  * Indicative cost breakdown from plan/estimate API (or mock).
  */
-export function V0EstimateSection({ planBundle, title = "Design plan estimate (for your architect)" }) {
-  const lines = planBundle?.estimate_lines;
+export function V0EstimateSection({ planBundle, title = "Design plan estimate (for your architect)", onChange }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(planBundle || null);
+  useEffect(() => setDraft(planBundle || null), [planBundle]);
+  const lines = draft?.estimate_lines;
   if (!lines?.length) return null;
   const total =
     typeof planBundle?.total_indicative_inr === "number"
@@ -131,7 +134,10 @@ export function V0EstimateSection({ planBundle, title = "Design plan estimate (f
         <div style={{ fontSize: 12, color: "#78716C", marginTop: 4, lineHeight: 1.45 }}>
           Working estimate for professional validation. Range, quantity, and rate quality improve as dimensions and specifications are confirmed.
         </div></div>
-        <button type="button" onClick={() => downloadEstimateCsv(planBundle)} style={{ border: "1px solid #C85F2B", color: "#A54818", background: "#fff", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}>Download CSV</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          {onChange ? <button type="button" onClick={() => { if (editing) { onChange(draft); } setEditing(!editing); }} style={{ border: "1px solid #C85F2B", color: "#A54818", background: "#fff", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}>{editing ? "Save estimate" : "Edit estimate"}</button> : null}
+          <button type="button" onClick={() => downloadEstimateCsv(draft)} style={{ border: "1px solid #C85F2B", color: "#A54818", background: "#fff", borderRadius: 8, padding: "8px 10px", fontSize: 12, fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}>Download CSV</button>
+        </div>
       </div>
       <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, minWidth: 760 }}>
         <thead>
@@ -147,14 +153,14 @@ export function V0EstimateSection({ planBundle, title = "Design plan estimate (f
           {lines.map((row, i) => (
             <tr key={i} style={{ borderBottom: "1px solid #F5F0EA" }}>
               <td style={{ padding: "12px 16px", color: "#44403C", verticalAlign: "top" }}>
-                <div style={{ fontWeight: 600 }}>{row.label}</div>
+                {editing ? <input value={row.label || ""} onChange={(e) => setDraft((d) => ({ ...d, estimate_lines: d.estimate_lines.map((x, j) => j === i ? { ...x, label: e.target.value } : x) }))} style={{ width: "100%", border: "1px solid #D6C9BD", borderRadius: 6, padding: "6px 8px" }} /> : <div style={{ fontWeight: 600 }}>{row.label}</div>}
                 {row.note ? <div style={{ fontSize: 11, color: "#78716C", marginTop: 4, lineHeight: 1.4 }}>{row.note}</div> : null}
               </td>
-              <td style={{ padding: "12px 10px", textAlign: "right", verticalAlign: "top" }}>{row.quantity ?? "—"}</td>
+              <td style={{ padding: "12px 10px", textAlign: "right", verticalAlign: "top" }}>{editing ? <input type="number" value={row.quantity ?? ""} onChange={(e) => setDraft((d) => ({ ...d, estimate_lines: d.estimate_lines.map((x, j) => j === i ? { ...x, quantity: Number(e.target.value) } : x) }))} style={{ width: 70, border: "1px solid #D6C9BD", borderRadius: 6, padding: "6px" }} /> : row.quantity ?? "—"}</td>
               <td style={{ padding: "12px 10px", verticalAlign: "top" }}>{row.unit || "allowance"}</td>
-              <td style={{ padding: "12px 10px", textAlign: "right", whiteSpace: "nowrap", verticalAlign: "top" }}>{row.unit_rate_inr ? formatInr(row.unit_rate_inr) : "—"}</td>
+              <td style={{ padding: "12px 10px", textAlign: "right", whiteSpace: "nowrap", verticalAlign: "top" }}>{editing ? <input type="number" value={row.unit_rate_inr ?? ""} onChange={(e) => setDraft((d) => ({ ...d, estimate_lines: d.estimate_lines.map((x, j) => j === i ? { ...x, unit_rate_inr: Number(e.target.value), amount_inr: Number(e.target.value) * Number(x.quantity || 1) } : x) }))} style={{ width: 90, border: "1px solid #D6C9BD", borderRadius: 6, padding: "6px" }} /> : row.unit_rate_inr ? formatInr(row.unit_rate_inr) : "—"}</td>
               <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 700, color: "#1C1917", whiteSpace: "nowrap", verticalAlign: "top" }}>
-                <div>{formatInr(row.amount_inr)}</div>
+                <div>{editing ? <input type="number" value={row.amount_inr ?? ""} onChange={(e) => setDraft((d) => ({ ...d, estimate_lines: d.estimate_lines.map((x, j) => j === i ? { ...x, amount_inr: Number(e.target.value) } : x), total_indicative_inr: d.estimate_lines.reduce((s, x, j) => s + (j === i ? Number(e.target.value) : Number(x.amount_inr || 0)), 0) }))} style={{ width: 110, border: "1px solid #D6C9BD", borderRadius: 6, padding: "6px" }} /> : formatInr(row.amount_inr)}</div>
                 {row.low_inr || row.high_inr ? <div style={{ fontSize: 11, color: "#78716C", fontWeight: 500, marginTop: 3 }}>{formatInr(row.low_inr)}–{formatInr(row.high_inr)}</div> : null}
               </td>
             </tr>

@@ -41,6 +41,7 @@ import { canVisitWizardStep, nextMaxStepReached, wizardExitPath } from "../lib/w
 import VisionCaptureStep from "../components/VisionCaptureStep";
 import LocationAutocomplete from "../components/LocationAutocomplete";
 import WizardMobileStepBar from "../components/WizardMobileStepBar";
+import { createFlowProjectRecord, persistFlowAfterV0, updateProjectEstimate } from "../lib/projectFlowApi";
 
 const STEPS = [
   { n: 1, title: "Site and vision", sub: "Location, plot, brief", icon: "✨" },
@@ -2001,7 +2002,7 @@ export default function BuildNewHome() {
                     {projectPassActive ? `Revise ${revisionTarget === "floor_plan" ? "floor plan" : "exterior"}` : "Unlock revisions · Project Pass"}
                   </button>
                 </div>
-                <V0EstimateSection planBundle={v0PlanBundle} />
+                <V0EstimateSection planBundle={v0PlanBundle} onChange={async (next) => { setV0PlanBundle(next); const pid = flowProjectId || getBuildFlow().projectId; if (pid) { try { await updateProjectEstimate(pid, next); setBuildFlow({ v0Plan: next }); } catch (e) { setStepBlockError(e.message); } } }} />
                 <V0MilestonesSection planBundle={v0PlanBundle} />
                 <ProQuotesEngagementCallout
                   hasOwnPros={hireMode === "own_team"}
@@ -2016,7 +2017,7 @@ export default function BuildNewHome() {
               Post your project
             </h1>
             <p style={{ fontSize: 13, color: "#5C5147", marginBottom: 16, lineHeight: 1.55, maxWidth: 640 }}>
-              Choose how professionals will quote this home. Split-by-trade RFQs (electrical, plumbing, carpentry, civil) keep every bidder on the same scope — the way construction bid packages work.
+              Choose how professionals will quote this home. Split-by-trade RFQs (electrical, plumbing, carpentry, civil) keep every bidder on the same scope so bids are comparable.
             </p>
             <div style={{ marginBottom: 18, maxWidth: 720 }}>
               <HireStrategyPicker
@@ -2140,7 +2141,7 @@ export default function BuildNewHome() {
               className="preview-hero"
               style={{
                 backgroundImage:
-                  "url(https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=75)",
+                  `url(${v0ImageBundle?.images?.[0]?.url || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=75"})`,
               }}
             />
             <div style={{ padding: "16px 18px 20px", marginTop: 0 }}>

@@ -381,6 +381,7 @@ async function indexV0DesignDocuments(projectId, ownerUserId, imageBundle) {
   const items = [
     ...(imageBundle.images || []).map((item) => ({ item, prefix: 'Initial design concept' })),
     ...(imageBundle.floor_plans || imageBundle.floorPlans || []).map((item) => ({ item, prefix: 'Initial design floor plan' })),
+    ...(imageBundle.before_images || imageBundle.beforeImages || []).map((item) => ({ item, prefix: 'Original room photo' })),
   ].filter(({ item }) => item?.storage_path);
   if (!items.length) return;
   const rows = items.map(({ item, prefix }, index) => ({
@@ -580,6 +581,13 @@ export async function upsertFlowProject({
 }
 
 /** After v0 generate — saves design + estimate for the user without waiting for handoff. */
+export async function updateProjectEstimate(projectId, estimate) {
+  if (!supabase || !projectId || !estimate) throw new Error("A saved project estimate is required.");
+  const { error } = await supabase.from("project_v0_packs").update({ estimate_json: estimate, updated_at: new Date().toISOString() }).eq("project_id", projectId);
+  if (error) throw new Error(`Could not save the estimate: ${error.message}`);
+  return estimate;
+}
+
 export async function persistFlowAfterV0({ projectId, flowType, brief, source, v0Images, v0Plan }) {
   return upsertFlowProject({
     projectId,

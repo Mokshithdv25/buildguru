@@ -25,7 +25,7 @@ import {
   sanitizeV0Bundle,
   sanitizePlanBundle,
 } from "../lib/aiApi";
-import { createFlowProjectRecord, persistFlowAfterV0 } from "../lib/projectFlowApi";
+import { createFlowProjectRecord, persistFlowAfterV0, updateProjectEstimate } from "../lib/projectFlowApi";
 import { buildSignInRedirect, isHomeownerSignedIn } from "../lib/requireHomeownerAuth";
 import {
   ColourHexSwatch,
@@ -454,7 +454,10 @@ export default function RemodelHome() {
       setV0GenPhase("estimate");
       setV0GenStatus("Building your estimate…");
       const planPayload = await requestEstimatePlan("remodel", brief, imagesPayload);
-      setV0ImageBundle(imagesPayload);
+      const imagesWithBefore = beforeImage
+        ? { ...(imagesPayload || {}), before_images: [{ url: beforeImage, label: "Original room photo" }] }
+        : imagesPayload;
+      setV0ImageBundle(imagesWithBefore);
       setV0PlanBundle(planPayload);
       setV0Generated(true);
       const briefForSave = { ...brief, referredProSlug, step: 5, v0Generated: true };
@@ -463,12 +466,12 @@ export default function RemodelHome() {
         flowType: "remodel",
         brief: briefForSave,
         source: "remodel",
-        v0Images: imagesPayload,
+        v0Images: imagesWithBefore,
         v0Plan: planPayload,
       });
       const pid = saved?.projectId || null;
       if (pid) setFlowProjectId(pid);
-      setRemodelFlow({ v0: true, v0Images: imagesPayload, v0Plan: planPayload, projectId: pid });
+      setRemodelFlow({ v0: true, v0Images: imagesWithBefore, v0Plan: planPayload, projectId: pid });
     } catch (e) {
       setStepBlockError(formatAiApiError(e));
     } finally {
@@ -1152,7 +1155,7 @@ export default function RemodelHome() {
                 elevationTitle="Interior concept renders"
                 interiorRenders
               />
-              <V0EstimateSection planBundle={v0PlanBundle} title="Design plan estimate (for your architect)" />
+              <V0EstimateSection planBundle={v0PlanBundle} title="Design plan estimate (for your architect)" onChange={async (next) => { setV0PlanBundle(next); const pid = flowProjectId || getRemodelFlow().projectId; if (pid) { try { await updateProjectEstimate(pid, next); setRemodelFlow({ v0Plan: next }); } catch (e) { setStepBlockError(e.message); } } }} />
               <V0MilestonesSection planBundle={v0PlanBundle} />
             </div>
 
@@ -1282,7 +1285,7 @@ export default function RemodelHome() {
               Post your project
             </h1>
             <p style={{ fontSize: 13, color: "#57534E", margin: "0 0 16px", lineHeight: 1.55, maxWidth: 640 }}>
-              Choose how professionals will quote this remodel. Trade RFQs let electricians, plumbers and carpenters price the same checklist — the pattern Houzz and construction bid packages use so bids are comparable.
+              Choose how professionals will quote this remodel. Trade RFQs let electricians, plumbers and carpenters price the same checklist so bids are comparable.
             </p>
             <div style={{ marginBottom: 18, maxWidth: 720 }}>
               <HireStrategyPicker

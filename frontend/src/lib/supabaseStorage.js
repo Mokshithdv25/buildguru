@@ -154,7 +154,14 @@ export async function persistV0ImagesToStorage({ userId, projectId, imageBundle 
         )
       )
     : floorPlansRaw;
-  const allItems = [...(images || []), ...(floor_plans || [])].filter((item) => item?.url);
+  const beforeImages = (imageBundle.before_images || imageBundle.beforeImages || []).length
+    ? await Promise.all(
+        (imageBundle.before_images || imageBundle.beforeImages).map((img, idx) =>
+          mirrorImageToStorage({ userId, projectId, img, folder: "before", idx })
+        )
+      )
+    : (imageBundle.before_images || imageBundle.beforeImages || []);
+  const allItems = [...(images || []), ...(floor_plans || []), ...(beforeImages || [])].filter((item) => item?.url);
   const failed = allItems.filter((item) => !item.storage_path);
   if (failed.length) {
     throw new Error(
@@ -166,6 +173,8 @@ export async function persistV0ImagesToStorage({ userId, projectId, imageBundle 
     images,
     floor_plans,
     floorPlans: floor_plans,
+    before_images: beforeImages,
+    beforeImages,
     storage_mirrored: allItems.length > 0 && failed.length === 0,
   };
 }
@@ -188,11 +197,14 @@ export async function refreshV0ImagesFromStorage(imageBundle) {
   const images = await Promise.all((imageBundle.images || []).map(refreshStoredItem));
   const sourceFloorPlans = imageBundle.floor_plans || imageBundle.floorPlans || [];
   const floorPlans = await Promise.all(sourceFloorPlans.map(refreshStoredItem));
+  const beforeImages = await Promise.all((imageBundle.before_images || imageBundle.beforeImages || []).map(refreshStoredItem));
   return {
     ...imageBundle,
     images,
     floor_plans: floorPlans,
     floorPlans,
+    before_images: beforeImages,
+    beforeImages,
   };
 }
 
