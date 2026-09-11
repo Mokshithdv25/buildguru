@@ -25,7 +25,7 @@ import {
   sanitizeV0Bundle,
   sanitizePlanBundle,
 } from "../lib/aiApi";
-import { createFlowProjectRecord, persistFlowAfterV0, updateProjectEstimate } from "../lib/projectFlowApi";
+import { createFlowProjectRecord, persistFlowAfterV0, updateProjectEstimate, upsertFlowProject } from "../lib/projectFlowApi";
 import { buildSignInRedirect, isHomeownerSignedIn } from "../lib/requireHomeownerAuth";
 import {
   ColourHexSwatch,
@@ -348,6 +348,33 @@ export default function RemodelHome() {
 
   useEffect(() => {
     const f = getRemodelFlow();
+    const saved = f.formSnapshot && typeof f.formSnapshot === "object" ? f.formSnapshot : f;
+    if (saved.dreamVision != null) setDreamVision(String(saved.dreamVision));
+    if (Array.isArray(saved.visionInspirationItems)) setVisionInspirationItems(saved.visionInspirationItems);
+    if (Array.isArray(saved.photos)) setPhotos(saved.photos);
+    if (saved.ptype) setPtype(String(saved.ptype));
+    if (saved.room) setRoom(String(saved.room));
+    if (saved.len != null) setLen(String(saved.len));
+    if (saved.breadth != null) setBreadth(String(saved.breadth));
+    if (saved.spaceNotes != null) setSpaceNotes(String(saved.spaceNotes));
+    if (saved.mainGoal) setMainGoal(String(saved.mainGoal));
+    if (Array.isArray(saved.painPoints)) setPainPoints(saved.painPoints);
+    if (saved.changeLevel) setChangeLevel(String(saved.changeLevel));
+    if (saved.budgetUnit) setBudgetUnit(String(saved.budgetUnit));
+    if (saved.budgetAmount != null) setBudgetAmount(String(saved.budgetAmount));
+    if (saved.budgetNotes != null) setBudgetNotes(String(saved.budgetNotes));
+    if (saved.startTimeline) setStartTimeline(String(saved.startTimeline));
+    if (saved.completionTime) setCompletionTime(String(saved.completionTime));
+    if (saved.layoutOk) setLayoutOk(String(saved.layoutOk));
+    if (Array.isArray(saved.mustKeep)) setMustKeep(saved.mustKeep);
+    if (Array.isArray(saved.dealbreakers3)) setDealbreakers3(saved.dealbreakers3);
+    if (Array.isArray(saved.styles)) setStyles(saved.styles);
+    if (saved.finishTier) setFinishTier(String(saved.finishTier));
+    if (saved.colourBase) setColourBase(String(saved.colourBase));
+    if (saved.colourSecondary) setColourSecondary(String(saved.colourSecondary));
+    if (saved.postAiNotes != null) setPostAiNotes(String(saved.postAiNotes));
+    const savedStep = Number(f.activeStep || f.step);
+    if (savedStep >= 1 && savedStep <= 6) { setStep(savedStep); setMaxStepReached(savedStep); }
     const hasRealV0 = bundleHasGrokConcepts(f.v0Images);
     if (hasRealV0) {
       setV0Generated(!!f.v0);
@@ -367,6 +394,37 @@ export default function RemodelHome() {
     if (f.hireMode) setHireMode(normalizeHireMode(f.hireMode));
     else if (typeof f.hasArchitect === "boolean") setHireMode(hireModeFromLegacyFlag(f.hasArchitect));
   }, []);
+
+  useEffect(() => {
+    const snapshot = { dreamVision, visionInspirationItems, photos, ptype, room, len, breadth, spaceNotes, mainGoal, painPoints, changeLevel, budgetUnit, budgetAmount, budgetNotes, startTimeline, completionTime, layoutOk, mustKeep, dealbreakers3, styles, finishTier, colourBase, colourSecondary, postAiNotes };
+    const timeoutId = setTimeout(() => setRemodelFlow({ formSnapshot: snapshot, activeStep: step, step }), 200);
+    return () => clearTimeout(timeoutId);
+  }, [dreamVision, visionInspirationItems, photos, ptype, room, len, breadth, spaceNotes, mainGoal, painPoints, changeLevel, budgetUnit, budgetAmount, budgetNotes, startTimeline, completionTime, layoutOk, mustKeep, dealbreakers3, styles, finishTier, colourBase, colourSecondary, postAiNotes, step]);
+
+  useEffect(() => {
+    if (!isHomeownerSignedIn() || v0Generating) return undefined;
+    const local = getRemodelFlow();
+    const timeoutId = setTimeout(async () => {
+      try {
+        const saved = await upsertFlowProject({
+          projectId: flowProjectId || local.projectId,
+          flowType: "remodel",
+          brief: { ...remodelBriefPayload(), activeStep: step, step },
+          source: "remodel",
+          flowStep: v0Generated ? "v0" : "draft",
+        });
+        if (saved?.projectId && saved.projectId !== flowProjectId) {
+          setFlowProjectId(saved.projectId);
+          setRemodelFlow({ projectId: saved.projectId });
+        }
+      } catch (error) {
+        console.warn("Could not autosave remodel progress:", error?.message || error);
+      }
+    }, 1200);
+    return () => clearTimeout(timeoutId);
+  // remodelBriefPayload is intentionally read from the current wizard state for the debounced draft save.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dreamVision, room, len, breadth, budgetUnit, budgetAmount, step, v0Generated, flowProjectId]);
 
   useEffect(() => {
     const raf = window.requestAnimationFrame(() => {
