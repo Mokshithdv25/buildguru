@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ChevronDown, ChevronUp, Inbox, Loader2, MapPin, MessageCircleQuestion, Phone } from "lucide-react";
+import { ChevronDown, ChevronUp, Inbox, Loader2, MapPin, MessageCircleQuestion, Phone } from "lucide-react";
 import BackButton from "../components/BackButton";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";

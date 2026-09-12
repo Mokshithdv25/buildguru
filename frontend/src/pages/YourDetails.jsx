@@ -17,7 +17,6 @@ import {
   setPortfolioMedia,
 } from "../lib/portfolioStorage";
 import {
-  ArrowLeft,
   ArrowRight,
   User,
   Briefcase,

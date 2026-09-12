@@ -13,7 +13,7 @@ import {
 } from "../lib/portfolioThemes";
 import { getPortfolioBase, getPortfolioMedia, setPortfolioBase } from "../lib/portfolioStorage";
 import { updatePortfolio } from "../lib/api";
-import { ArrowLeft, ArrowRight, Palette, LayoutTemplate, Check } from "lucide-react";
+import { ArrowRight, Palette, LayoutTemplate, Check } from "lucide-react";
 import RouteFallback from "../components/RouteFallback";
 import BackButton from "../components/BackButton";
 
