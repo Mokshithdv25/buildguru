@@ -8,6 +8,7 @@ import { findCraft } from "../lib/crafts";
 import { updatePortfolio } from "../lib/api";
 import { useHmSession } from "../hooks/useHmSession";
 import RouteFallback from "../components/RouteFallback";
+import BackButton from "../components/BackButton";
 import {
   getPortfolioBase,
   getPortfolioMedia,
@@ -240,13 +241,7 @@ export default function YourDetails() {
       {/* Header */}
       <header className={`${HM_HEADER_BAR_CLASS} hm-desktop-only`} data-testid="hm-header">
         <div className="flex items-center gap-3 md:gap-4 min-w-0">
-          <button
-            type="button"
-            onClick={() => navigate("/craft")}
-            className="flex items-center gap-2 text-sm font-semibold text-[#1C1917] hover:text-[#C85F2B] transition-colors border border-[#EFE3D2] px-3 py-2 rounded-lg bg-white shrink-0"
-          >
-            <ArrowLeft size={16} /> Back
-          </button>
+          <BackButton to="/craft" />
           <HmHeaderBrandLockup tagline={HM_TAGLINE_PORTFOLIO} truncateTitle className="min-w-0 flex-1" />
         </div>
 

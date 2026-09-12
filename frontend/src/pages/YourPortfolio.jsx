@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { StepRail, ProfileStrength, LivePreview } from "../components/SharedUI";
 import { HmHeaderBrandLockup } from "../components/HmBrandLockup";
 import HmUserMenu from "../components/HmUserMenu";
+import BackButton from "../components/BackButton";
 import { HM_HEADER_BAR_CLASS, HM_TAGLINE_PORTFOLIO } from "../lib/hmBrand";
 import { ArrowLeft, ArrowRight, UploadCloud, X, Camera, Download, ShieldCheck } from "lucide-react";
 import {
@@ -156,13 +157,7 @@ export default function YourPortfolio() {
       {/* Header */}
       <header className={`${HM_HEADER_BAR_CLASS} hm-desktop-only`} data-testid="hm-header">
         <div className="flex items-center gap-3 md:gap-4 min-w-0">
-          <button
-            type="button"
-            onClick={() => navigate("/portfolio-theme")}
-            className="flex items-center gap-2 text-sm font-semibold text-[#1C1917] hover:text-[#C85F2B] transition-colors border border-[#EFE3D2] px-3 py-2 rounded-lg bg-white shrink-0"
-          >
-            <ArrowLeft size={16} /> Back
-          </button>
+          <BackButton to="/portfolio-theme" />
           <HmHeaderBrandLockup tagline={HM_TAGLINE_PORTFOLIO} truncateTitle className="min-w-0 flex-1" />
         </div>
 

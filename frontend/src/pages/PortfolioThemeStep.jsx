@@ -15,6 +15,7 @@ import { getPortfolioBase, getPortfolioMedia, setPortfolioBase } from "../lib/po
 import { updatePortfolio } from "../lib/api";
 import { ArrowLeft, ArrowRight, Palette, LayoutTemplate, Check } from "lucide-react";
 import RouteFallback from "../components/RouteFallback";
+import BackButton from "../components/BackButton";
 
 function ThemeCard({ theme, selected, onSelect }) {
   return (
@@ -133,13 +134,7 @@ export default function PortfolioThemeStep() {
 
       <header className={`${HM_HEADER_BAR_CLASS} hm-desktop-only`} data-testid="hm-header">
         <div className="flex items-center gap-3 md:gap-4 min-w-0">
-          <button
-            type="button"
-            onClick={() => navigate("/details")}
-            className="flex items-center gap-2 text-sm font-semibold text-[#1C1917] hover:text-[#C85F2B] transition-colors border border-[#EFE3D2] px-3 py-2 rounded-lg bg-white shrink-0"
-          >
-            <ArrowLeft size={16} /> Back
-          </button>
+          <BackButton to="/details" />
           <HmHeaderBrandLockup tagline={HM_TAGLINE_PORTFOLIO} truncateTitle className="min-w-0 flex-1" />
         </div>
         <div className="hidden md:block">

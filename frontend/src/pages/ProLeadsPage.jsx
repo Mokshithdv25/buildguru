@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ChevronDown, ChevronUp, Inbox, Loader2, MapPin } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
+import BackButton from "../components/BackButton";
 import { HM_FIXED_NAV_OFFSET_CLASS } from "../lib/hmBrand";
 import { useMobileNative } from "../hooks/useMobileNative";
 import { formatInrShort } from "../lib/projectFlowApi";
@@ -218,9 +219,7 @@ export default function ProLeadsPage() {
             <h1 className="hm-pro-title">Homeowner project leads</h1>
             <p className="hm-pro-subtitle">Whole-project bids — homeowners who asked one contractor or architect to price the entire brief. Trade RFQs (electrical, plumbing, carpentry, materials) are under Work packages.</p>
           </div>
-          <button type="button" className="hm-pro-button-secondary" onClick={() => navigate("/pro/dashboard")}>
-            <ArrowLeft size={16} /> Dashboard
-          </button>
+          <BackButton to="/pro/dashboard" label="Dashboard" />
         </header>
 
         <nav className="hm-pro-segment" aria-label="Lead type">

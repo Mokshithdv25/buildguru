@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ChevronDown, ChevronUp, Inbox, Loader2, MapPin, MessageCircleQuestion, Phone } from "lucide-react";
+import BackButton from "../components/BackButton";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import { HM_FIXED_NAV_OFFSET_CLASS } from "../lib/hmBrand";
@@ -281,7 +282,7 @@ export default function ProWorkPackagesPage() {
             <h1 className="hm-pro-title">Work packages for {myCraft}</h1>
             <p className="hm-pro-subtitle">Homeowners post trade-scoped requests for quotes — one package per trade with a fixed scope every bidder prices. Ask questions, bid line by line, and track the homeowner's decision.</p>
           </div>
-          <button type="button" className="hm-pro-button-secondary" onClick={() => navigate("/pro/dashboard")}><ArrowLeft size={16} /> Dashboard</button>
+          <BackButton to="/pro/dashboard" label="Dashboard" />
         </header>
 
         <nav className="hm-pro-segment" aria-label="Lead type">

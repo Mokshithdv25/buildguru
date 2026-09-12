@@ -11,6 +11,24 @@ body {
     color: #1C1917;
 }
 
+.hm-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 12px 8px 10px;
+  border: 1px solid #e6d9ca;
+  border-radius: 10px;
+  background: rgba(255, 253, 250, 0.9);
+  color: #5f554c;
+  font: 700 13px/1 "DM Sans", system-ui, sans-serif;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.hm-back-button:hover { border-color: #c85f2b; background: #fff7ef; color: #a54818; }
+.hm-back-button:focus-visible { outline: 3px solid rgba(200, 95, 43, 0.28); outline-offset: 2px; }
+.hm-back-button:active { transform: translateY(1px); }
+
 /* Capacitor iOS / Android — notch + home indicator safe areas */
 .hm-native nav.fixed {
     padding-top: env(safe-area-inset-top, 0px);
