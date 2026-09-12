@@ -337,13 +337,13 @@ function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <HmSessionProvider>
-          <AppErrorBoundary>
+        <AppErrorBoundary>
+          <HmSessionProvider>
             <AuthSessionSync />
             <ScrollToTopOnRouteChange />
             <AppRoutes />
-          </AppErrorBoundary>
-        </HmSessionProvider>
+          </HmSessionProvider>
+        </AppErrorBoundary>
       </BrowserRouter>
     </div>
   );
