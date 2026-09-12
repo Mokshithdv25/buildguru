@@ -743,41 +743,56 @@ export async function loadProjectBoard({ projectId, source }) {
     .limit(1);
   if (briefError) throw briefError;
   const brief = briefRows?.[0]?.brief_json || {};
-  const v0Pack = await loadV0Pack(resolvedProjectId);
+  const loadBoardRows = async () => {
+    const [stagesResult, tasksResult, messagesResult] = await Promise.all([
+      supabase
+        .from("project_stages")
+        .select("*")
+        .eq("project_id", resolvedProjectId)
+        .order("sort_order", { ascending: true }),
+      supabase
+        .from("project_tasks")
+        .select("*")
+        .eq("project_id", resolvedProjectId)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("project_messages")
+        .select("*")
+        .eq("project_id", resolvedProjectId)
+        .order("created_at", { ascending: true }),
+    ]);
+    if (stagesResult.error) throw stagesResult.error;
+    if (tasksResult.error) throw tasksResult.error;
+    if (messagesResult.error) throw messagesResult.error;
+    return {
+      stages: stagesResult.data || [],
+      tasks: tasksResult.data || [],
+      messages: messagesResult.data || [],
+    };
+  };
 
-  // Older projects can pre-date the project-hub checklist tables. Repair the
-  // stage/task seed before reading the board so controls such as the task
-  // stage selector always have real saved stages to work with.
+  // Load the board rows together so normal projects do not wait on a serial
+  // repair check. Older projects can pre-date the checklist tables; repair
+  // those only when the initial read proves stages or tasks are missing.
+  const [v0Pack, initialRows] = await Promise.all([
+    loadV0Pack(resolvedProjectId),
+    loadBoardRows(),
+  ]);
+  let { stages, tasks, messages } = initialRows;
   const flowType = project.flow_type || mapFlowType(source) || "new_home";
-  try {
-    await ensureProjectStagesAndTasks(resolvedProjectId, brief, flowType, v0Pack?.estimate || null);
-  } catch (repairError) {
-    // Keep the board readable if a legacy project cannot be repaired in this
-    // request; the UI still renders a defensive stage list below.
-    console.warn("Could not repair project stage checklist:", repairError?.message || repairError);
+  if (!stages.length || !tasks.length) {
+    try {
+      await ensureProjectStagesAndTasks(resolvedProjectId, brief, flowType, v0Pack?.estimate || null);
+      ({ stages, tasks, messages } = await loadBoardRows());
+    } catch (repairError) {
+      // Keep the board readable if a legacy project cannot be repaired in this
+      // request; the UI still renders a defensive stage list below.
+      console.warn("Could not repair project stage checklist:", repairError?.message || repairError);
+    }
   }
 
-  const { data: stages, error: stagesError } = await supabase
-    .from("project_stages")
-    .select("*")
-    .eq("project_id", resolvedProjectId)
-    .order("sort_order", { ascending: true });
-  if (stagesError) throw stagesError;
-  const { data: tasks, error: tasksError } = await supabase
-    .from("project_tasks")
-    .select("*")
-    .eq("project_id", resolvedProjectId)
-    .order("created_at", { ascending: true });
-  if (tasksError) throw tasksError;
-  const { data: messages, error: messagesError } = await supabase
-    .from("project_messages")
-    .select("*")
-    .eq("project_id", resolvedProjectId)
-    .order("created_at", { ascending: true });
-  if (messagesError) throw messagesError;
-
-  const stageById = Object.fromEntries((stages || []).map((s) => [s.id, s.name]));
-  let phaseRows = (stages || []).map((s) => {
+  const stageById = Object.fromEntries(stages.map((s) => [s.id, s.name]));
+  let phaseRows = stages.map((s) => {
     const pill = stagePill(s.status);
     return {
       id: s.id,
@@ -800,7 +815,7 @@ export async function loadProjectBoard({ projectId, source }) {
     }
   };
 
-  const taskRows = (tasks || []).map((t) => ({
+  const taskRows = tasks.map((t) => ({
     id: t.id,
     done: t.status === "done",
     status: t.status || "todo",
@@ -812,7 +827,7 @@ export async function loadProjectBoard({ projectId, source }) {
   }));
   phaseRows = derivePhaseProgress(phaseRows, taskRows);
 
-  const messageRows = (messages || []).map((m) => ({
+  const messageRows = messages.map((m) => ({
     id: m.id,
     phase: stageById[m.stage_id] || "Design & Approval",
     role: m.author_role || "Team",
