@@ -109,12 +109,14 @@ export async function loadProjectIntelligence({ projectId, brief, v0Pack }) {
     const staleIds = allMaterials
       .filter((item) => generatedSources.includes(item.source_artifact) && item.status === "suggested")
       .map((item) => item.id);
-    const { error: staleError } = await supabase
-      .from("project_material_items")
-      .update({ status: "removed" })
-      .eq("project_id", projectId)
-      .in("id", staleIds);
-    if (staleIds.length && staleError) throw staleError;
+    if (staleIds.length) {
+      const { error: staleError } = await supabase
+        .from("project_material_items")
+        .update({ status: "removed" })
+        .eq("project_id", projectId)
+        .in("id", staleIds);
+      if (staleError) throw staleError;
+    }
     materials = allMaterials.filter((item) => !generatedSources.includes(item.source_artifact));
   }
   if (!hasSavedEstimateRows) {
