@@ -146,7 +146,7 @@ export default function HmProjectIntelligence({
         <article className="hm-project-intelligence__card hm-project-intelligence__card--materials">
           <div className="hm-project-intelligence__card-icon"><Sparkles size={19} /></div>
           <h3>Material takeoff & shopping checklist</h3>
-          <p>{materials.length} editable planning items generated from the saved brief and AI v0 scope. Choose brands, change quantities, and approve before vendor pricing or ordering.</p>
+          <p>{materials.length ? `${materials.length} editable items synced from the saved estimate.` : "Save an estimate first to generate the material plan."} Choose brands, change quantities, and approve before vendor pricing or ordering.</p>
           <button type="button" className="hm-project-intelligence__wide" onClick={onOpenMaterials}>Open editable material plan <ArrowRight size={14} /></button>
         </article>
       </div>

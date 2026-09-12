@@ -1,6 +1,7 @@
 import { getSupabase } from "./supabaseClient";
 import { persistV0ImagesToStorage, refreshV0ImagesFromStorage } from "./supabaseStorage";
 import { isOwnTeamHire, marketplacePostsProject, normalizeHireMode } from "./hireMode";
+import { syncEstimateMaterials } from "./projectIntelligenceApi";
 
 const supabase = getSupabase();
 
@@ -585,6 +586,7 @@ export async function updateProjectEstimate(projectId, estimate) {
   if (!supabase || !projectId || !estimate) throw new Error("A saved project estimate is required.");
   const { error } = await supabase.from("project_v0_packs").update({ estimate_json: estimate, updated_at: new Date().toISOString() }).eq("project_id", projectId);
   if (error) throw new Error(`Could not save the estimate: ${error.message}`);
+  await syncEstimateMaterials(projectId, estimate);
   return estimate;
 }
 

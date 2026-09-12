@@ -53,46 +53,34 @@ function makeSeed(projectId, category, itemName, quantity, unit, sortOrder, note
   };
 }
 
-/** Editable planning takeoff derived from the saved brief and AI v0 scope. */
+function materialCategoryForEstimateLabel(label) {
+  const value = String(label || "").toLowerCase();
+  if (/electrical|lighting|cable|wire|switch|socket|mep|hvac/.test(value)) return "Electrical";
+  if (/plumb|sanitary|bath|drain|pipe|fixture/.test(value)) return "Plumbing";
+  if (/paint/.test(value)) return "Paint";
+  if (/tile|floor|stone|surface/.test(value)) return "Flooring";
+  if (/carpentry|joinery|kitchen|wardrobe|cabinet|plywood|wood|interior/.test(value)) return "Joinery";
+  if (/steel|tmt|reinforcement|metal/.test(value)) return "Steel";
+  if (/cement|concrete|masonry|brick|block|structure|shell|facade|civil/.test(value)) return "Masonry";
+  if (/waterproof/.test(value)) return "Waterproofing";
+  return "Other";
+}
+
+/** Editable material rows derived from the saved estimate. */
 export function deriveMaterialTakeoff({ projectId, brief = {}, v0Pack = null } = {}) {
-  const isRemodel = Boolean(brief.room || brief.mainGoal || brief.completionTime) && !brief.homeType;
-  const plotArea = positiveNumber(brief.plotArea, brief.area, brief.builtUpArea);
-  const roomArea = positiveNumber(
-    positiveNumber(brief.len, brief.length) * positiveNumber(brief.breadth, brief.width),
-    brief.roomArea,
-    brief.area,
-  );
-  const floors = Math.max(1, positiveNumber(brief.floors, brief.floorCount, 1));
-  const workingArea = isRemodel
-    ? Math.max(roomArea || 150, 60)
-    : Math.max(positiveNumber(brief.builtUpArea, plotArea ? plotArea * Math.min(floors, 4) * 0.72 : 0) || 1200, 400);
-  const estimateLabels = (v0Pack?.estimate?.estimate_lines || []).map((line) => String(line?.label || "").toLowerCase());
-  const rows = [];
-  let index = 0;
-  const add = (category, name, quantity, unit, notes) => rows.push(makeSeed(projectId, category, name, rounded(quantity), unit, index++, notes));
-
-  if (isRemodel) {
-    add("Flooring", "Floor tiles with 10% cutting allowance", workingArea * 1.1, "sq ft", "Derived from saved room dimensions; confirm tile module and laying pattern.");
-    add("Flooring", "Tile adhesive", workingArea / 45, "20 kg bag", "Planning allowance for prepared substrate.");
-    add("Paint", "Interior wall paint", workingArea * 0.1, "litre", "Two-coat planning allowance; actual coverage depends on surface and product.");
-    add("Electrical", "Copper cable", workingArea * 2.2, "metre", "Draft allowance; electrician must validate circuits and wire sizes.");
-    add("Joinery", "Plywood / board", workingArea * 0.22, "sq ft", "Included where the remodel brief indicates storage or carpentry.");
-    add("Waterproofing", "Waterproofing system", Math.max(workingArea * 0.18, 25), "sq ft", "Use for wet areas only after site verification.");
-  } else {
-    add("Cement", "PPC / OPC cement", workingArea * 0.4, "50 kg bag", "Early-stage residential planning coefficient; structural BOQ must govern procurement.");
-    add("Steel", "TMT reinforcement steel", workingArea * 4, "kg", "Indicative only; use engineer-issued bar bending schedule before ordering.");
-    add("Masonry", "AAC blocks / masonry units", workingArea * 0.8, "unit", "Walling allowance derived from built-up area.");
-    add("Flooring", "Floor tiles with wastage", workingArea * 1.08, "sq ft", "Includes an 8% planning allowance for cuts and breakage.");
-    add("Paint", "Interior and exterior paint", workingArea * 0.12, "litre", "Planning allowance based on built-up area, coats, and typical wall surface.");
-    add("Electrical", "Copper cable", workingArea * 4, "metre", "Electrician must validate circuits, loads, and wire sizes.");
-    add("Plumbing", "Water supply and drainage pipe", workingArea * 0.75, "metre", "Draft combined allowance; plumbing drawings take precedence.");
-    add("Waterproofing", "Wet-area waterproofing", workingArea * 0.2, "sq ft", "Bathrooms, balconies, utility, and terrace zones require measured quantities.");
-  }
-
-  if (estimateLabels.some((label) => label.includes("kitchen") || label.includes("carpentry")) && !rows.some((row) => row.category === "Joinery")) {
-    add("Joinery", "Kitchen / storage board allowance", workingArea * 0.12, "sq ft", "Added from the AI v0 estimate scope.");
-  }
-  return rows;
+  const estimateLines = Array.isArray(v0Pack?.estimate?.estimate_lines) ? v0Pack.estimate.estimate_lines : [];
+  return estimateLines
+    .map((line, index) => {
+      const label = String(line?.label || `Estimate line ${index + 1}`).trim();
+      const quantity = positiveNumber(line?.quantity, 1);
+      const unit = String(line?.unit || "allowance").trim();
+      const amount = positiveNumber(line?.amount_inr, line?.expected_inr, line?.high_inr);
+      const note = [
+        line?.note,
+        amount ? `Estimate allowance: ₹${Math.round(amount).toLocaleString("en-IN")}` : null,
+      ].filter(Boolean).join(" · ") || "Copied from the saved project estimate; confirm quantities with the revised professional BOQ.";
+      return makeSeed(projectId, materialCategoryForEstimateLabel(label), label, rounded(quantity), unit, index, note);
+    });
 }
 
 export async function loadProjectIntelligence({ projectId, brief, v0Pack }) {
@@ -110,17 +98,67 @@ export async function loadProjectIntelligence({ projectId, brief, v0Pack }) {
     throw firstError;
   }
 
-  let materials = materialsResult.data || [];
-  if (!materials.length && draft.length) {
+  const allMaterials = materialsResult.data || [];
+  const generatedSources = ["brief_and_v0_estimate", "v0_estimate"];
+  let materials = allMaterials.filter((item) => !generatedSources.includes(item.source_artifact) || draft.length);
+  // Do not show brief-only coefficients as if they came from an estimate.
+  if (!draft.length) return { materials, actions: actionsResult.data || [], configured: true };
+
+  const hasSavedEstimateRows = allMaterials.some((item) => item.source_artifact === "v0_estimate");
+  if (!hasSavedEstimateRows && allMaterials.some((item) => generatedSources.includes(item.source_artifact))) {
+    const staleIds = allMaterials
+      .filter((item) => generatedSources.includes(item.source_artifact) && item.status === "suggested")
+      .map((item) => item.id);
+    const { error: staleError } = await supabase
+      .from("project_material_items")
+      .update({ status: "removed" })
+      .eq("project_id", projectId)
+      .in("id", staleIds);
+    if (staleIds.length && staleError) throw staleError;
+    materials = allMaterials.filter((item) => !generatedSources.includes(item.source_artifact));
+  }
+  if (!hasSavedEstimateRows) {
     const rows = draft.map(({ id, ...row }) => row);
     const { data, error } = await supabase
       .from("project_material_items")
       .upsert(rows, { onConflict: "project_id,seed_key", ignoreDuplicates: true })
       .select(MATERIAL_FIELDS);
     if (error) throw error;
-    materials = data || [];
+    materials = [...materials, ...(data || [])];
   }
   return { materials, actions: actionsResult.data || [], configured: true };
+}
+
+/** Replace generated material rows whenever the project estimate is revised. */
+export async function syncEstimateMaterials(projectId, estimate) {
+  const supabase = getSupabase();
+  if (!supabase || !projectId) return;
+  const draft = deriveMaterialTakeoff({ projectId, v0Pack: { estimate } });
+  const { data: existing, error: existingError } = await supabase
+    .from("project_material_items")
+    .select(MATERIAL_FIELDS)
+    .eq("project_id", projectId)
+    .in("source_artifact", ["brief_and_v0_estimate", "v0_estimate"]);
+  if (existingError) {
+    if (schemaIsMissing(existingError)) return;
+    throw existingError;
+  }
+  const protectedSeeds = new Set((existing || []).filter((item) => item.status !== "suggested").map((item) => item.seed_key));
+  const replaceable = (existing || []).filter((item) => item.status === "suggested");
+  if (replaceable.length) {
+    const { error } = await supabase
+      .from("project_material_items")
+      .update({ status: "removed" })
+      .eq("project_id", projectId)
+      .in("id", replaceable.map((item) => item.id));
+    if (error) throw error;
+  }
+  const rowsToInsert = draft.filter((row) => !protectedSeeds.has(row.seed_key));
+  if (!rowsToInsert.length) return;
+  const { error } = await supabase
+    .from("project_material_items")
+    .upsert(rowsToInsert.map(({ id, ...row }) => ({ ...row, source_artifact: "v0_estimate" })), { onConflict: "project_id,seed_key" });
+  if (error) throw error;
 }
 
 export async function listProjectMaterials(projectId) {
