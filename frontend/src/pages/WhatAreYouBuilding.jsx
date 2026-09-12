@@ -2,6 +2,7 @@ import React from "react";
 import { Home, Images, MapPinned, Palette, Ruler, Sparkles, Wrench } from "lucide-react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
+import BackButton from "../components/BackButton";
 import { HM_FIXED_NAV_OFFSET_TAGLINE_CLASS, HM_TAGLINE_BUILD_CHOOSER } from "../lib/hmBrand";
 import { isHomeownerSignedIn, navigateToHomeownerFlow } from "../lib/requireHomeownerAuth";
 
@@ -103,15 +104,7 @@ export default function WhatAreYouBuilding() {
       <main className="relative z-10 mx-auto max-w-[920px] px-5 pb-20 pt-8 md:px-8 md:pb-24 md:pt-10">
 
         {/* Native link — avoids onClick blocked by overlays; goes to home (reliable exit from chooser) */}
-        <Link
-          to="/"
-          className="relative z-10 mb-8 inline-flex cursor-pointer items-center gap-2 text-sm text-[#5C5147] no-underline transition-colors hover:text-[#C85F2B]"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-            <path d="m15 18-6-6 6-6"/>
-          </svg>
-          Back
-        </Link>
+        <BackButton to="/" className="relative z-10 mb-8" />
 
       {/* Heading */}
         <div className="text-center mb-10 md:mb-12">

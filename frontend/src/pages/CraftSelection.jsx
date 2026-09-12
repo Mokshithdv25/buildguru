@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { StepRail, ProfileStrength, LivePreview } from "../components/SharedUI";
 import { HmHeaderBrandLockup } from "../components/HmBrandLockup";
 import HmUserMenu from "../components/HmUserMenu";
+import BackButton from "../components/BackButton";
 import { HM_HEADER_BAR_CLASS, HM_TAGLINE_PORTFOLIO } from "../lib/hmBrand";
 import {
   Home,
@@ -125,16 +126,7 @@ export default function CraftSelection() {
       {/* Header */}
       <header className={`${HM_HEADER_BAR_CLASS} hm-desktop-only`} data-testid="hm-header">
         <div className="flex items-center gap-3 md:gap-4 min-w-0">
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-sm font-semibold text-[#1C1917] hover:text-[#57534E] transition-colors border border-[#EFE3D2] px-3 py-2 rounded-lg bg-white shrink-0"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-            Back
-          </button>
+          <BackButton to="/" />
           <HmHeaderBrandLockup tagline={HM_TAGLINE_PORTFOLIO} truncateTitle className="min-w-0 flex-1" />
         </div>
 
