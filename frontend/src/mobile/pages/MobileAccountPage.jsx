@@ -40,7 +40,12 @@ export default function MobileAccountPage() {
     <>
       <MobileHeader title="You" subtitle={session ? name : "Explore BuildGuru"} />
       <main className="hm-m-account-page">
-        {session || !AUTH_UI_ENABLED ? (
+        {session === undefined && AUTH_UI_ENABLED ? (
+          <section className="hm-m-account-signin">
+            <span>Checking your account…</span>
+            <h1>Opening your workspace.</h1>
+          </section>
+        ) : session || !AUTH_UI_ENABLED ? (
           <section className="hm-m-account-profile">
             <span className="hm-m-account-avatar"><UserRound size={25} /></span>
             <div>

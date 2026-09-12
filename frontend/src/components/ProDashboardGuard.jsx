@@ -1,16 +1,19 @@
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import { AUTH_UI_ENABLED } from "../lib/authMode";
 import { useHmSession } from "../hooks/useHmSession";
+import { readHmSession } from "../lib/hmAuth";
+import AuthGateShell from "./AuthGateShell";
 
 /** Pro-only gate for dashboard and marketplace management tools. */
 export default function ProDashboardGuard({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const session = useHmSession();
+  const hookSession = useHmSession();
+  const session = hookSession === undefined ? readHmSession() || undefined : hookSession;
   const authLoading = session === undefined;
   const signedIn = Boolean(session?.supabaseUserId);
+  const signedInPro = signedIn && session?.role === "pro";
 
   useEffect(() => {
     if (!AUTH_UI_ENABLED) return;
@@ -27,13 +30,11 @@ export default function ProDashboardGuard({ children }) {
 
   if (!AUTH_UI_ENABLED) return children;
 
-  if (authLoading || !signedIn || session?.role !== "pro") {
-    return (
-      <div className="min-h-screen bg-[#FBF7F2] flex items-center justify-center">
-        <Loader2 className="w-7 h-7 animate-spin text-[#C85F2B]" />
-      </div>
-    );
+  if (signedInPro) return children;
+
+  if (signedIn && session?.role !== "pro") {
+    return <AuthGateShell message="Taking you to your project…" />;
   }
 
-  return children;
+  return <AuthGateShell message={authLoading ? "Checking your account…" : "Taking you to sign in…"} />;
 }

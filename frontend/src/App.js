@@ -25,9 +25,13 @@ import BuildNewHome from "./pages/BuildNewHome";
 import RemodelHome from "./pages/RemodelHome";
 import DesignPage from "./pages/DesignPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import AccountPage from "./pages/AccountPage";
+import ProjectDashboard from "./pages/ProjectDashboard";
+import Marketplace from "./pages/Marketplace";
+import ShopPage from "./pages/ShopPage";
+import PricingPage from "./pages/PricingPage";
 
 const MobileAppRoutes = lazy(() => import("./mobile/MobileAppRoutes"));
-const AccountPage = lazy(() => import("./pages/AccountPage"));
 const SubscriptionsPage = lazy(() => import("./pages/SubscriptionsPage"));
 const CraftSelection = lazy(() => import("./pages/CraftSelection"));
 const YourDetails = lazy(() => import("./pages/YourDetails"));
@@ -35,9 +39,6 @@ const YourPortfolio = lazy(() => import("./pages/YourPortfolio"));
 const GoLive = lazy(() => import("./pages/GoLive"));
 const PortfolioThemeStep = lazy(() => import("./pages/PortfolioThemeStep"));
 const PortfolioPage = lazy(() => import("./pages/PortfolioPage"));
-const ProjectDashboard = lazy(() => import("./pages/ProjectDashboard"));
-const Marketplace = lazy(() => import("./pages/Marketplace"));
-const ShopPage = lazy(() => import("./pages/ShopPage"));
 const DocumentVault = lazy(() => import("./pages/DocumentVault"));
 const ProjectDesignJourney = lazy(() => import("./pages/ProjectDesignJourney"));
 const TeamPage = lazy(() => import("./pages/TeamPage"));
@@ -47,11 +48,14 @@ const ProDashboard = lazy(() => import("./pages/ProDashboard"));
 const ProLeadsPage = lazy(() => import("./pages/ProLeadsPage"));
 const ProWorkPackagesPage = lazy(() => import("./pages/ProWorkPackagesPage"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
-const PricingPage = lazy(() => import("./pages/PricingPage"));
 const CareersPage = lazy(() => import("./pages/CareersPage"));
 const CareerProfilePage = lazy(() => import("./pages/CareerProfilePage"));
 const ProfessionalIntakeAdminPage = lazy(() => import("./pages/ProfessionalIntakeAdminPage"));
 const GuidesPage = lazy(() => import("./pages/GuidesPage"));
+
+function Suspend({ children, label }) {
+  return <Suspense fallback={<RouteFallback label={label} />}>{children}</Suspense>;
+}
 
 function ScrollToTopOnRouteChange() {
   const { pathname, search, hash } = useLocation();
@@ -82,6 +86,7 @@ function DesktopRoutes() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/design" element={<DesignPage />} />
+      <Route path="/ideas" element={<DesignPage />} />
       <Route
         path="/sign-in"
         element={AUTH_UI_ENABLED ? <SignInErrorBoundary><SignInPage portalMode="signin" /></SignInErrorBoundary> : <Navigate to="/" replace />}
@@ -91,57 +96,67 @@ function DesktopRoutes() {
       <Route path="/pro/join" element={AUTH_UI_ENABLED ? <SignInErrorBoundary><SignInPage portalRole="pro" portalMode="signup" /></SignInErrorBoundary> : <Navigate to="/" replace />} />
       <Route path="/account" element={<AccountPage />} />
       <Route path="/account/settings" element={<AccountPage />} />
-      <Route path="/subscriptions" element={<SubscriptionsPage />} />
+      <Route path="/subscriptions" element={<Suspend><SubscriptionsPage /></Suspend>} />
       <Route path="/pricing" element={<PricingPage />} />
-      <Route path="/careers" element={<CareersPage />} />
-      <Route path="/career-profile/:slug" element={<CareerProfilePage />} />
-      <Route path="/guides" element={<GuidesPage />} />
-      <Route path="/guides/:slug" element={<GuidesPage />} />
+      <Route path="/careers" element={<Suspend><CareersPage /></Suspend>} />
+      <Route path="/career-profile/:slug" element={<Suspend><CareerProfilePage /></Suspend>} />
+      <Route path="/guides" element={<Suspend><GuidesPage /></Suspend>} />
+      <Route path="/guides/:slug" element={<Suspend><GuidesPage /></Suspend>} />
       <Route
         path="/ops/onboard-professional"
-        element={LOCAL_OPS_UI_ENABLED ? <ProfessionalIntakeAdminPage /> : <Navigate to="/" replace />}
+        element={LOCAL_OPS_UI_ENABLED ? <Suspend><ProfessionalIntakeAdminPage /></Suspend> : <Navigate to="/" replace />}
       />
       <Route
         path="/craft"
         element={
-          <ProOnboardingGuard>
-            <CraftSelection />
-          </ProOnboardingGuard>
+          <Suspend>
+            <ProOnboardingGuard>
+              <CraftSelection />
+            </ProOnboardingGuard>
+          </Suspend>
         }
       />
       <Route
         path="/details"
         element={
-          <ProOnboardingGuard>
-            <YourDetails />
-          </ProOnboardingGuard>
+          <Suspend>
+            <ProOnboardingGuard>
+              <YourDetails />
+            </ProOnboardingGuard>
+          </Suspend>
         }
       />
       <Route
         path="/portfolio-theme"
         element={
-          <ProOnboardingGuard>
-            <PortfolioThemeStep />
-          </ProOnboardingGuard>
+          <Suspend>
+            <ProOnboardingGuard>
+              <PortfolioThemeStep />
+            </ProOnboardingGuard>
+          </Suspend>
         }
       />
       <Route
         path="/portfolio"
         element={
-          <ProOnboardingGuard>
-            <YourPortfolio />
-          </ProOnboardingGuard>
+          <Suspend>
+            <ProOnboardingGuard>
+              <YourPortfolio />
+            </ProOnboardingGuard>
+          </Suspend>
         }
       />
       <Route
         path="/live"
         element={
-          <ProOnboardingGuard>
-            <GoLive />
-          </ProOnboardingGuard>
+          <Suspend>
+            <ProOnboardingGuard>
+              <GoLive />
+            </ProOnboardingGuard>
+          </Suspend>
         }
       />
-      <Route path="/profile/:slug" element={<PortfolioPage />} />
+      <Route path="/profile/:slug" element={<Suspend><PortfolioPage /></Suspend>} />
       <Route path="/build" element={<WhatAreYouBuilding />} />
       <Route
         path="/build/new-home"
@@ -178,55 +193,67 @@ function DesktopRoutes() {
       <Route
         path="/documents"
         element={
-          <HomeownerFlowGuard>
-            <DocumentVault />
-          </HomeownerFlowGuard>
+          <Suspend>
+            <HomeownerFlowGuard>
+              <DocumentVault />
+            </HomeownerFlowGuard>
+          </Suspend>
         }
       />
       <Route
         path="/project/journey"
         element={
-          <HomeownerFlowGuard>
-            <ProjectDesignJourney />
-          </HomeownerFlowGuard>
+          <Suspend>
+            <HomeownerFlowGuard>
+              <ProjectDesignJourney />
+            </HomeownerFlowGuard>
+          </Suspend>
         }
       />
-      <Route path="/team" element={<HomeownerFlowGuard><TeamPage /></HomeownerFlowGuard>} />
-      <Route path="/project/payments" element={<HomeownerFlowGuard><ProjectPayments /></HomeownerFlowGuard>} />
+      <Route path="/team" element={<Suspend><HomeownerFlowGuard><TeamPage /></HomeownerFlowGuard></Suspend>} />
+      <Route path="/project/payments" element={<Suspend><HomeownerFlowGuard><ProjectPayments /></HomeownerFlowGuard></Suspend>} />
       <Route
         path="/stage"
         element={
-          <HomeownerFlowGuard>
-            <StageDashboard />
-          </HomeownerFlowGuard>
+          <Suspend>
+            <HomeownerFlowGuard>
+              <StageDashboard />
+            </HomeownerFlowGuard>
+          </Suspend>
         }
       />
       <Route
         path="/pro/dashboard"
         element={
-          <ProDashboardGuard>
-            <ProDashboard />
-          </ProDashboardGuard>
+          <Suspend>
+            <ProDashboardGuard>
+              <ProDashboard />
+            </ProDashboardGuard>
+          </Suspend>
         }
       />
       <Route
         path="/pro/leads"
         element={
-          <ProDashboardGuard>
-            <ProLeadsPage />
-          </ProDashboardGuard>
+          <Suspend>
+            <ProDashboardGuard>
+              <ProLeadsPage />
+            </ProDashboardGuard>
+          </Suspend>
         }
       />
       <Route
         path="/pro/rfqs"
         element={
-          <ProDashboardGuard>
-            <ProWorkPackagesPage />
-          </ProDashboardGuard>
+          <Suspend>
+            <ProDashboardGuard>
+              <ProWorkPackagesPage />
+            </ProDashboardGuard>
+          </Suspend>
         }
       />
-      <Route path="/terms" element={<LegalPage kind="terms" />} />
-      <Route path="/privacy" element={<LegalPage kind="privacy" />} />
+      <Route path="/terms" element={<Suspend><LegalPage kind="terms" /></Suspend>} />
+      <Route path="/privacy" element={<Suspend><LegalPage kind="privacy" /></Suspend>} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
@@ -234,11 +261,14 @@ function DesktopRoutes() {
 
 function AppRoutes() {
   const mobileNative = useMobileNative();
-  return (
-    <Suspense fallback={<RouteFallback />}>
-      {mobileNative ? <MobileAppRoutes /> : <DesktopRoutes />}
-    </Suspense>
-  );
+  if (mobileNative) {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <MobileAppRoutes />
+      </Suspense>
+    );
+  }
+  return <DesktopRoutes />;
 }
 
 function AuthSessionSync() {

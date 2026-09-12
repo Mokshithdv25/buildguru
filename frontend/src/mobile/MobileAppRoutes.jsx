@@ -40,6 +40,7 @@ const AccountPage = lazy(() => import("../pages/AccountPage"));
 const LegalPage = lazy(() => import("../pages/LegalPage"));
 const CareersPage = lazy(() => import("../pages/CareersPage"));
 const CareerProfilePage = lazy(() => import("../pages/CareerProfilePage"));
+const GuidesPage = lazy(() => import("../pages/GuidesPage"));
 
 function MobileRouteLoading() {
   return <RouteFallback label="Loading…" />;
@@ -53,9 +54,13 @@ function withShell(Page) {
   );
 }
 
+function withSuspense(node) {
+  return <Suspense fallback={<MobileRouteLoading />}>{node}</Suspense>;
+}
+
 export default function MobileAppRoutes() {
   return (
-    <Suspense fallback={<MobileRouteLoading />}><Routes>
+    <Routes>
       <Route path="/" element={withShell(MobileHomePage)} />
       <Route path="/design" element={withShell(MobileDesignPage)} />
       <Route path="/ideas" element={<Navigate to="/design" replace />} />
@@ -88,11 +93,11 @@ export default function MobileAppRoutes() {
       <Route path="/account" element={withShell(MobileAccountPage)} />
       <Route
         path="/account/settings"
-        element={
+        element={withSuspense(
           <MobileShell hideTabs>
             <AccountPage />
-          </MobileShell>
-        }
+          </MobileShell>,
+        )}
       />
       <Route path="/subscriptions" element={withShell(SubscriptionsPage)} />
       <Route path="/pricing" element={withShell(PricingPage)} />
@@ -119,21 +124,24 @@ export default function MobileAppRoutes() {
       <Route path="/team" element={<HomeownerFlowGuard>{withShell(MobileTeamPage)}</HomeownerFlowGuard>} />
       <Route path="/project/payments" element={<HomeownerFlowGuard>{withShell(MobilePaymentsPage)}</HomeownerFlowGuard>} />
       <Route path="/project/journey" element={<HomeownerFlowGuard>{withShell(MobileDesignJourneyPage)}</HomeownerFlowGuard>} />
+      <Route path="/stage" element={<Navigate to="/project" replace />} />
       <Route path="/profile/:slug" element={withShell(MobileProProfilePage)} />
-      <Route path="/craft" element={<ProOnboardingGuard><MobileWizardLayout title="Your craft" subtitle="Pro portfolio onboarding" backTo="/account"><CraftSelection /></MobileWizardLayout></ProOnboardingGuard>} />
-      <Route path="/details" element={<ProOnboardingGuard><MobileWizardLayout title="Your details" subtitle="Business & contact" backTo="/craft"><YourDetails /></MobileWizardLayout></ProOnboardingGuard>} />
-      <Route path="/portfolio-theme" element={<ProOnboardingGuard><MobileWizardLayout title="Look & feel" subtitle="Theme & layout" backTo="/details"><PortfolioThemeStep /></MobileWizardLayout></ProOnboardingGuard>} />
-      <Route path="/portfolio" element={<ProOnboardingGuard><MobileWizardLayout title="Portfolio" subtitle="Photos & specialties" backTo="/portfolio-theme"><YourPortfolio /></MobileWizardLayout></ProOnboardingGuard>} />
-      <Route path="/live" element={<ProOnboardingGuard><MobileWizardLayout title="Go live" subtitle="Publish to marketplace" backTo="/portfolio"><GoLive /></MobileWizardLayout></ProOnboardingGuard>} />
-      <Route path="/pro" element={<ProDashboardGuard>{withShell(ProDashboard)}</ProDashboardGuard>} />
-      <Route path="/pro/dashboard" element={<ProDashboardGuard>{withShell(ProDashboard)}</ProDashboardGuard>} />
-      <Route path="/pro/leads" element={<ProDashboardGuard>{withShell(ProLeadsPage)}</ProDashboardGuard>} />
-      <Route path="/pro/rfqs" element={<ProDashboardGuard>{withShell(ProWorkPackagesPage)}</ProDashboardGuard>} />
-      <Route path="/terms" element={<MobileShell hideTabs><LegalPage kind="terms" /></MobileShell>} />
-      <Route path="/privacy" element={<MobileShell hideTabs><LegalPage kind="privacy" /></MobileShell>} />
-      <Route path="/careers" element={<MobileShell hideTabs><CareersPage /></MobileShell>} />
-      <Route path="/career-profile/:slug" element={<MobileShell hideTabs><CareerProfilePage /></MobileShell>} />
+      <Route path="/craft" element={withSuspense(<ProOnboardingGuard><MobileWizardLayout title="Your craft" subtitle="Pro portfolio onboarding" backTo="/account"><CraftSelection /></MobileWizardLayout></ProOnboardingGuard>)} />
+      <Route path="/details" element={withSuspense(<ProOnboardingGuard><MobileWizardLayout title="Your details" subtitle="Business & contact" backTo="/craft"><YourDetails /></MobileWizardLayout></ProOnboardingGuard>)} />
+      <Route path="/portfolio-theme" element={withSuspense(<ProOnboardingGuard><MobileWizardLayout title="Look & feel" subtitle="Theme & layout" backTo="/details"><PortfolioThemeStep /></MobileWizardLayout></ProOnboardingGuard>)} />
+      <Route path="/portfolio" element={withSuspense(<ProOnboardingGuard><MobileWizardLayout title="Portfolio" subtitle="Photos & specialties" backTo="/portfolio-theme"><YourPortfolio /></MobileWizardLayout></ProOnboardingGuard>)} />
+      <Route path="/live" element={withSuspense(<ProOnboardingGuard><MobileWizardLayout title="Go live" subtitle="Publish to marketplace" backTo="/portfolio"><GoLive /></MobileWizardLayout></ProOnboardingGuard>)} />
+      <Route path="/pro" element={withSuspense(<ProDashboardGuard>{withShell(ProDashboard)}</ProDashboardGuard>)} />
+      <Route path="/pro/dashboard" element={withSuspense(<ProDashboardGuard>{withShell(ProDashboard)}</ProDashboardGuard>)} />
+      <Route path="/pro/leads" element={withSuspense(<ProDashboardGuard>{withShell(ProLeadsPage)}</ProDashboardGuard>)} />
+      <Route path="/pro/rfqs" element={withSuspense(<ProDashboardGuard>{withShell(ProWorkPackagesPage)}</ProDashboardGuard>)} />
+      <Route path="/terms" element={withSuspense(<MobileShell hideTabs><LegalPage kind="terms" /></MobileShell>)} />
+      <Route path="/privacy" element={withSuspense(<MobileShell hideTabs><LegalPage kind="privacy" /></MobileShell>)} />
+      <Route path="/careers" element={withSuspense(<MobileShell hideTabs><CareersPage /></MobileShell>)} />
+      <Route path="/career-profile/:slug" element={withSuspense(<MobileShell hideTabs><CareerProfilePage /></MobileShell>)} />
+      <Route path="/guides" element={withSuspense(<MobileShell hideTabs><GuidesPage /></MobileShell>)} />
+      <Route path="/guides/:slug" element={withSuspense(<MobileShell hideTabs><GuidesPage /></MobileShell>)} />
       <Route path="*" element={<NotFoundPage />} />
-    </Routes></Suspense>
+    </Routes>
   );
 }

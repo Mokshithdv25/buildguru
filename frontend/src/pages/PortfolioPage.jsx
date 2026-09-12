@@ -6,6 +6,7 @@ import { getPublicProfile } from "../lib/api";
 import { formatLocationLabel } from "../lib/formatLocation";
 import { getPortfolioThemeFromRecord, portfolioThemeCssVars } from "../lib/portfolioThemes";
 import { blockPortfolio, reportPortfolio } from "../lib/portfolioSafetyApi";
+import RouteFallback from "../components/RouteFallback";
 import "./PortfolioPage.css";
 
 const FALLBACK_HERO = `${process.env.PUBLIC_URL || ""}/landing-hero.png`;
@@ -56,7 +57,7 @@ export default function PortfolioPage() {
   }, [slug]);
 
   if (notFound) return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',sans-serif", background: "#faf9f7" }}>
+    <div className="hm-landing-page" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',sans-serif", background: "#faf9f7" }}>
       <div style={{ fontSize: 52, marginBottom: 12 }}>🏠</div>
       <h1 style={{ fontWeight: 800, fontSize: 22, marginBottom: 8 }}>Profile not found</h1>
       <p style={{ color: "#888", marginBottom: 8, maxWidth: 360, textAlign: "center", lineHeight: 1.5 }}>
@@ -74,7 +75,9 @@ export default function PortfolioPage() {
     </div>
   );
 
-  if (!data) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',sans-serif" }}>Loading…</div>;
+  if (!data) {
+    return <RouteFallback label="Loading this portfolio…" />;
+  }
 
   const craft = findCraft(data.craft);
   const craftLabel = craft?.name || data.craft || "Professional";

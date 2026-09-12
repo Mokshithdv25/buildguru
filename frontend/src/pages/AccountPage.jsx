@@ -13,6 +13,7 @@ import { formatInrShort, listUserProjects } from "../lib/projectFlowApi";
 import { AUTH_UI_ENABLED } from "../lib/authMode";
 import HmUserMenu from "../components/HmUserMenu";
 import { deleteMyAccount } from "../lib/accountApi";
+import RouteFallback from "../components/RouteFallback";
 
 export default function AccountPage() {
   const navigate = useNavigate();
@@ -121,9 +122,9 @@ export default function AccountPage() {
 
   if (session === undefined || session === null) {
     return (
-      <div className="min-h-screen bg-[#FBF2E8] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-[#C85F2B]" />
-      </div>
+      <RouteFallback
+        label={session === undefined ? "Checking your account…" : "Taking you to sign in…"}
+      />
     );
   }
 

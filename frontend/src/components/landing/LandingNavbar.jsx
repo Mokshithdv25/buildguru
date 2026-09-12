@@ -111,9 +111,11 @@ export default function LandingNavbar({ tagline = null }) {
       "/build/new-home",
       "/build/remodel",
       "/project",
+      "/project/journey",
       "/documents",
       "/project/payments",
       "/team",
+      "/stage",
     ].includes(pathOnly);
     if (homeownerOnly) navigateToHomeownerFlow(navigate, path);
     else navigate(path);

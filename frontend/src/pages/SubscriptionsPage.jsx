@@ -7,6 +7,7 @@ import { useHmSession } from "../hooks/useHmSession";
 import { billingErrorMessage, fetchBillingSummary, purchasePlan } from "../lib/billingApi";
 import HmUserMenu from "../components/HmUserMenu";
 import { Capacitor } from "@capacitor/core";
+import RouteFallback from "../components/RouteFallback";
 
 const PLAN_COPY = {
   homeowner: {
@@ -103,9 +104,9 @@ export default function SubscriptionsPage() {
 
   if (session === undefined || (AUTH_UI_ENABLED && session === null)) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-copper" />
-      </div>
+      <RouteFallback
+        label={session === undefined ? "Checking your account…" : "Taking you to sign in…"}
+      />
     );
   }
 

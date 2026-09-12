@@ -12,6 +12,7 @@ export function useProjectWorkspace() {
   const requestedId = searchParams.get("projectId") || "";
 
   useEffect(() => {
+    if (session === undefined) return undefined;
     let cancelled = false;
     (async () => {
       setLoading(true);

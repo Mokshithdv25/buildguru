@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { getProEntryPath } from "../lib/proEntryPath";
 import LandingNavbar from "../components/landing/LandingNavbar";
@@ -15,12 +15,6 @@ import LandingFooter from "../components/landing/LandingFooter";
  */
 export default function HomePage() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    void import("./ProjectDashboard");
-    void import("./Marketplace");
-    void import("./ShopPage");
-  }, []);
 
   const scrollToInspiration = () => {
     document.getElementById("landing-inspiration")?.scrollIntoView({ behavior: "smooth", block: "start" });
