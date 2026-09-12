@@ -745,6 +745,18 @@ export async function loadProjectBoard({ projectId, source }) {
   const brief = briefRows?.[0]?.brief_json || {};
   const v0Pack = await loadV0Pack(resolvedProjectId);
 
+  // Older projects can pre-date the project-hub checklist tables. Repair the
+  // stage/task seed before reading the board so controls such as the task
+  // stage selector always have real saved stages to work with.
+  const flowType = project.flow_type || mapFlowType(source) || "new_home";
+  try {
+    await ensureProjectStagesAndTasks(resolvedProjectId, brief, flowType, v0Pack?.estimate || null);
+  } catch (repairError) {
+    // Keep the board readable if a legacy project cannot be repaired in this
+    // request; the UI still renders a defensive stage list below.
+    console.warn("Could not repair project stage checklist:", repairError?.message || repairError);
+  }
+
   const { data: stages, error: stagesError } = await supabase
     .from("project_stages")
     .select("*")
@@ -879,6 +891,7 @@ export async function addProjectTask({ projectId, title, phaseName }) {
         .eq("project_id", projectId);
       if (stageError) throw stageError;
       stageId = (stages || []).find((s) => s.name === phaseName)?.id || null;
+      if (!stageId) throw new Error("This project’s stages are still loading. Please try again.");
   }
     const { data, error } = await supabase
       .from("project_tasks")

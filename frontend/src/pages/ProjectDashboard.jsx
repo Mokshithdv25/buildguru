@@ -265,6 +265,14 @@ const STAGE_DETAILS = {
   },
 };
 
+const DEFAULT_PROJECT_STAGES = [
+  "Design & Approval",
+  "Sourcing",
+  "Site & Foundation",
+  "Structure",
+  "Finishing",
+];
+
 /** Per-stage calendar-style reminders — editable on the board (demo seed until calendar sync). */
 const MILESTONE_SEED = {
   "Design & Approval": [
@@ -710,7 +718,10 @@ export default function ProjectDashboard() {
     run();
   }, [searchParams, activeProjectId]);
 
-  const phaseOrder = useMemo(() => phaseRows.map((p) => p.name), [phaseRows]);
+  const phaseOrder = useMemo(
+    () => (phaseRows.length ? phaseRows.map((p) => p.name) : DEFAULT_PROJECT_STAGES),
+    [phaseRows],
+  );
   const phaseRank = useMemo(() => Object.fromEntries(phaseOrder.map((n, i) => [n, i])), [phaseOrder]);
 
   const filteredTasks = useMemo(() => tasks.filter((t) => t.phase === selectedPhase), [tasks, selectedPhase]);
