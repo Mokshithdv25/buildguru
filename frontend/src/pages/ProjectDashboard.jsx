@@ -654,11 +654,9 @@ export default function ProjectDashboard() {
       try {
         const source = searchParams.get("source") || "";
         const projectId = searchParams.get("projectId") || "";
-        const [board, documents, paymentRows] = await Promise.all([
-          loadProjectBoard({ source, projectId }),
-          listProjectDocuments(projectId),
-          listProjectPayments(projectId),
-        ]);
+        // Paint the board as soon as its core rows are ready. Documents and
+        // payments are secondary panels and should not hold up the timeline.
+        const board = await loadProjectBoard({ source, projectId });
         if (!board) throw new Error("This project could not be loaded for the signed-in account.");
         if (Array.isArray(board.phases)) {
           setPhaseRows(board.phases);
@@ -670,6 +668,10 @@ export default function ProjectDashboard() {
         setMsgs(Array.isArray(board.messages) ? board.messages : []);
         setBriefData(board.brief || null);
         setV0Pack(board.v0Pack || null);
+        const [documents, paymentRows] = await Promise.all([
+          listProjectDocuments(projectId),
+          listProjectPayments(projectId),
+        ]);
         setProjectDocuments(documents || []);
         setPayments(paymentRows || []);
         try {
