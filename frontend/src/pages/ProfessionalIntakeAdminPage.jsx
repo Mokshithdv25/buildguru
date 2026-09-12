@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import BackButton from "../components/BackButton";
 import {
-  ArrowLeft,
   Building2,
   CheckCircle2,
   ImagePlus,
@@ -136,7 +136,7 @@ export default function ProfessionalIntakeAdminPage() {
     <main className="hm-ops-page">
       <header className="hm-ops-header">
         <div>
-          <Link to="/" className="hm-ops-back"><ArrowLeft size={16} /> BuildGuru</Link>
+          <BackButton to="/" label="BuildGuru" className="hm-ops-back" />
           <p>LOCAL OPERATIONS</p>
           <h1>Onboard an architect</h1>
           <span>Save the private contact record and list its safe profile fields in professional search.</span>

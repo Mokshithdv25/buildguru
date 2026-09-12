@@ -1,4 +1,5 @@
 import React from "react";
+import BackButton from "./BackButton";
 
 /** Catches render errors on /sign-in so users see a message instead of a blank page. */
 export default class SignInErrorBoundary extends React.Component {
@@ -29,9 +30,7 @@ export default class SignInErrorBoundary extends React.Component {
                 {String(this.state.error?.message || this.state.error)}
               </p>
             ) : null}
-            <a href="/" className="text-sm font-semibold text-[#C85F2B] hover:underline">
-              ← Back to home
-            </a>
+            <BackButton to="/" label="Home" />
           </div>
         </div>
       );

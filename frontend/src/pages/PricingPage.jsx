@@ -1,8 +1,9 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import LandingFooter from "../components/landing/LandingFooter";
+import BackButton from "../components/BackButton";
 import { LEGAL_BUSINESS_NAME, SUPPORT_EMAIL, legalEntityLine } from "../lib/legalBusiness";
 
 const SERVICES = [
@@ -66,12 +67,7 @@ export default function PricingPage() {
       <LandingNavbar tagline="Pricing & services" />
       <main className="flex-1 px-5 py-10 md:px-8 md:py-14">
         <div className="mx-auto max-w-5xl">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-copper mb-6"
-          >
-            <ArrowLeft size={16} /> Home
-          </Link>
+          <BackButton to="/" label="BuildGuru" className="mb-6" />
           <p className="font-body text-xs font-bold uppercase tracking-[0.16em] text-copper m-0 mb-2">
             Products &amp; services
           </p>

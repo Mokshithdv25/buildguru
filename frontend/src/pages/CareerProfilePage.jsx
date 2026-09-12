@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, MapPin } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { MapPin } from "lucide-react";
+import { useParams } from "react-router-dom";
 import LandingFooter from "../components/landing/LandingFooter";
 import LandingNavbar from "../components/landing/LandingNavbar";
+import BackButton from "../components/BackButton";
 import { useMobileNative } from "../hooks/useMobileNative";
 import { getPublishedCareerProfile } from "../lib/careersApi";
 import "./CareerProfilePage.css";
@@ -32,7 +33,7 @@ export default function CareerProfilePage() {
     <div className="hm-career-profile">
       {!mobile ? <LandingNavbar tagline="Portfolio" /> : null}
       <main>
-        <Link to="/careers" className="hm-career-profile-back"><ArrowLeft size={16} /> Careers</Link>
+        <BackButton to="/careers" label="Careers" className="hm-career-profile-back" />
         {error ? <div className="hm-career-profile-empty"><h1>Portfolio unavailable</h1><p>{error}</p></div> : null}
         {!profile && !error ? <div className="hm-career-profile-empty"><p>Loading portfolio…</p></div> : null}
         {profile ? (

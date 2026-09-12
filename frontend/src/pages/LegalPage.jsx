@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import BackButton from "../components/BackButton";
 import { LEGAL_BUSINESS_NAME, SUPPORT_EMAIL, legalEntityDetailsParagraph } from "../lib/legalBusiness";
 
 const aboutParagraph = () => {
@@ -107,12 +107,7 @@ export default function LegalPage({ kind = "terms" }) {
   return (
     <div className="min-h-screen bg-[#FBF7F2]" style={{ fontFamily: "'DM Sans', Inter, system-ui, sans-serif" }}>
       <div className="mx-auto max-w-2xl px-6 py-10 md:py-14">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[#1C1917] hover:text-[#C85F2B] transition-colors mb-8"
-        >
-          <ArrowLeft size={16} /> BuildGuru
-        </Link>
+        <BackButton to="/" label="BuildGuru" className="mb-8" />
 
         <h1 className="font-serif-display text-3xl md:text-4xl font-semibold text-[#1C1917] mb-2">{title}</h1>
         <p className="text-sm text-[#7A6E62] mb-8">Last updated: July 2026</p>

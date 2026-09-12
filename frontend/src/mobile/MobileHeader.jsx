@@ -9,7 +9,7 @@ export default function MobileHeader({ title, subtitle, backTo, right = null }) 
     <header className="hm-m-header">
       {backTo != null ? (
         <button type="button" className="hm-m-icon-btn" aria-label="Back" onClick={() => (backTo === -1 ? navigate(-1) : navigate(backTo))}>
-          <ChevronLeft size={22} />
+          <ChevronLeft size={24} strokeWidth={2} aria-hidden="true" />
         </button>
       ) : (
         <button type="button" className="hm-m-brand-btn" aria-label="BuildGuru home" onClick={() => navigate("/")}>

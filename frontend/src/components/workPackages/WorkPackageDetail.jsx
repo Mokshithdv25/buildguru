@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Check, Inbox, Loader2, MessageCircleQuestion, Phone, Star, UserPlus, X } from "lucide-react";
+import { Check, Inbox, Loader2, MessageCircleQuestion, Phone, Star, UserPlus, X } from "lucide-react";
+import BackButton from "../BackButton";
 import { formatInrShort } from "../../lib/projectFlowApi";
 import { listPublishedPortfolios } from "../../lib/api";
 import {
@@ -352,7 +353,7 @@ export default function WorkPackageDetail({
 
   return (
     <section className="hm-wp" aria-label={`Work package: ${pkg.title}`}>
-      <button type="button" className="hm-wp__back" onClick={onBack}><ArrowLeft size={14} /> All work packages</button>
+      <BackButton className="hm-wp__back" onClick={onBack} label="All work packages" />
 
       <div className="hm-wp__card">
         <div className="hm-wp__detail-head">

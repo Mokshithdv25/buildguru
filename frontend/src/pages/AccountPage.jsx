@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import BackButton from "../components/BackButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -133,14 +134,7 @@ export default function AccountPage() {
   return (
     <div className="hm-landing-page min-h-screen bg-background flex flex-col">
       <header className={`flex items-center gap-3 md:gap-4 px-5 md:px-10 py-3 min-h-[4.65rem] ${HM_HEADER_BAR_CHROME_CLASS}`}>
-        <button
-          type="button"
-          onClick={() => navigate(session.role === "pro" ? "/pro/dashboard" : "/build")}
-          className="inline-flex shrink-0 items-center gap-2 text-sm text-muted-foreground hover:text-foreground bg-transparent border-none cursor-pointer font-body"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </button>
+        <BackButton to={session.role === "pro" ? "/pro/dashboard" : "/build"} />
         <button
           type="button"
           onClick={() => navigate("/")}
