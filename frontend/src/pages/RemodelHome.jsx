@@ -125,6 +125,7 @@ function RightPanel({
   len,
   breadth,
   photos,
+  beforeImage,
   spaceNotes,
   mainGoal,
   changeLevel,
@@ -178,7 +179,7 @@ function RightPanel({
           className="preview-hero"
           style={{
             backgroundImage:
-              "url(https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=900&q=75)",
+              `url(${beforeImage || photos?.[0] || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=900&q=75"})`,
           }}
         />
         <div style={{ padding: "16px 18px 20px", marginTop: 0 }}>
@@ -1528,6 +1529,7 @@ export default function RemodelHome() {
           len={len}
           breadth={breadth}
           photos={photos}
+          beforeImage={beforeImage}
           spaceNotes={spaceNotes}
           mainGoal={mainGoal}
           changeLevel={changeLevel}
