@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import BackButton from "../components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone,
   ArrowRight,
-  ArrowLeft,
   Check,
   ChevronRight,
   Loader2,
@@ -840,16 +840,11 @@ export default function SignInPage({ portalRole = null, portalMode = null }) {
       <div
         className={`flex items-center gap-3 md:gap-4 px-5 md:px-10 py-3 min-h-[4.65rem] ${HM_HEADER_BAR_CHROME_CLASS}`}
       >
-        <button
-          type="button"
+        <BackButton
           onClick={step === "otp" ? () => setStep("entry") : goBack}
-          className={`hm-mobile-auth-back flex shrink-0 items-center gap-1.5 text-muted-foreground font-body text-sm hover:text-foreground transition-colors bg-transparent border-none cursor-pointer ${
-            step === "details" || step === "done" ? "invisible pointer-events-none" : ""
-          }`}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {step === "otp" ? "Change number" : "Back"}
-        </button>
+          label={step === "otp" ? "Change number" : "Back"}
+          className={`hm-mobile-auth-back ${step === "details" || step === "done" ? "invisible pointer-events-none" : ""}`}
+        />
         <button
           type="button"
           onClick={() => navigate("/")}

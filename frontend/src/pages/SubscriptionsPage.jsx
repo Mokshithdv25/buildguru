@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, CreditCard, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, CreditCard, Loader2, ShieldCheck, Sparkles } from "lucide-react";
+import BackButton from "../components/BackButton";
 import { HM_HEADER_BAR_CHROME_CLASS, HM_WORDMARK_TITLE_CLASS, hmLogoMarkSrc } from "../lib/hmBrand";
 import { AUTH_UI_ENABLED } from "../lib/authMode";
 import { useHmSession } from "../hooks/useHmSession";
@@ -122,13 +123,7 @@ export default function SubscriptionsPage() {
   return (
     <div className="hm-landing-page min-h-screen bg-background flex flex-col">
       <header className={`flex items-center gap-3 md:gap-4 px-5 md:px-10 py-3 min-h-[4.65rem] ${HM_HEADER_BAR_CHROME_CLASS}`}>
-        <button
-          type="button"
-          onClick={() => navigate(backPath)}
-          className="inline-flex shrink-0 items-center gap-2 text-sm text-muted-foreground hover:text-foreground bg-transparent border-none cursor-pointer font-body"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
+        <BackButton to={backPath} />
         <button type="button" onClick={() => navigate("/")} className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer p-0 min-w-0">
           <img src={hmLogoMarkSrc} alt="BuildGuru" className="w-12 h-12 shrink-0" width={48} height={48} />
           <span className={HM_WORDMARK_TITLE_CLASS}>BuildGuru</span>

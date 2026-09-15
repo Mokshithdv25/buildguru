@@ -473,6 +473,7 @@ export default function ProjectDashboard() {
   const [siteUploading, setSiteUploading] = useState(false);
   const [selectedSiteFeedEntry, setSelectedSiteFeedEntry] = useState(null);
   const sitePhotoPickerRef = useRef(null);
+  const messageInputRef = useRef(null);
   const [boardError, setBoardError] = useState("");
   const [budgetDetailOpen, setBudgetDetailOpen] = useState(false);
   const [budgetDetailScope, setBudgetDetailScope] = useState("stage");
@@ -1904,11 +1905,9 @@ export default function ProjectDashboard() {
                     ))}
                     {(stageDetail.docs || []).length > 3 ? <div style={{ fontSize: 12, color: "#9A8F87" }}>+{(stageDetail.docs || []).length - 3} more</div> : null}
                   </div>
-                  {!isLiveProject ? (
-                    <button type="button" onClick={openVaultForStage} style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1.5px solid ${OR}`, background: "#fff", color: OR, fontWeight: 700, fontSize: 14, cursor: "pointer", flexShrink: 0, marginBottom: 16 }}>
-                      All documents →
-                    </button>
-                  ) : null}
+                  <button type="button" onClick={openVaultForStage} style={{ width: "100%", padding: "12px 14px", borderRadius: 10, border: `1.5px solid ${OR}`, background: "#fff", color: OR, fontWeight: 700, fontSize: 14, cursor: "pointer", flexShrink: 0, marginBottom: 16 }}>
+                    View documents →
+                  </button>
                   <div style={{ borderTop: "1px solid #EDEAE6", paddingTop: 14, flex: 1, minHeight: 140, display: "flex", flexDirection: "column" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexShrink: 0 }}>
                       <div>
@@ -1955,7 +1954,7 @@ export default function ProjectDashboard() {
                     <div style={{ fontWeight: 700, fontSize: 18 }}>Discussion</div>
                     <div style={{ fontSize: 13, color: "#9A8F87", marginTop: 4 }}>{selectedPhase} thread</div>
                   </div>
-                  <button type="button" style={{ background: "none", border: "none", color: OR, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                  <button type="button" onClick={() => messageInputRef.current?.focus()} style={{ background: "none", border: "none", color: OR, fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                     New Message
                   </button>
                 </div>
@@ -1977,6 +1976,7 @@ export default function ProjectDashboard() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, border: "1px solid #D4CEC6", borderRadius: 12, padding: "12px 16px", background: "#FDFCFB" }}>
                   <input
+                    ref={messageInputRef}
                     value={msg}
                     onChange={(e) => setMsg(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && sendMsg()}
@@ -2008,18 +2008,20 @@ export default function ProjectDashboard() {
                     View All
                   </button>
                 </div>
-                {stageDetail.siteImage ? (
-                  <div style={{ borderRadius: 12, overflow: "hidden", position: "relative", marginBottom: 10 }}>
-                    <img src={stageDetail.siteImage} alt="" style={{ width: "100%", height: 168, objectFit: "cover", display: "block" }} />
-                    <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,25,23,0.72)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20 }}>Latest</div>
-                  </div>
-                ) : (
-                  <div style={{ borderRadius: 12, marginBottom: 10, padding: 18, background: "#F3F1EE", color: "#7A6E62", fontSize: 13 }}>
-                    No saved site media yet.
-                  </div>
-                )}
-                <div style={{ fontSize: 12, color: "#9A8F87", marginBottom: 4 }}>{stageDetail.siteTime}</div>
-                <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.45 }}>{stageDetail.siteCaption}</div>
+                <button type="button" onClick={() => setActiveNav("Site Feed")} aria-label={`Open site feed for ${selectedPhase}`} style={{ display: "block", width: "100%", border: "none", background: "transparent", padding: 0, textAlign: "left", cursor: "pointer", fontFamily: "inherit" }}>
+                  {stageDetail.siteImage ? (
+                    <div style={{ borderRadius: 12, overflow: "hidden", position: "relative", marginBottom: 10 }}>
+                      <img src={stageDetail.siteImage} alt="" style={{ width: "100%", height: 168, objectFit: "cover", display: "block" }} />
+                      <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(28,25,23,0.72)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20 }}>Latest</div>
+                    </div>
+                  ) : (
+                    <div style={{ borderRadius: 12, marginBottom: 10, padding: 18, background: "#F3F1EE", color: "#7A6E62", fontSize: 13 }}>
+                      No saved site media yet.
+                    </div>
+                  )}
+                  <div style={{ fontSize: 12, color: "#9A8F87", marginBottom: 4 }}>{stageDetail.siteTime}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.45 }}>{stageDetail.siteCaption}</div>
+                </button>
               </div>
 
               <div style={{ ...panel, padding: "18px 20px" }}>

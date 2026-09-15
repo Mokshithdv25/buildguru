@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, BriefcaseBusiness, Camera, CheckCircle2, MapPin, Pencil, Users, X } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, Camera, CheckCircle2, MapPin, Pencil, Users, X } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
 import LandingFooter from "../components/landing/LandingFooter";
+import BackButton from "../components/BackButton";
 import { useMobileNative } from "../hooks/useMobileNative";
 import {
   isCurrentUserCareersAdmin,
@@ -211,7 +212,7 @@ function ApplicationForm({ job, onClose }) {
               </p>
             ) : null}
             {publishedSlug ? <Link className="hm-careers-profile-link" to={`/career-profile/${publishedSlug}`}>View your portfolio <ArrowRight size={16} /></Link> : null}
-            <button type="button" onClick={onClose}>Back to open roles</button>
+            <BackButton onClick={onClose} label="Open roles" />
           </div>
         ) : (
           <>
@@ -521,7 +522,7 @@ export default function CareersPage() {
       <main>
         <section className="hm-careers-hero">
           <div>
-            <Link to="/" className="hm-careers-back"><ArrowLeft size={16} /> Home</Link>
+            <BackButton to="/" label="BuildGuru" className="hm-careers-back" />
             <p className="hm-careers-eyebrow">Careers at BuildGuru</p>
             <h1>Build the future of Indian home projects.</h1>
             <p>Join a team making design, hiring, materials and project delivery clearer for homeowners and professionals.</p>

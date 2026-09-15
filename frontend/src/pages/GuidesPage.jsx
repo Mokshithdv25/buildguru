@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import BackButton from "../components/BackButton";
 
 const GUIDES = [
   {
@@ -85,7 +86,7 @@ export default function GuidesPage() {
       <main className="min-h-screen bg-[#FBF7F2] px-6 py-12 text-[#1C1917] md:py-20">
         <SeoMeta title="Home construction and remodeling guides" description="Practical BuildGuru guides for planning, budgeting, remodeling, and choosing professionals for a home project in India." url="/guides" />
         <div className="mx-auto max-w-5xl">
-          <Link to="/" className="text-sm font-semibold text-[#A65427]">← BuildGuru</Link>
+          <BackButton to="/" label="BuildGuru" />
           <p className="mt-12 text-xs font-bold uppercase tracking-[0.18em] text-[#A65427]">BuildGuru guides</p>
           <h1 className="mt-3 max-w-3xl font-serif-display text-4xl font-semibold md:text-6xl">Plan your home project with more clarity.</h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-[#6B625A]">Useful, plain-language guidance for homeowners planning construction, remodeling, budgets, and professional handoffs in India.</p>
@@ -101,7 +102,7 @@ export default function GuidesPage() {
     <main className="min-h-screen bg-[#FBF7F2] px-6 py-12 text-[#1C1917] md:py-20">
       <SeoMeta title={guide.title} description={guide.description} url={`/guides/${guide.slug}`} />
       <article className="mx-auto max-w-3xl">
-        <Link to="/guides" className="text-sm font-semibold text-[#A65427]">← All guides</Link>
+        <BackButton to="/guides" label="All guides" />
         <p className="mt-12 text-xs font-bold uppercase tracking-[0.18em] text-[#A65427]">BuildGuru guide · {guide.date}</p>
         <h1 className="mt-3 font-serif-display text-4xl font-semibold md:text-6xl">{guide.title}</h1>
         <p className="mt-5 text-xl leading-relaxed text-[#6B625A]">{guide.description}</p>

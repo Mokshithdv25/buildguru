@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import MobileHeader from "../MobileHeader";
+import BackButton from "../../components/BackButton";
 import MobileSaveToast from "../components/MobileSaveToast";
 import { useMobileIdeabooks } from "../MobileIdeabooksContext";
 
@@ -26,9 +27,7 @@ export default function MobilePhotoPage() {
         <MobileHeader title="Photo" backTo="/" />
         <div className="hm-m-empty">
           <p>Photo not found.</p>
-          <button type="button" className="hm-m-btn-secondary" onClick={() => navigate("/")}>
-            Back to Home
-          </button>
+          <BackButton to="/" label="Home" />
         </div>
       </>
     );

@@ -5,7 +5,7 @@ import { HmHeaderBrandLockup } from "../components/HmBrandLockup";
 import HmUserMenu from "../components/HmUserMenu";
 import BackButton from "../components/BackButton";
 import { HM_HEADER_BAR_CLASS, HM_TAGLINE_PORTFOLIO } from "../lib/hmBrand";
-import { ArrowLeft, ArrowRight, UploadCloud, X, Camera, Download, ShieldCheck } from "lucide-react";
+import { ArrowRight, UploadCloud, X, Camera, Download, ShieldCheck } from "lucide-react";
 import {
   getPortfolioBase,
   getPortfolioMedia,

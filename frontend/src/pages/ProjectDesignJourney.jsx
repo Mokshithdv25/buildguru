@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ProjectHubShell from "../components/ProjectHubShell";
+import BackButton from "../components/BackButton";
 import { formatInrShort, loadProjectBoard } from "../lib/projectFlowApi";
 
 const OR = "#C85F2B";
@@ -270,22 +271,7 @@ export default function ProjectDesignJourney() {
             <p style={{ fontSize: 13, color: "#9A8F87", marginTop: 8 }}>Loading saved design &amp; estimate…</p>
           ) : null}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}>
-            <button
-              type="button"
-              onClick={() => navigate(`/project${hubQuery}`)}
-              style={{
-                padding: "9px 16px",
-                borderRadius: 9,
-                border: "1.5px solid #D1C9BF",
-                background: "#fff",
-                fontWeight: 600,
-                fontSize: 13,
-                cursor: "pointer",
-                color: "#44403C",
-              }}
-            >
-              ← Back to overview
-            </button>
+            <BackButton to={`/project${hubQuery}`} label="Project overview" />
             <button
               type="button"
               onClick={() => navigate(`/documents${hubQuery}`)}
