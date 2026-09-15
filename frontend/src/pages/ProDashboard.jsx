@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, BriefcaseBusiness, ClipboardCheck, ExternalLink, FolderKanban, MessageSquareText, PackageSearch, Pencil, Share2, Sparkles, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import LandingNavbar from "../components/landing/LandingNavbar";
-import HmHomiMascot from "../components/HmHomiMascot";
 import HmProAssistant from "../components/HmProAssistant";
 import HmCommandCenter from "../components/HmCommandCenter";
 import { HM_FIXED_NAV_OFFSET_CLASS } from "../lib/hmBrand";
@@ -27,13 +26,14 @@ function readPortfolioCache() {
   }
 }
 
-function Metric({ icon: Icon, label, value, detail }) {
+function Metric({ icon: Icon, label, value, detail, onClick }) {
   return (
-    <article className="hm-pro-card hm-pro-metric">
+    <button type="button" className="hm-pro-card hm-pro-metric hm-pro-metric-button" onClick={onClick}>
       <div className="hm-pro-metric-top"><span className="hm-pro-metric-label">{label}</span><span className="hm-pro-metric-icon"><Icon size={17} /></span></div>
       <strong className="hm-pro-metric-value">{value}</strong>
       <span className="hm-pro-metric-detail">{detail}</span>
-    </article>
+      <ArrowRight className="hm-pro-metric-arrow" size={15} aria-hidden="true" />
+    </button>
   );
 }
 
@@ -189,7 +189,6 @@ export default function ProDashboard() {
 
         <section className="hm-pro-card hm-pro-briefing">
           <div className="hm-pro-briefing-copy">
-            <div className="hm-pro-mascot-wrap"><HmHomiMascot size={45} variant="hero" /></div>
             <div><p className="hm-pro-eyebrow">Today’s briefing</p><h2>Here’s where your attention belongs.</h2><p>{briefing}</p>{leadError ? <p className="hm-pro-error" role="alert">{leadError}</p> : null}</div>
           </div>
           <div className="hm-pro-briefing-actions">
@@ -211,11 +210,11 @@ export default function ProDashboard() {
         />
 
         <section className="hm-pro-metrics" aria-label="Professional pipeline summary">
-          <Metric icon={PackageSearch} label="Open work packages" value={leadsLoading ? "—" : String(openPackages.length)} detail={invitedPackages.length ? `${invitedPackages.length} invited directly to you` : "Trade-scoped RFQs you can bid on"} />
-          <Metric icon={Users} label="New leads" value={leadValue} detail="Homeowner projects waiting for review" />
-          <Metric icon={MessageSquareText} label="Bids out" value={leadsLoading ? "—" : String(openBids.length + packageBidsOut.length)} detail="Priced bids awaiting a homeowner decision" />
-          <Metric icon={BriefcaseBusiness} label="Active work" value={leadsLoading ? "—" : String(activeWork.length + packageAwards.length)} detail="Won projects and awarded packages" />
-          <Metric icon={Sparkles} label="Profile strength" value={`${profileStrength}%`} detail={isPublished ? "Portfolio live for homeowners" : "Portfolio not published yet"} />
+          <Metric icon={PackageSearch} label="Open work packages" value={leadsLoading ? "—" : String(openPackages.length)} detail={invitedPackages.length ? `${invitedPackages.length} invited directly to you` : "Trade-scoped RFQs you can bid on"} onClick={() => navigate("/pro/rfqs?view=open")} />
+          <Metric icon={Users} label="New leads" value={leadValue} detail="Homeowner projects waiting for review" onClick={() => navigate("/pro/leads?status=new")} />
+          <Metric icon={MessageSquareText} label="Bids out" value={leadsLoading ? "—" : String(openBids.length + packageBidsOut.length)} detail="Priced bids awaiting a homeowner decision" onClick={() => navigate("/pro/rfqs?view=mine")} />
+          <Metric icon={BriefcaseBusiness} label="Active work" value={leadsLoading ? "—" : String(activeWork.length + packageAwards.length)} detail="Won projects and awarded packages" onClick={() => navigate("/pro/leads?status=won")} />
+          <Metric icon={Sparkles} label="Profile strength" value={`${profileStrength}%`} detail={isPublished ? "Portfolio live for homeowners" : "Portfolio not published yet"} onClick={() => navigate(isPublished ? "/details" : getProOnboardingResumePath())} />
         </section>
 
         <div className="hm-pro-dashboard-grid">
