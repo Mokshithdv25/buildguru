@@ -47,7 +47,7 @@ export default function AccountPage() {
   }, [session, navigate]);
 
   useEffect(() => {
-    if (!session?.supabaseUserId) {
+    if (!session?.supabaseUserId || session.role === "pro") {
       setSavedProjects([]);
       return;
     }
@@ -66,7 +66,7 @@ export default function AccountPage() {
     return () => {
       cancelled = true;
     };
-  }, [session?.supabaseUserId]);
+  }, [session?.supabaseUserId, session?.role]);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -215,43 +215,45 @@ export default function AccountPage() {
             </Button>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card/90 p-6 space-y-3 shadow-sm">
-            <p className="font-body text-sm font-semibold text-foreground m-0">Saved projects</p>
-            <p className="font-body text-xs text-muted-foreground m-0 leading-relaxed">
-              Design, estimate, brief, and tasks from your build or remodel flows.
-            </p>
-            {projectsLoading ? (
-              <p className="font-body text-xs text-muted-foreground m-0">Loading…</p>
-            ) : savedProjects.length === 0 ? (
-              <p className="font-body text-xs text-muted-foreground m-0">
-                None yet. Complete a build or remodel flow and generate v0 while signed in.
+          {session.role !== "pro" ? (
+            <div className="rounded-2xl border border-border bg-card/90 p-6 space-y-3 shadow-sm">
+              <p className="font-body text-sm font-semibold text-foreground m-0">Saved projects</p>
+              <p className="font-body text-xs text-muted-foreground m-0 leading-relaxed">
+                Design, estimate, brief, and tasks from your build or remodel flows.
               </p>
-            ) : (
-              <ul className="m-0 p-0 list-none space-y-2">
-                {savedProjects.map((p) => (
-                  <li key={p.id}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const src =
-                          p.flow_type === "remodel" || p.source === "remodel"
-                            ? "remodel"
-                            : "build-new";
-                        navigate(`/project?projectId=${encodeURIComponent(p.id)}&source=${src}`);
-                      }}
-                      className="w-full text-left rounded-xl border border-border px-3 py-2.5 bg-background hover:bg-muted/40 transition-colors font-body text-sm cursor-pointer"
-                    >
-                      <span className="font-semibold text-foreground block">{p.title || "Untitled project"}</span>
-                      <span className="text-xs text-muted-foreground mt-0.5 block">
-                        {p.flow_type === "remodel" ? "Remodel" : "New build"}
-                        {p.budget_max ? ` · ${formatInrShort(p.budget_max)}` : ""}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+              {projectsLoading ? (
+                <p className="font-body text-xs text-muted-foreground m-0">Loading…</p>
+              ) : savedProjects.length === 0 ? (
+                <p className="font-body text-xs text-muted-foreground m-0">
+                  None yet. Complete a build or remodel flow and generate v0 while signed in.
+                </p>
+              ) : (
+                <ul className="m-0 p-0 list-none space-y-2">
+                  {savedProjects.map((p) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const src =
+                            p.flow_type === "remodel" || p.source === "remodel"
+                              ? "remodel"
+                              : "build-new";
+                          navigate(`/project?projectId=${encodeURIComponent(p.id)}&source=${src}`);
+                        }}
+                        className="w-full text-left rounded-xl border border-border px-3 py-2.5 bg-background hover:bg-muted/40 transition-colors font-body text-sm cursor-pointer"
+                      >
+                        <span className="font-semibold text-foreground block">{p.title || "Untitled project"}</span>
+                        <span className="text-xs text-muted-foreground mt-0.5 block">
+                          {p.flow_type === "remodel" ? "Remodel" : "New build"}
+                          {p.budget_max ? ` · ${formatInrShort(p.budget_max)}` : ""}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : null}
 
           <div className="rounded-2xl border border-border/80 bg-background/80 p-4 space-y-2">
             <p className="font-body text-sm font-semibold text-foreground m-0">More</p>
