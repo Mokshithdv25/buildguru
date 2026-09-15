@@ -250,11 +250,30 @@
 
 .hm-pro-metrics {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   margin: 14px 0;
 }
 .hm-pro-metric { min-height: 136px; padding: 18px; }
+.hm-pro-metric-button {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--hm-pro-line);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.hm-pro-metric-button:hover,
+.hm-pro-metric-button:focus-visible {
+  border-color: #d9bca5;
+  box-shadow: 0 20px 44px rgba(65, 46, 31, 0.1);
+  outline: none;
+  transform: translateY(-2px);
+}
+.hm-pro-metric-button:focus-visible { outline: 3px solid rgba(200, 95, 43, 0.22); outline-offset: 2px; }
+.hm-pro-metric-arrow { position: absolute; right: 18px; bottom: 17px; color: #b4a399; transition: color 160ms ease, transform 160ms ease; }
+.hm-pro-metric-button:hover .hm-pro-metric-arrow,
+.hm-pro-metric-button:focus-visible .hm-pro-metric-arrow { color: var(--hm-pro-orange); transform: translateX(2px); }
 .hm-pro-metric-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--hm-pro-muted); }
 .hm-pro-metric-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 11px; background: #fff0e3; color: var(--hm-pro-orange); }
 .hm-pro-metric-label { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
